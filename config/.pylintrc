@@ -1,0 +1,25 @@
+# --rcfile config/.pylintrc
+[DESIGN]
+max-locals=25
+
+[FORMAT]
+max-line-length=100
+
+[MESSAGE CONTROL]
+disable=raw-checker-failed,
+        bad-inline-option,
+        locally-disabled,
+        file-ignored,
+        suppressed-message,
+        useless-suppression,
+        deprecated-pragma,
+        use-symbolic-message-instead,
+        missing-module-docstring,
+        missing-class-docstring,
+        missing-function-docstring,
+        logging-fstring-interpolation,
+        consider-using-generator,
+        duplicate-code
+
+[MASTER]
+load-plugins=pylint.extensions.typing

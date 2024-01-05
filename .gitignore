@@ -1,0 +1,10 @@
+
+venv/
+*.pyc
+src/hdx_cli_toolkit.egg-info/
+.coverage
+
+cov.xml
+
+
+

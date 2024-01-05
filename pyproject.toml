@@ -1,0 +1,44 @@
+[project]
+name = "hdx_cli_toolkit"
+version = "2024.1.1"
+description = "HDX CLI tool kit for commandline interaction with HDX"
+readme = "README.md"
+requires-python = ">=3.11"
+authors = [
+  {email = "ian.hopkinson@un.org"},
+  {name = "Ian Hopkinson"}
+]
+
+dependencies = [
+  "hdx-python-api",
+  "hdx-python-country",
+  "click",
+  "pytest",
+  "pytest-cov",
+  "black==23.10.0",
+  "flake8",
+  "pylint"
+]
+
+[project.scripts]
+hdx-toolkit = "hdx_cli_toolkit.cli:hdx_toolkit"
+
+[project.urls]
+repository = "https://github.com/OCHA-DAP/hdx-cli-toolkit"
+
+[build-system]
+requires = ["setuptools >= 61.0.0"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.black]
+line-length = 100
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+# A regex preceded with ^/ will apply only to files and directories
+# in the root of the project.
+^/foo.py  # exclude a file named foo.py in the root of the project (in addition to the defaults)
+'''

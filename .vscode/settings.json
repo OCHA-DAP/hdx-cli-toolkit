@@ -1,0 +1,18 @@
+{
+  "pylint.args": ["--rcfile=config/.pylintrc"],
+  "flake8.args": [
+    "--config=config/.flake8"
+  ],
+  "editor.defaultFoldingRangeProvider": "ms-python.black-formatter",
+  "editor.defaultFormatter": "ms-python.black-formatter",
+  "editor.formatOnSave": true,
+  "prettier.enable": false,
+  "python.testing.pytestArgs": [
+    "--cov=hdx_cli_toolkit",
+    "--cov-config=config/.coveragerc",
+    "--cov-report=xml:cov.xml",
+    "tests"
+  ],
+  "python.testing.unittestEnabled": false,
+  "python.testing.pytestEnabled": true
+}
