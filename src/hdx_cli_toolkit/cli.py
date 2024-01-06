@@ -3,6 +3,7 @@
 
 import datetime
 import fnmatch
+import json
 import os
 import time
 from collections.abc import Callable
@@ -88,6 +89,12 @@ def list_datasets(
         hdx_site=hdx_site,
     )
 
+    print(
+        f"Found {len(filtered_datasets)} datasets for organisation '{organisation['display_name']} "
+        f"({organisation['name']})' matching filter conditions:",
+        flush=True,
+    )
+
     print(f"{'dataset_name':<70.70}{key:<50.50}", flush=True)
     for dataset in filtered_datasets:
         print(f"{dataset['name']:<70.70}{str(dataset[key]):<50.50}", flush=True)
@@ -165,6 +172,34 @@ def update(
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
 
 
+@hdx_toolkit.command(name="print")
+@multi_decorator(OPTIONS)
+def print_datasets(
+    organisation: str = "healthsites",
+    key: str = "private",
+    value: str = "value",
+    dataset_filter: str = "*",
+    hdx_site: str = "stage",
+):
+    """Print datasets in HDX to the terminal"""
+
+    filtered_datasets = get_filtered_datasets(
+        organisation=organisation,
+        key=key,
+        value=value,
+        dataset_filter=dataset_filter,
+        hdx_site=hdx_site,
+        verbose=False,
+    )
+
+    print("[", flush=True)
+    for i, dataset in enumerate(filtered_datasets):
+        print(json.dumps(dataset.data, indent=4), flush=True)
+        if i != len(filtered_datasets) - 1:
+            print(",", flush=True)
+    print("]", flush=True)
+
+
 def str_to_bool(x: str) -> bool:
     return x == "True"
 
@@ -191,6 +226,7 @@ def get_filtered_datasets(
     value: str = "value",
     dataset_filter: str = "*",
     hdx_site: str = "stage",
+    verbose: bool = True,
 ) -> list[Dataset]:
     Configuration.create(
         user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -198,19 +234,21 @@ def get_filtered_datasets(
         hdx_site=hdx_site,
         hdx_read_only=False,
     )
-    organization = Organization.read_from_hdx(organisation)
-    datasets = organization.get_datasets(include_private=True)
+    organisation = Organization.read_from_hdx(organisation)
+    datasets = organisation.get_datasets(include_private=True)
     filtered_datasets = []
     for dataset in datasets:
         if fnmatch.fnmatch(dataset["name"], dataset_filter):
             filtered_datasets.append(dataset)
 
-    print(Configuration.read().hdx_site, flush=True)
-    print(
-        f"Found {len(filtered_datasets)} datasets for organisation '{organization['display_name']} "
-        f"({organization['name']})' matching filter conditions:",
-        flush=True,
-    )
+    if verbose:
+        print(Configuration.read().hdx_site, flush=True)
+        print(
+            f"Found {len(filtered_datasets)} datasets for organisation "
+            f"'{organisation['display_name']} "
+            f"({organisation['name']})' matching filter conditions:",
+            flush=True,
+        )
 
     return filtered_datasets
 
