@@ -4,12 +4,15 @@
 import datetime
 import fnmatch
 import os
+import time
 from collections.abc import Callable
+from typing import Any
 
 import click
 from click.decorators import FC
 
-from hdx.api.configuration import Configuration, ConfigurationError
+from hdx.api.configuration import Configuration
+from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
 
@@ -108,26 +111,78 @@ def update(
         dataset_filter=dataset_filter,
         hdx_site=hdx_site,
     )
-    print(f"Updating key '{key}' with value '{value}'")
 
-    print(f"{'dataset_name':<70.70}{'old value':<20.20}{'new value':<20.20}", flush=True)
+    if len(filtered_datasets) == 0:
+        print("Specified filter returns no datasets", flush=True)
+        return
+
+    print(f"Updating key '{key}' with value '{value}'")
+    conversion_func, type_name = make_conversion_func(filtered_datasets[0][key])
+    if conversion_func is None:
+        print(f"Type name '{type_name}' is not recognised, aborting", flush=True)
+        return
+
+    print(f"Detected value type is '{type_name}'", flush=True)
+    print(
+        f"{'dataset_name':<70.70}{'old value':<20.20}{'new value':<20.20}"
+        f"{'Time to update/seconds':<25.25}",
+        flush=True,
+    )
     n_changed = 0
+    n_failures = 0
     for dataset in filtered_datasets:
+        t0 = time.time()
         old_value = str(dataset[key])
-        value_type = type(dataset[key])
-        if value_type.__name__ == "bool":
-            dataset[key] = bool(value)
-        elif value_type.__name__ == "int":
-            dataset[key] = int(value)
-        elif value_type.__name__ == "float":
-            dataset[key] = float(value)
-        elif value_type.__name__ == "str":
-            dataset[key] = str(value)
+        dataset[key] = conversion_func(value)
         if old_value != str(dataset[key]):
             n_changed += 1
-        print(f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}", flush=True)
+        else:
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+                f"{'No update required':<25.25}",
+                flush=True,
+            )
+            continue
+        try:
+            dataset.update_in_hdx(
+                update_resources=False,
+                hxl_update=False,
+                operation="patch",
+                batch_mode="KEEP_OLD",
+                skip_validation=True,
+                ignore_check=True,
+            )
+        except HDXError:
+            n_failures += 0
+            print(f"Could not update {dataset['name']}")
+        print(
+            f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+            f"{time.time()-t0:0.2f}",
+            flush=True,
+        )
 
-    print(f"Changed {n_changed} values")
+    print(f"Changed {n_changed} values", flush=True)
+    print(f"{n_failures} failures as evidenced by HDXError", flush=True)
+
+
+def str_to_bool(x: str) -> bool:
+    return x == "True"
+
+
+def make_conversion_func(value: Any) -> (Callable | None, str):
+    value_type = type(value)
+    if value_type.__name__ == "bool":
+        conversion_func = str_to_bool  # bool
+    elif value_type.__name__ == "int":
+        conversion_func = int
+    elif value_type.__name__ == "float":
+        conversion_func = float
+    elif value_type.__name__ == "str":
+        conversion_func = str
+    else:
+        conversion_func = None
+
+    return conversion_func, value_type.__name__
 
 
 def get_filtered_datasets(
@@ -141,9 +196,10 @@ def get_filtered_datasets(
         user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
         user_agent_lookup="hdx-cli-toolkit",
         hdx_site=hdx_site,
+        hdx_read_only=False,
     )
     organization = Organization.read_from_hdx(organisation)
-    datasets = organization.get_datasets()
+    datasets = organization.get_datasets(include_private=True)
     filtered_datasets = []
     for dataset in datasets:
         if fnmatch.fnmatch(dataset["name"], dataset_filter):
