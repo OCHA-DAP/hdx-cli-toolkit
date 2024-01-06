@@ -12,6 +12,7 @@ authors = [
 dependencies = [
   "hdx-python-api",
   "hdx-python-country",
+  "quantulum3[classifier]", # This stops the UserWarning but has a number of large dependencies
   "click",
   "pytest",
   "pytest-cov",

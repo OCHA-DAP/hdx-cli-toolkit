@@ -2,9 +2,9 @@
 
 ## Overview
 
-This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
+This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations, in the first instance to carry out a bulk quarantine action on all the datasets in an organisation. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
 
-In the first instance to carry out a bulk quarantine action on all the datasets in an organisation.
+
 
 ## Installation
 First a virtual enviroment is created and activated
@@ -42,14 +42,6 @@ And details of the arguments for a command can be found using
 
 ```
 hdx-toolkit [COMMAND] --help
-```
-
-An issue with a dependency means that a `UserWarning` is displayed when commands are run, this can be ignored:
-
-```
-[*some path*]\venv\Lib\site-packages\quantulum3\classifier.py:28: UserWarning: Classifier dependencies not installed. Run pip install quantulum3[classifier] to install them. The classifer helps to dissambiguate units.
-  warnings.warn(
-
 ```
 
 `update` is clearly an operation with potential negative side-effects. Commands can be tested on the `stage` site by setting `--hdx_site=stage`. In addition the `list` command can be used to check the datasets to be effected since `list` and `update` both take the same arguments and use the same filtering function although for `list` the `--value` argument is ignored:
