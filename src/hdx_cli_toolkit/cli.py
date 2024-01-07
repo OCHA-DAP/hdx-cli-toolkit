@@ -12,7 +12,7 @@ from typing import Any
 import click
 from click.decorators import FC
 
-from hdx.api.configuration import Configuration
+from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
@@ -222,12 +222,16 @@ def get_filtered_datasets(
     hdx_site: str = "stage",
     verbose: bool = True,
 ) -> list[Dataset]:
-    Configuration.create(
-        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-        user_agent_lookup="hdx-cli-toolkit",
-        hdx_site=hdx_site,
-        hdx_read_only=False,
-    )
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-cli-toolkit",
+            hdx_site=hdx_site,
+            hdx_read_only=False,
+        )
+    except ConfigurationError:
+        pass
+
     organisation = Organization.read_from_hdx(organisation)
     datasets = organisation.get_datasets(include_private=True)
     filtered_datasets = []
