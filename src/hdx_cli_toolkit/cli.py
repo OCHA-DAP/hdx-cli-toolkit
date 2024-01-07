@@ -29,7 +29,7 @@ OPTIONS = [
     click.option(
         "--organisation",
         is_flag=False,
-        default="healthsites",
+        default="",
         help="an organisation name",
     ),
     click.option(
@@ -72,7 +72,7 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
 @hdx_toolkit.command(name="list")
 @multi_decorator(OPTIONS)
 def list_datasets(
-    organisation: str = "healthsites",
+    organisation: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -89,12 +89,6 @@ def list_datasets(
         hdx_site=hdx_site,
     )
 
-    print(
-        f"Found {len(filtered_datasets)} datasets for organisation '{organisation['display_name']} "
-        f"({organisation['name']})' matching filter conditions:",
-        flush=True,
-    )
-
     print(f"{'dataset_name':<70.70}{key:<50.50}", flush=True)
     for dataset in filtered_datasets:
         print(f"{dataset['name']:<70.70}{str(dataset[key]):<50.50}", flush=True)
@@ -103,7 +97,7 @@ def list_datasets(
 @hdx_toolkit.command(name="update")
 @multi_decorator(OPTIONS)
 def update(
-    organisation: str = "healthsites",
+    organisation: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",

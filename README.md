@@ -46,24 +46,25 @@ hdx-toolkit [COMMAND] --help
 
 `update` is clearly an operation with potential negative side-effects. Commands can be tested on the `stage` site by setting `--hdx_site=stage`. In addition the `list` command can be used to check the datasets to be effected since `list` and `update` both take the same arguments and use the same filtering function although for `list` the `--value` argument is ignored:
 
+The default orgnaisation is `healthsites` reflecting the original 
 ```shell
-hdx-toolkit list --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
-hdx-toolkit update --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=False
-hdx-toolkit update --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=False
+hdx-toolkit update --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
 ```
 
 We can then be slightly more adventurous:
 
 ```shell
-hdx-toolkit list --dataset_filter=*la* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --dataset_filter=*la* --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organisation=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organisation=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
 ```
 
 Then go mad:
 
 ```shell
-hdx-toolkit list --dataset_filter=* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --dataset_filter=* --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organisation=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organisation=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
 
 
