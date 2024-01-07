@@ -67,8 +67,16 @@ hdx-toolkit list --organisation=healthsites--dataset_filter=* --hdx_site=stage -
 hdx-toolkit update --organisation=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
 
+## Contributions
 
+This project users a GitHub Action to run tests and linting. It requires the following environment variables/secrets to be set in the `test` environment:
 
+```
+HDX_KEY - secret. value: fake secret
+HDX_SITE - environment variable value: stage
+USER_AGENT - environment variable: hdx_cli_toolkit_gha
+PREPREFIX - - environment variable: HDXINTERNAL
+```
 
 
 
