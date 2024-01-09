@@ -16,6 +16,7 @@ from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
+from hdx.data.user import User
 
 
 @click.group()
@@ -234,9 +235,52 @@ def get_organisation_metadata(organisation: str, hdx_site: str = "stage", verbos
                 print(json.dumps(organisation_metadata.data, indent=2), flush=True)
             else:
                 print(
-                    f"{organisation_metadata['name']:<100.100}: {organisation_metadata['id']}",
+                    f"{organisation_metadata['name']:<50.50}: {organisation_metadata['id']}",
                     flush=True,
                 )
+
+
+@hdx_toolkit.command(name="get_user_metadata")
+@click.option(
+    "--user",
+    is_flag=False,
+    default="",
+    help="a user name or email, wildcards are implicitly included",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="if true show all user metadata",
+)
+def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False):
+    """Get user id and other metadata"""
+    print_banner("Get User Metadata")
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-cli-toolkit",
+            hdx_site=hdx_site,
+            hdx_read_only=False,
+        )
+    except ConfigurationError:
+        pass
+
+    user_list = User.get_all_users(q=user)
+    for a_user in user_list:
+        if verbose:
+            print(json.dumps(a_user.data, indent=2), flush=True)
+        else:
+            print(
+                f"{a_user['name']:<50.50}: {a_user['id']}",
+                flush=True,
+            )
 
 
 def str_to_bool(x: str) -> bool:
