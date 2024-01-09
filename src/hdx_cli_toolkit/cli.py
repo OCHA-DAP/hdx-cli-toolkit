@@ -153,7 +153,7 @@ def update(
                 skip_validation=True,
                 ignore_check=True,
             )
-        except HDXError:
+        except (HDXError, KeyError):
             n_failures += 0
             print(f"Could not update {dataset['name']}")
         print(
@@ -192,6 +192,51 @@ def print_datasets(
         if i != len(filtered_datasets) - 1:
             print(",", flush=True)
     print("]", flush=True)
+
+
+@hdx_toolkit.command(name="get_organisation_metadata")
+@click.option(
+    "--organisation",
+    is_flag=False,
+    default="",
+    help="an organisation name, can include wildcards",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="if true show all Organisation metadata",
+)
+def get_organisation_metadata(organisation: str, hdx_site: str = "stage", verbose: bool = False):
+    """Get an organisation id and other metadata"""
+    print_banner("Get Organisation Metadata")
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-cli-toolkit",
+            hdx_site=hdx_site,
+            hdx_read_only=False,
+        )
+    except ConfigurationError:
+        pass
+
+    all_organisations = Organization.get_all_organization_names(include_extras=True)
+    for an_organisation in all_organisations:
+        if fnmatch.fnmatch(an_organisation, organisation):
+            organisation_metadata = Organization.read_from_hdx(an_organisation)
+            if verbose:
+                print(json.dumps(organisation_metadata.data, indent=2), flush=True)
+            else:
+                print(
+                    f"{organisation_metadata['name']:<100.100}: {organisation_metadata['id']}",
+                    flush=True,
+                )
 
 
 def str_to_bool(x: str) -> bool:
