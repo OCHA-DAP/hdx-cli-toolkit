@@ -24,8 +24,6 @@ def hdx_toolkit() -> None:
     """Tools for Commandline interactions with HDX"""
 
 
-# This method for bundling reusable options is borrowed from here:
-#
 OPTIONS = [
     click.option(
         "--organisation",
@@ -200,7 +198,7 @@ def print_datasets(
     "--organisation",
     is_flag=False,
     default="",
-    help="an organisation name, can include wildcards",
+    help="an organisation name, wildcards are implicitly included",
 )
 @click.option(
     "--hdx_site",
@@ -229,7 +227,7 @@ def get_organisation_metadata(organisation: str, hdx_site: str = "stage", verbos
 
     all_organisations = Organization.get_all_organization_names(include_extras=True)
     for an_organisation in all_organisations:
-        if fnmatch.fnmatch(an_organisation, organisation):
+        if fnmatch.fnmatch(an_organisation, f"*{organisation}*"):
             organisation_metadata = Organization.read_from_hdx(an_organisation)
             if verbose:
                 print(json.dumps(organisation_metadata.data, indent=2), flush=True)
@@ -290,7 +288,7 @@ def str_to_bool(x: str) -> bool:
 def make_conversion_func(value: Any) -> (Callable | None, str):
     value_type = type(value)
     if value_type.__name__ == "bool":
-        conversion_func = str_to_bool  # bool
+        conversion_func = str_to_bool
     elif value_type.__name__ == "int":
         conversion_func = int
     elif value_type.__name__ == "float":
