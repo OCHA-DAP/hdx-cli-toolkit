@@ -302,7 +302,7 @@ def make_conversion_func(value: Any) -> (Callable | None, str):
 
 
 def get_filtered_datasets(
-    organisation: str = "healthsites",
+    organisation: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -319,8 +319,19 @@ def get_filtered_datasets(
     except ConfigurationError:
         pass
 
-    organisation = Organization.read_from_hdx(organisation)
-    datasets = organisation.get_datasets(include_private=True)
+    if organisation != "":
+        organisation = Organization.read_from_hdx(organisation)
+        datasets = organisation.get_datasets(include_private=True)
+    else:
+        dataset = Dataset.read_from_hdx(dataset_filter)
+        if dataset is None:
+            datasets = []
+            organisation = {"display_name": "", "name": ""}
+        else:
+            datasets = [dataset]
+            organisation = dataset.get_organization()
+            organisation = {"display_name": organisation["title"], "name": organisation["name"]}
+
     filtered_datasets = []
     for dataset in datasets:
         if fnmatch.fnmatch(dataset["name"], dataset_filter):

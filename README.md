@@ -49,6 +49,7 @@ Commands:
   update                     Update datasets in HDX
 ```
 
+The output from the `print` command is designed to be piped to file to make a valid JSON fixture.
 
 And details of the arguments for a command can be found using:
 
