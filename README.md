@@ -23,7 +23,7 @@ pip install -e .
 The user agent (`hdx_cli_toolkit_ih`) is specified in the `~/.useragents.yaml` file the suffix _ih should be replaced with the users initials.
 ```
 hdx-cli-toolkit:
-    preprefix: HDXINTERNAL
+    preprefix: [YOUR_ORGANISATION]
     user_agent: hdx_cli_toolkit_ih
 ```
 
@@ -88,7 +88,7 @@ This project users a GitHub Action to run tests and linting. It requires the fol
 HDX_KEY - secret. Value: fake secret
 HDX_SITE - environment variable. Value: stage
 USER_AGENT - environment variable. Value: hdx_cli_toolkit_gha
-PREPREFIX - - environment variable. Value: HDXINTERNAL
+PREPREFIX - - environment variable. Value: [YOUR_ORGANISATION]
 ```
 
 Testing uses a mock for the HDX so a live HDX_KEY is not required.
