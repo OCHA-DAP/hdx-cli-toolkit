@@ -292,9 +292,10 @@ def show_configuration():
     )
 
     if os.path.exists(user_hdx_config_yaml):
-        print(
+        click.secho(
             f"Found a user configuration file at {user_hdx_config_yaml}. "
-            "Contents (secrets censored):"
+            "Contents (secrets censored):",
+            bold=True,
         )
         with open(user_hdx_config_yaml, encoding="utf-8") as config_file:
             config_file_contents = config_file.read()
@@ -308,14 +309,14 @@ def show_configuration():
 
     user_agent_config_yaml = os.path.join(os.path.expanduser("~"), ".useragents.yaml")
     if os.path.exists(user_agent_config_yaml):
-        print(f"User agents file found at {user_agent_config_yaml}", flush=True)
+        click.secho(f"User agents file found at {user_agent_config_yaml}", bold=True)
         with open(user_agent_config_yaml, encoding="utf-8") as config_file:
             user_agents_file_contents = config_file.read()
             print(user_agents_file_contents, flush=True)
 
     # Check Environment variables
     environment_variables = ["HDX_KEY", "HDX_SITE", "HDX_URL"]
-    print("Values of relevant environment variables (overwrite supplied values):", flush=True)
+    click.secho("Values of relevant environment variables (overwrite supplied values):", bold=True)
     for variable in environment_variables:
         env_variable = os.getenv(variable)
         if env_variable is not None:
@@ -325,7 +326,9 @@ def show_configuration():
         else:
             print(f"{variable} is not set", flush=True)
 
-    print(f"\nDefault base configuration file is at {default_hdx_config_yaml}. Contents:")
+    click.secho(
+        f"\nDefault base configuration file is at {default_hdx_config_yaml}. Contents:", bold=True
+    )
     with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
         config_file_contents = config_file.read()
         print(config_file_contents, flush=True)
@@ -411,7 +414,7 @@ def print_banner(action: str):
     title = f"HDX CLI toolkit - {action}"
     timestamp = f"Invoked at: {datetime.datetime.now().isoformat()}"
     width = max(len(title), len(timestamp))
-    print((width + 4) * "*")
-    print(f"* {title:<{width}} *")
-    print(f"* {timestamp:<{width}} *")
-    print((width + 4) * "*")
+    click.secho((width + 4) * "*", bold=True)
+    click.secho(f"* {title:<{width}} *", bold=True)
+    click.secho(f"* {timestamp:<{width}} *", bold=True)
+    click.secho((width + 4) * "*", bold=True)
