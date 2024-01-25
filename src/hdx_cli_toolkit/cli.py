@@ -17,6 +17,7 @@ from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
 from hdx.data.user import User
+from hdx.utilities.path import script_dir_plus_file
 
 
 @click.group()
@@ -279,6 +280,62 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
                 f"{a_user['name']:<50.50}: {a_user['id']}",
                 flush=True,
             )
+
+
+@hdx_toolkit.command(name="configuration")
+def show_configuration():
+    print_banner("configuration")
+    # Check files
+    user_hdx_config_yaml = os.path.join(os.path.expanduser("~"), ".hdx_configuration.yaml")
+    default_hdx_config_yaml = script_dir_plus_file(
+        "hdx_base_configuration.yaml", ConfigurationError
+    )
+
+    if os.path.exists(user_hdx_config_yaml):
+        print(
+            f"Found a user configuration file at {user_hdx_config_yaml}. Contents (secrets censored):"
+        )
+        with open(user_hdx_config_yaml, encoding="utf-8") as config_file:
+            config_file_contents = config_file.read()
+            rows = config_file_contents.split("\n")
+            for row in rows:
+                if row.startswith("hdx_key"):
+                    key_part, secret_part = row.split(":")
+                    secret_part = censor_secret(secret_part)
+                    row = key_part + ': "' + secret_part
+                print(row, flush=True)
+
+    user_agent_config_yaml = os.path.join(os.path.expanduser("~"), ".useragents.yaml")
+    if os.path.exists(user_agent_config_yaml):
+        print(f"User agents file found at {user_agent_config_yaml}", flush=True)
+        with open(user_agent_config_yaml, encoding="utf-8") as config_file:
+            user_agents_file_contents = config_file.read()
+            print(user_agents_file_contents, flush=True)
+
+    # Check Environment variables
+    environment_variables = ["HDX_KEY", "HDX_SITE", "HDX_URL"]
+    print("Values of relevant environment variables (overwrite supplied values):", flush=True)
+    for variable in environment_variables:
+        env_variable = os.getenv(variable)
+        if env_variable is not None:
+            if variable == "HDX_KEY":
+                env_variable = censor_secret(env_variable)
+            print(f"{variable}:{env_variable}", flush=True)
+        else:
+            print(f"{variable} is not set", flush=True)
+
+    print(f"\nDefault base configuration file is at {default_hdx_config_yaml}. Contents:")
+    with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
+        config_file_contents = config_file.read()
+        print(config_file_contents, flush=True)
+
+
+def censor_secret(secret: str) -> str:
+    if len(secret) < 10:
+        censored_secret = len(secret) * "*"
+    else:
+        censored_secret = (len(secret) - 10) * "*" + secret[-10:]
+    return censored_secret
 
 
 def str_to_bool(x: str) -> bool:
