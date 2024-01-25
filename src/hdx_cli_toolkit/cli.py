@@ -293,7 +293,8 @@ def show_configuration():
 
     if os.path.exists(user_hdx_config_yaml):
         print(
-            f"Found a user configuration file at {user_hdx_config_yaml}. Contents (secrets censored):"
+            f"Found a user configuration file at {user_hdx_config_yaml}. "
+            "Contents (secrets censored):"
         )
         with open(user_hdx_config_yaml, encoding="utf-8") as config_file:
             config_file_contents = config_file.read()
