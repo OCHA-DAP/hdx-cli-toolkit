@@ -316,7 +316,9 @@ def show_configuration():
 
     # Check Environment variables
     environment_variables = ["HDX_KEY", "HDX_SITE", "HDX_URL"]
-    click.secho("Values of relevant environment variables (overwrite supplied values):", bold=True)
+    click.secho(
+        "Values of relevant environment variables (used in absence of supplied values):", bold=True
+    )
     for variable in environment_variables:
         env_variable = os.getenv(variable)
         if env_variable is not None:
