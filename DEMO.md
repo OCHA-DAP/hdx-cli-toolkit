@@ -21,6 +21,12 @@ Or for a specific command:
 hdx-toolkit list --help
 ```
 
+Understanding the `Configuration` used by `hdx-python-api` can be challenging for new users, so the `configuration` command will echo the relevant local values (censoring any secrets):
+
+```
+hdx-toolkit configuration
+```
+
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`:
 
 ```
