@@ -91,7 +91,8 @@ def list_datasets(
 
     print(f"{'dataset_name':<70.70}{key:<50.50}", flush=True)
     for dataset in filtered_datasets:
-        print(f"{dataset['name']:<70.70}{str(dataset[key]):<50.50}", flush=True)
+        value = dataset.get(key, "")
+        print(f"{dataset['name']:<70.70}{str(value):<50.50}", flush=True)
 
 
 @hdx_toolkit.command(name="update")
