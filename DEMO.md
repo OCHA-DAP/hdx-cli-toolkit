@@ -35,6 +35,8 @@ hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --
 
 For this action an organisation is required unless an exact dataset name is supplied.
 
+The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword.
+
 Another pain point for me is getting an organisation id, the `get_organisation_metadata` fixes
 this. We can just get the id with an organisation name, note wildcards are implicit in the organisation specification since this is how the CKAN API works:
 
