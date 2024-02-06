@@ -7,7 +7,6 @@ import json
 import os
 import time
 from collections.abc import Callable
-from typing import Any
 
 import click
 from click.decorators import FC
@@ -18,6 +17,12 @@ from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
 from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
+
+from hdx_cli_toolkit.utilities import (
+    write_dictionary,
+    print_table_from_list_of_dicts,
+    censor_secret,
+)
 
 
 @click.group()
@@ -71,12 +76,19 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
 
 @hdx_toolkit.command(name="list")
 @multi_decorator(OPTIONS)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export data from list to CSV",
+)
 def list_datasets(
     organisation: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
     hdx_site: str = "stage",
+    output_path: str = None,
 ):
     """List datasets in HDX"""
     print_banner("list")
@@ -89,10 +101,23 @@ def list_datasets(
         hdx_site=hdx_site,
     )
 
-    print(f"{'dataset_name':<70.70}{key:<50.50}", flush=True)
+    keys = key.split(",")
+    output_template = {"dataset_name": ""}
+    for key_ in keys:
+        output_template[key_] = ""
+
+    output = []
     for dataset in filtered_datasets:
-        value = dataset.get(key, "")
-        print(f"{dataset['name']:<70.70}{str(value):<50.50}", flush=True)
+        output_row = output_template.copy()
+        output_row["dataset_name"] = dataset["name"]
+        for key_ in keys:
+            output_row[key_] = dataset.get(key_, "")
+        output.append(output_row)
+
+    print_table_from_list_of_dicts(output)
+    if output_path is not None:
+        status = write_dictionary(output_path, output, append=False)
+        print(status, flush=True)
 
 
 @hdx_toolkit.command(name="update")
@@ -335,34 +360,6 @@ def show_configuration():
     with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
         config_file_contents = config_file.read()
         print(config_file_contents, flush=True)
-
-
-def censor_secret(secret: str) -> str:
-    if len(secret) < 10:
-        censored_secret = len(secret) * "*"
-    else:
-        censored_secret = (len(secret) - 10) * "*" + secret[-10:]
-    return censored_secret
-
-
-def str_to_bool(x: str) -> bool:
-    return x == "True"
-
-
-def make_conversion_func(value: Any) -> (Callable | None, str):
-    value_type = type(value)
-    if value_type.__name__ == "bool":
-        conversion_func = str_to_bool
-    elif value_type.__name__ == "int":
-        conversion_func = int
-    elif value_type.__name__ == "float":
-        conversion_func = float
-    elif value_type.__name__ == "str":
-        conversion_func = str
-    else:
-        conversion_func = None
-
-    return conversion_func, value_type.__name__
 
 
 def get_filtered_datasets(

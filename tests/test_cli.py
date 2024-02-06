@@ -7,7 +7,7 @@ from click.testing import CliRunner
 
 from hdx.data.dataset import Dataset
 from hdx.api.configuration import Configuration, ConfigurationError
-from hdx_cli_toolkit.cli import list_datasets, censor_secret
+from hdx_cli_toolkit.cli import list_datasets
 
 try:
     Configuration.create(
@@ -58,13 +58,3 @@ def cli_test_template(command, cli_arguments, expected_output, forbidden_output=
 
     if forbidden_output != "":
         assert forbidden_output not in str(result.exception)
-
-
-def test_censor_short_secret():
-    censored_secret = censor_secret("012345")
-    assert censored_secret == "******"
-
-
-def test_censor_long_secret():
-    censored_secret = censor_secret("ABCDEF0123456789")
-    assert censored_secret == "******0123456789"
