@@ -22,6 +22,7 @@ from hdx_cli_toolkit.utilities import (
     write_dictionary,
     print_table_from_list_of_dicts,
     censor_secret,
+    make_conversion_func,
 )
 
 
