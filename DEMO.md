@@ -37,8 +37,11 @@ For this action an organisation is required unless an exact dataset name is supp
 
 The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword.
 
-Another pain point for me is getting an organisation id, the `get_organisation_metadata` fixes
-this. We can just get the id with an organisation name, note wildcards are implicit in the organisation specification since this is how the CKAN API works:
+```
+hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
+```
+
+Another pain point for me is getting an organisation id, the `get_organisation_metadata` command fixes this. We can just get the id with an organisation name, note wildcards are implicit in the organisation specification since this is how the CKAN API works:
 
 ```
 hdx-toolkit get_organisation_metadata --organisation=zurich
@@ -53,13 +56,13 @@ hdx-toolkit get_organisation_metadata --organisation=eth-zurich-weather-and-clim
 Similarly we can get user ids:
 
 ```
- hdx-toolkit get_user_metadata --user=hopkinson
+hdx-toolkit get_user_metadata --user=hopkinson
 ```
 
 And see the complete records:
 
 ```
- hdx-toolkit get_user_metadata --user=hopkinson --verbose
+hdx-toolkit get_user_metadata --user=hopkinson --verbose
 ```
 
 Note I first joined HDX in March 2015!
@@ -75,3 +78,18 @@ This output is valid JSON and can be piped into a file to use as a test fixture 
 ## Future Work
 
 Add support for listing resources to a dataset
+
+## Collected commands
+
+```
+hdx-toolkit --help
+hdx-toolkit list --help
+hdx-toolkit configuration
+hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
+hdx-toolkit get_organisation_metadata --organisation=zurich
+hdx-toolkit get_organisation_metadata --organisation=eth-zurich-weather-and-climate-risks --verbose
+hdx-toolkit get_user_metadata --user=hopkinson
+hdx-toolkit get_user_metadata --user=hopkinson --verbose
+hdx-toolkit print --dataset_filter=climada-litpop-dataset
+```
