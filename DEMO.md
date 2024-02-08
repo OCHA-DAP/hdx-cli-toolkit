@@ -41,6 +41,12 @@ The `list` command can output multiple comma separated keys to a table, and also
 hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
 
+If the `query` keyword is supplied then `organization` and `dataset_filter` keywords are ignored and the `query` is passed to CKAN:
+
+```
+hdx-toolkit list --query=archived:true --key=owner_org
+```
+
 Another pain point for me is getting an organisation id, the `get_organisation_metadata` command fixes this. We can just get the id with an organisation name, note wildcards are implicit in the organisation specification since this is how the CKAN API works:
 
 ```
@@ -80,13 +86,14 @@ This output is valid JSON and can be piped into a file to use as a test fixture 
 Add support for listing resources to a dataset
 
 ## Collected commands
-
+ 
 ```
 hdx-toolkit --help
 hdx-toolkit list --help
 hdx-toolkit configuration
-hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organisation=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True
 hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
+hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
 hdx-toolkit get_organisation_metadata --organisation=zurich
 hdx-toolkit get_organisation_metadata --organisation=eth-zurich-weather-and-climate-risks --verbose
 hdx-toolkit get_user_metadata --user=hopkinson

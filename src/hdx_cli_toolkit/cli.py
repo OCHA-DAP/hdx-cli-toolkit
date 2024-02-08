@@ -57,6 +57,15 @@ OPTIONS = [
         help="a dataset name or pattern on which to filter list",
     ),
     click.option(
+        "--query",
+        is_flag=False,
+        default=None,
+        help=(
+            "a dataset query string to pass to CKAN, "
+            "organisation and dataset_filter are ignored if it is provided"
+        ),
+    ),
+    click.option(
         "--hdx_site",
         is_flag=False,
         default="stage",
@@ -88,6 +97,7 @@ def list_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
+    query: str = None,
     hdx_site: str = "stage",
     output_path: str = None,
 ):
@@ -99,6 +109,7 @@ def list_datasets(
         key=key,
         value=value,
         dataset_filter=dataset_filter,
+        query=query,
         hdx_site=hdx_site,
     )
 
@@ -128,6 +139,7 @@ def update(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
+    query: str = None,
     hdx_site: str = "stage",
 ):
     """Update datasets in HDX"""
@@ -137,6 +149,7 @@ def update(
         key=key,
         value=value,
         dataset_filter=dataset_filter,
+        query=query,
         hdx_site=hdx_site,
     )
 
@@ -200,6 +213,7 @@ def print_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
+    query: str = None,
     hdx_site: str = "stage",
 ):
     """Print datasets in HDX to the terminal"""
@@ -210,6 +224,7 @@ def print_datasets(
         value=value,
         dataset_filter=dataset_filter,
         hdx_site=hdx_site,
+        query=query,
         verbose=False,
     )
 
@@ -368,6 +383,7 @@ def get_filtered_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
+    query: str = None,
     hdx_site: str = "stage",
     verbose: bool = True,
 ) -> list[Dataset]:
@@ -384,6 +400,9 @@ def get_filtered_datasets(
     if organisation != "":
         organisation = Organization.read_from_hdx(organisation)
         datasets = organisation.get_datasets(include_private=True)
+    elif query is not None:
+        datasets = Dataset.search_in_hdx(query=query)
+        organisation = {"display_name": "", "name": ""}
     else:
         dataset = Dataset.read_from_hdx(dataset_filter)
         if dataset is None:
