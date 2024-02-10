@@ -31,8 +31,6 @@ hdx_key_stage: "[hdx_key from the staging HDX site]"
 hdx_key: "[hdx_key from the prod HDX site]"
 ```
 
-
-
 A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file the * replaced with the users initials.
 ```
 hdx-cli-toolkit:
