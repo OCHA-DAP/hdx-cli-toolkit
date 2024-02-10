@@ -24,9 +24,16 @@ For users the best route is probably to use [pipx](https://pypi.org/project/pipx
 
 In either case there is a small amount of configuration required.
 
-`hdx-cli-toolkit` uses the `hdx-python-api` library, configuration for which is done in the usual way [described here](https://hdx-python-api.readthedocs.io/en/latest/). 
+`hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
-The user agent (`hdx_cli_toolkit_ih`) is specified in the `~/.useragents.yaml` file the suffix _ih should be replaced with the users initials.
+```
+hdx_key_stage: "[hdx_key from the staging HDX site]"
+hdx_key: "[hdx_key from the prod HDX site]"
+```
+
+
+
+A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file the * replaced with the users initials.
 ```
 hdx-cli-toolkit:
     preprefix: [YOUR_ORGANIZATION]
