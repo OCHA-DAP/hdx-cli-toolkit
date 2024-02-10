@@ -2,7 +2,7 @@
 
 ## Overview
 
-This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations and other administrative activities, in the first instance to carry out a bulk quarantine action on all the datasets in an organisation. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
+This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations and other administrative activities, in the first instance to carry out a bulk quarantine action on all the datasets in an organization. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
 
 ## Installation
 `hdx-cli-toolkit` is a Python application. 
@@ -29,7 +29,7 @@ In either case there is a small amount of configuration required.
 The user agent (`hdx_cli_toolkit_ih`) is specified in the `~/.useragents.yaml` file the suffix _ih should be replaced with the users initials.
 ```
 hdx-cli-toolkit:
-    preprefix: [YOUR_ORGANISATION]
+    preprefix: [YOUR_ORGANIZATION]
     user_agent: hdx_cli_toolkit_ih
 ```
 
@@ -48,7 +48,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
-  get_organisation_metadata  Get an organisation id and other metadata
+  get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
@@ -67,22 +67,22 @@ hdx-toolkit [COMMAND] --help
 
 The original purpose of the `hdx-cli-toolkit` was to quarantine the Healthsites datasets, for which the process was a cautious single dataset update
 ```shell
-hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organization=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
 ```
 
 A slightly more adventurous update that selects 29 datasets using the `*la*` wildcard:
 
 ```shell
-hdx-toolkit list --organisation=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organisation=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organization=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
 ```
 
-Then applying to all the datasets in the Organisation, those already updated are skipped:
+Then applying to all the datasets in the organization, those already updated are skipped:
 
 ```shell
-hdx-toolkit list --organisation=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organisation=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
+hdx-toolkit update --organization=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
 The initial update takes approximately 10 seconds but subsequent updates in a list take only a couple of seconds.
 
@@ -94,7 +94,7 @@ This project users a GitHub Action to run tests and linting. It requires the fol
 HDX_KEY - secret. Value: fake secret
 HDX_SITE - environment variable. Value: stage
 USER_AGENT - environment variable. Value: hdx_cli_toolkit_gha
-PREPREFIX - - environment variable. Value: [YOUR_ORGANISATION]
+PREPREFIX - - environment variable. Value: [YOUR_organization]
 ```
 
 Testing uses a mock for the HDX so a live HDX_KEY is not required.

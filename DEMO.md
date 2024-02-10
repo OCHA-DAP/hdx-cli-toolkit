@@ -3,7 +3,7 @@
 ## Motivations
 
 1. Request for DPT to do a bulk quarantine action
-2. Requirement to grab various pieces of HDX data as text for developing pipelines (organisation, maintainer ids, datasets as JSON, lists of datasets for organisations...)
+2. Requirement to grab various pieces of HDX data as text for developing pipelines (organization, maintainer ids, datasets as JSON, lists of datasets for organizations...)
 3. One stop shop for "how do I do this?" - GitHub Actions, Pytest fixtures, mocks, Click CLI.
 
 ## Walkthrough
@@ -30,15 +30,15 @@ hdx-toolkit configuration
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`:
 
 ```
-hdx-toolkit list --organisation=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
 ```
 
-For this action an organisation is required unless an exact dataset name is supplied.
+For this action an organization is required unless an exact dataset name is supplied.
 
 The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword.
 
 ```
-hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
+hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
 
 If the `query` keyword is supplied then `organization` and `dataset_filter` keywords are ignored and the `query` is passed to CKAN:
@@ -47,16 +47,16 @@ If the `query` keyword is supplied then `organization` and `dataset_filter` keyw
 hdx-toolkit list --query=archived:true --key=owner_org
 ```
 
-Another pain point for me is getting an organisation id, the `get_organisation_metadata` command fixes this. We can just get the id with an organisation name, note wildcards are implicit in the organisation specification since this is how the CKAN API works:
+Another pain point for me is getting an organization id, the `get_organization_metadata` command fixes this. We can just get the id with an organization name, note wildcards are implicit in the organization specification since this is how the CKAN API works:
 
 ```
-hdx-toolkit get_organisation_metadata --organisation=zurich
+hdx-toolkit get_organization_metadata --organization=zurich
 ```
 
-We can get the full organisation record using the `--verbose` flag:
+We can get the full organization record using the `--verbose` flag:
 
 ```
-hdx-toolkit get_organisation_metadata --organisation=eth-zurich-weather-and-climate-risks --verbose
+hdx-toolkit get_organization_metadata --organization=eth-zurich-weather-and-climate-risks --verbose
 ```
 
 Similarly we can get user ids:
@@ -91,11 +91,11 @@ Add support for listing resources to a dataset
 hdx-toolkit --help
 hdx-toolkit list --help
 hdx-toolkit configuration
-hdx-toolkit list --organisation=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True
-hdx-toolkit list --organisation=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
+hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
-hdx-toolkit get_organisation_metadata --organisation=zurich
-hdx-toolkit get_organisation_metadata --organisation=eth-zurich-weather-and-climate-risks --verbose
+hdx-toolkit get_organization_metadata --organization=zurich
+hdx-toolkit get_organization_metadata --organization=eth-zurich-weather-and-climate-risks --verbose
 hdx-toolkit get_user_metadata --user=hopkinson
 hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset

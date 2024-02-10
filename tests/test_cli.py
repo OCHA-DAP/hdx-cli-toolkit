@@ -33,14 +33,14 @@ def test_list_datasets(mock_hdx, json_fixture):
     mock_hdx.return_value = mock_datasets
     command = list_datasets
     cli_arguments = [
-        "--organisation=healthsites",
+        "--organization=healthsites",
         "--dataset_filter=malawi-healthsites",
         "--hdx_site=stage",
         "--key=private",
     ]
 
     expected_output = (
-        "Found 1 datasets for organisation 'Global Healthsites Mapping Project (healthsites)' "
+        "Found 1 datasets for organization 'Global Healthsites Mapping Project (healthsites)' "
         "matching filter conditions:"
     )
 
@@ -50,7 +50,7 @@ def test_list_datasets(mock_hdx, json_fixture):
 @patch("hdx.data.dataset.Dataset.search_in_hdx")
 def test_get_filtered_datasets_1(mock_hdx):
     _ = get_filtered_datasets(
-        organisation="",
+        organization="",
         dataset_filter="*",
         query="archived:true",
     )
@@ -61,7 +61,7 @@ def test_get_filtered_datasets_1(mock_hdx):
 @patch("hdx.data.organization.Organization.read_from_hdx")
 def test_get_filtered_datasets_2(mock_hdx):
     _ = get_filtered_datasets(
-        organisation="healthsites",
+        organization="healthsites",
         dataset_filter="*",
         query=None,
     )
@@ -72,7 +72,7 @@ def test_get_filtered_datasets_2(mock_hdx):
 @patch("hdx.data.dataset.Dataset.read_from_hdx")
 def test_get_filtered_datasets_3(mock_hdx):
     _ = get_filtered_datasets(
-        organisation="",
+        organization="",
         dataset_filter="a-full-dataset-name",
         query=None,
     )

@@ -33,16 +33,16 @@ def hdx_toolkit() -> None:
 
 OPTIONS = [
     click.option(
-        "--organisation",
+        "--organization",
         is_flag=False,
         default="",
-        help="an organisation name",
+        help="an organization name",
     ),
     click.option(
         "--key",
         is_flag=False,
         default="private",
-        help="a single key to list alongside organisation",
+        help="a single key to list alongside organization",
     ),
     click.option(
         "--value",
@@ -62,7 +62,7 @@ OPTIONS = [
         default=None,
         help=(
             "a dataset query string to pass to CKAN, "
-            "organisation and dataset_filter are ignored if it is provided"
+            "organization and dataset_filter are ignored if it is provided"
         ),
     ),
     click.option(
@@ -93,7 +93,7 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
     help="A file path to export data from list to CSV",
 )
 def list_datasets(
-    organisation: str = "",
+    organization: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -105,7 +105,7 @@ def list_datasets(
     print_banner("list")
 
     filtered_datasets = get_filtered_datasets(
-        organisation=organisation,
+        organization=organization,
         key=key,
         value=value,
         dataset_filter=dataset_filter,
@@ -135,7 +135,7 @@ def list_datasets(
 @hdx_toolkit.command(name="update")
 @multi_decorator(OPTIONS)
 def update(
-    organisation: str = "",
+    organization: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -145,7 +145,7 @@ def update(
     """Update datasets in HDX"""
     print_banner("Update")
     filtered_datasets = get_filtered_datasets(
-        organisation=organisation,
+        organization=organization,
         key=key,
         value=value,
         dataset_filter=dataset_filter,
@@ -209,7 +209,7 @@ def update(
 @hdx_toolkit.command(name="print")
 @multi_decorator(OPTIONS)
 def print_datasets(
-    organisation: str = "healthsites",
+    organization: str = "healthsites",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -219,7 +219,7 @@ def print_datasets(
     """Print datasets in HDX to the terminal"""
 
     filtered_datasets = get_filtered_datasets(
-        organisation=organisation,
+        organization=organization,
         key=key,
         value=value,
         dataset_filter=dataset_filter,
@@ -236,12 +236,12 @@ def print_datasets(
     print("]", flush=True)
 
 
-@hdx_toolkit.command(name="get_organisation_metadata")
+@hdx_toolkit.command(name="get_organization_metadata")
 @click.option(
-    "--organisation",
+    "--organization",
     is_flag=False,
     default="",
-    help="an organisation name, wildcards are implicitly included",
+    help="an organization name, wildcards are implicitly included",
 )
 @click.option(
     "--hdx_site",
@@ -253,11 +253,11 @@ def print_datasets(
     "--verbose",
     is_flag=True,
     default=False,
-    help="if true show all Organisation metadata",
+    help="if true show all organization metadata",
 )
-def get_organisation_metadata(organisation: str, hdx_site: str = "stage", verbose: bool = False):
-    """Get an organisation id and other metadata"""
-    print_banner("Get Organisation Metadata")
+def get_organization_metadata(organization: str, hdx_site: str = "stage", verbose: bool = False):
+    """Get an organization id and other metadata"""
+    print_banner("Get organization Metadata")
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -268,15 +268,15 @@ def get_organisation_metadata(organisation: str, hdx_site: str = "stage", verbos
     except ConfigurationError:
         pass
 
-    all_organisations = Organization.get_all_organization_names(include_extras=True)
-    for an_organisation in all_organisations:
-        if fnmatch.fnmatch(an_organisation, f"*{organisation}*"):
-            organisation_metadata = Organization.read_from_hdx(an_organisation)
+    all_organizations = Organization.get_all_organization_names(include_extras=True)
+    for an_organization in all_organizations:
+        if fnmatch.fnmatch(an_organization, f"*{organization}*"):
+            organization_metadata = Organization.read_from_hdx(an_organization)
             if verbose:
-                print(json.dumps(organisation_metadata.data, indent=2), flush=True)
+                print(json.dumps(organization_metadata.data, indent=2), flush=True)
             else:
                 print(
-                    f"{organisation_metadata['name']:<50.50}: {organisation_metadata['id']}",
+                    f"{organization_metadata['name']:<50.50}: {organization_metadata['id']}",
                     flush=True,
                 )
 
@@ -379,7 +379,7 @@ def show_configuration():
 
 
 def get_filtered_datasets(
-    organisation: str = "",
+    organization: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
@@ -397,21 +397,21 @@ def get_filtered_datasets(
     except ConfigurationError:
         pass
 
-    if organisation != "":
-        organisation = Organization.read_from_hdx(organisation)
-        datasets = organisation.get_datasets(include_private=True)
+    if organization != "":
+        organization = Organization.read_from_hdx(organization)
+        datasets = organization.get_datasets(include_private=True)
     elif query is not None:
         datasets = Dataset.search_in_hdx(query=query)
-        organisation = {"display_name": "", "name": ""}
+        organization = {"display_name": "", "name": ""}
     else:
         dataset = Dataset.read_from_hdx(dataset_filter)
         if dataset is None:
             datasets = []
-            organisation = {"display_name": "", "name": ""}
+            organization = {"display_name": "", "name": ""}
         else:
             datasets = [dataset]
-            organisation = dataset.get_organization()
-            organisation = {"display_name": organisation["title"], "name": organisation["name"]}
+            organization = dataset.get_organization()
+            organization = {"display_name": organization["title"], "name": organization["name"]}
 
     filtered_datasets = []
     for dataset in datasets:
@@ -421,9 +421,9 @@ def get_filtered_datasets(
     if verbose:
         print(Configuration.read().hdx_site, flush=True)
         print(
-            f"Found {len(filtered_datasets)} datasets for organisation "
-            f"'{organisation['display_name']} "
-            f"({organisation['name']})' matching filter conditions:",
+            f"Found {len(filtered_datasets)} datasets for organization "
+            f"'{organization['display_name']} "
+            f"({organization['name']})' matching filter conditions:",
             flush=True,
         )
 
