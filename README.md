@@ -5,18 +5,24 @@
 This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations and other administrative activities, in the first instance to carry out a bulk quarantine action on all the datasets in an organisation. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
 
 ## Installation
-`hdx-cli-toolkit` is a Python application. To install the [GitHub repo](https://github.com/OCHA-DAP/hdx-cli-toolkit) should be cloned, and a virtual enviroment created:
+`hdx-cli-toolkit` is a Python application. 
+
+For developers the code should be cloned installed from the [GitHub repo](https://github.com/OCHA-DAP/hdx-cli-toolkit), and a virtual enviroment created:
 
 ```shell
 python -m venv venv
 source venv/Scripts/activate
 ```
 
-The code is installed with
+And then an editable installation created:
 
 ```shell
 pip install -e .
 ```
+
+For users the best route is probably to use [pipx](https://pypi.org/project/pipx/) to install which will provide `hdx-toolkit` globally in its own environment.
+
+In either case there is a small amount of configuration required.
 
 `hdx-cli-toolkit` uses the `hdx-python-api` library, configuration for which is done in the usual way [described here](https://hdx-python-api.readthedocs.io/en/latest/). 
 
