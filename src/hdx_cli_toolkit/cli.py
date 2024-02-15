@@ -15,6 +15,7 @@ from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.organization import Organization
+from hdx.data.resource_view import ResourceView
 from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
 
@@ -447,7 +448,22 @@ def get_filtered_datasets(
 def decorate_dataset_with_extras(dataset: Dataset) -> dict:
     output_dict = dataset.data
     resources = dataset.get_resources()
-    output_dict["resources"] = [x.data for x in resources]
+    output_dict["resources"] = []
+    for resource in resources:
+        resource_dict = resource.data
+        if "fs_check_info" in resource_dict:
+            resource_dict["fs_check_info"] = json.loads(resource_dict["fs_check_info"])
+        quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
+        resource_dict["quickcharts"] = []
+        if quickcharts is not None:
+            for quickchart in quickcharts:
+                quickchart_dict = quickchart.data
+                if "hxl_preview_config" in quickchart_dict:
+                    quickchart_dict["hxl_preview_config"] = json.loads(
+                        quickchart_dict["hxl_preview_config"]
+                    )
+                resource_dict["quickcharts"].append(quickchart_dict)
+        output_dict["resources"].append(resource_dict)
 
     showcases = dataset.get_showcases()
     output_dict["showcases"] = [x.data for x in showcases]
