@@ -91,7 +91,7 @@ This adds resources under a `resources` key which includes a `quickcharts` key a
 
 ## Future Work
 
-Add support for listing resources to a dataset
+Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
 
 ## Collected commands
  
