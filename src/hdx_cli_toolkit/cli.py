@@ -208,6 +208,15 @@ def update(
 
 @hdx_toolkit.command(name="print")
 @multi_decorator(OPTIONS)
+@click.option(
+    "--with_extras",
+    is_flag=True,
+    default=False,
+    help=(
+        "If set resources, resource_views (QuickCharts) "
+        "and Showcases are added to the dataset output"
+    ),
+)
 def print_datasets(
     organization: str = "healthsites",
     key: str = "private",
@@ -215,6 +224,7 @@ def print_datasets(
     dataset_filter: str = "*",
     query: str = None,
     hdx_site: str = "stage",
+    with_extras: bool = False,
 ):
     """Print datasets in HDX to the terminal"""
 
@@ -230,7 +240,11 @@ def print_datasets(
 
     print("[", flush=True)
     for i, dataset in enumerate(filtered_datasets):
-        print(json.dumps(dataset.data, indent=4), flush=True)
+        output_dict = dataset.data
+        if with_extras:
+            output_dict = decorate_dataset_with_extras(dataset)
+
+        print(json.dumps(output_dict, indent=4), flush=True)
         if i != len(filtered_datasets) - 1:
             print(",", flush=True)
     print("]", flush=True)
@@ -428,6 +442,17 @@ def get_filtered_datasets(
         )
 
     return filtered_datasets
+
+
+def decorate_dataset_with_extras(dataset: Dataset) -> dict:
+    output_dict = dataset.data
+    resources = dataset.get_resources()
+    output_dict["resources"] = [x.data for x in resources]
+
+    showcases = dataset.get_showcases()
+    output_dict["showcases"] = [x.data for x in showcases]
+
+    return output_dict
 
 
 def print_banner(action: str):

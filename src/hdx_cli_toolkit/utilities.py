@@ -5,7 +5,8 @@ import csv
 import dataclasses
 import os
 
-from typing import Any, Optional, Callable
+from collections.abc import Callable
+from typing import Any, Optional
 
 
 def write_dictionary(
@@ -122,7 +123,7 @@ def str_to_bool(x: str) -> bool:
     return x == "True"
 
 
-def make_conversion_func(value: Any) -> (Callable | None, str):
+def make_conversion_func(value: Any) -> tuple[Callable | None, str]:
     value_type = type(value)
     if value_type.__name__ == "bool":
         conversion_func = str_to_bool
