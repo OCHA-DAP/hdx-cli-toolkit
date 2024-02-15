@@ -53,6 +53,7 @@ Options:
   --help  Show this message and exit.
 
 Commands:
+  configuration              Print configuration information to terminal
   get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
@@ -90,6 +91,8 @@ hdx-toolkit list --organization=healthsites--dataset_filter=* --hdx_site=stage -
 hdx-toolkit update --organization=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
 The initial update takes approximately 10 seconds but subsequent updates in a list take only a couple of seconds.
+
+A detailed walk through of commands can be found in the [DEMO.md](DEMO.md) file
 
 ## Contributions
 

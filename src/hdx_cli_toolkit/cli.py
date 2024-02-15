@@ -107,8 +107,6 @@ def list_datasets(
 
     filtered_datasets = get_filtered_datasets(
         organization=organization,
-        key=key,
-        value=value,
         dataset_filter=dataset_filter,
         query=query,
         hdx_site=hdx_site,
@@ -147,8 +145,6 @@ def update(
     print_banner("Update")
     filtered_datasets = get_filtered_datasets(
         organization=organization,
-        key=key,
-        value=value,
         dataset_filter=dataset_filter,
         query=query,
         hdx_site=hdx_site,
@@ -231,8 +227,6 @@ def print_datasets(
 
     filtered_datasets = get_filtered_datasets(
         organization=organization,
-        key=key,
-        value=value,
         dataset_filter=dataset_filter,
         hdx_site=hdx_site,
         query=query,
@@ -341,6 +335,7 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 
 @hdx_toolkit.command(name="configuration")
 def show_configuration():
+    """Print configuration information to terminal"""
     print_banner("configuration")
     # Check files
     user_hdx_config_yaml = os.path.join(os.path.expanduser("~"), ".hdx_configuration.yaml")
@@ -395,13 +390,27 @@ def show_configuration():
 
 def get_filtered_datasets(
     organization: str = "",
-    key: str = "private",
-    value: str = "value",
     dataset_filter: str = "*",
     query: str = None,
     hdx_site: str = "stage",
     verbose: bool = True,
 ) -> list[Dataset]:
+    """A function to return a list of datasets selected by some selection criteria based on
+    organization, dataset name, or CKAN query strings. The verbose flag is provided so
+    summary output can be suppressed for output to file in the print command.
+
+    Keyword Arguments:
+        organization {str} -- an organization name (default: {""})
+        key {str} -- _description_ (default: {"private"})
+        value {str} -- _description_ (default: {"value"})
+        dataset_filter {str} -- a filter for dataset name, can contain wildcards (default: {"*"})
+        query {str} -- a query string to use in the CKAN search API (default: {None})
+        hdx_site {str} -- target HDX site {prod|stage} (default: {"stage"})
+        verbose {bool} -- if True prints summary information (default: {True})
+
+    Returns:
+        list[Dataset] -- a list of datasets satisfying the selection criteria
+    """
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -446,6 +455,17 @@ def get_filtered_datasets(
 
 
 def decorate_dataset_with_extras(dataset: Dataset) -> dict:
+    """A function to add resource, quickcharts (resource_view) and showcases keys to a dataset
+    dictionary representation for the print command. fs_check_info and hxl_preview_config are
+    converted from JSON objects serialised as single strings to dictionaries to make printed output
+    more readable. This decoration means that the dataset dictionary cannot be uploaded to HDX.
+
+    Arguments:
+        dataset {Dataset} -- a Dataset object to process
+
+    Returns:
+        dict -- a dictionary containing the dataset metadata
+    """
     output_dict = dataset.data
     resources = dataset.get_resources()
     output_dict["resources"] = []
@@ -472,6 +492,12 @@ def decorate_dataset_with_extras(dataset: Dataset) -> dict:
 
 
 def print_banner(action: str):
+    """Simple function to output a banner to console, uses click's secho command but not colour
+    because the underlying colorama does not output correctly to git-bash terminals.
+
+    Arguments:
+        action {str} -- _description_
+    """
     title = f"HDX CLI toolkit - {action}"
     timestamp = f"Invoked at: {datetime.datetime.now().isoformat()}"
     width = max(len(title), len(timestamp))

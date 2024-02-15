@@ -3,7 +3,7 @@
 
 import os
 from unittest import mock
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 from click.testing import CliRunner
 
 from hdx.data.dataset import Dataset

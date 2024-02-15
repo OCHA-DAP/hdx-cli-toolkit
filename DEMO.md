@@ -81,6 +81,14 @@ hdx-toolkit print --dataset_filter=climada-litpop-dataset
 
 This output is valid JSON and can be piped into a file to use as a test fixture or template.
 
+It is possible to include resource, showcase and QuickChart (resource_view) metadata into the `print` view using the `--with_extras` flag:
+
+```
+hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
+```
+
+This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
+
 ## Future Work
 
 Add support for listing resources to a dataset
@@ -99,4 +107,5 @@ hdx-toolkit get_organization_metadata --organization=eth-zurich-weather-and-clim
 hdx-toolkit get_user_metadata --user=hopkinson
 hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
+hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 ```
