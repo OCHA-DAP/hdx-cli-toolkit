@@ -89,6 +89,16 @@ hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 
 This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
 
+A Quick Chart can be uploaded from a JSON file using a commandline like where the `dataset_filter`
+specifies a single dataset and the `resource_name specifies` the resource to which the Quick Chart is attached:
+
+```
+ hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
+```
+
+The hdx_hxl_preview_file_path points to a JSON format file with the key `hxl_preview_config` which
+contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Example Quick Chart recipes can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file)
+
 ## Future Work
 
 Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
@@ -108,4 +118,5 @@ hdx-toolkit get_user_metadata --user=hopkinson
 hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
+hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
 ```

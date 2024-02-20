@@ -1,0 +1,119 @@
+{
+    "hxl_preview_config": {
+        "configVersion": 5,
+        "bites": [
+            {
+                "tempShowSaveCancelButtons": false,
+                "ingredient": {
+                    "aggregateColumn": "#country",
+                    "valueColumn": "#adm1+name",
+                    "aggregateFunction": "distinct-count",
+                    "dateColumn": null,
+                    "comparisonValueColumn": null,
+                    "comparisonOperator": null,
+                    "filters": {},
+                    "description": ""
+                },
+                "type": "chart",
+                "errorMsg": null,
+                "computedProperties": {
+                    "explainedFiltersMap": {},
+                    "pieChart": false,
+                    "title": "Unique Values in region_name by country_name",
+                    "dataTitle": "region_name"
+                },
+                "uiProperties": {
+                    "swapAxis": true,
+                    "showGrid": false,
+                    "color": "#1ebfb3",
+                    "sortingByValue1": "DESC",
+                    "sortingByCategory1": null,
+                    "internalColorPattern": [
+                        "#1ebfb3",
+                        "#0077ce",
+                        "#f2645a",
+                        "#9C27B0"
+                    ],
+                    "title": "Best title 1"
+                },
+                "dataProperties": {},
+                "displayCategory": "Charts",
+                "hashCode": 940226173
+            },
+            {
+                "tempShowSaveCancelButtons": false,
+                "ingredient": {
+                    "aggregateColumn": null,
+                    "valueColumn": "#indicator+num",
+                    "aggregateFunction": "distinct-count",
+                    "dateColumn": null,
+                    "comparisonValueColumn": null,
+                    "comparisonOperator": null,
+                    "filters": {},
+                    "description": ""
+                },
+                "type": "key figure",
+                "errorMsg": null,
+                "computedProperties": {
+                    "explainedFiltersMap": {},
+                    "title": "Unique Values in value",
+                    "dataTitle": "value",
+                    "unit": null
+                },
+                "uiProperties": {
+                    "internalColorPattern": [
+                        "#1ebfb3",
+                        "#0077ce",
+                        "#f2645a",
+                        "#9C27B0"
+                    ],
+                    "title": "New title 2"
+                },
+                "dataProperties": {},
+                "displayCategory": "Key Figures",
+                "hashCode": 276800972
+            },
+            {
+                "tempShowSaveCancelButtons": false,
+                "ingredient": {
+                    "aggregateColumn": "#adm1+name",
+                    "valueColumn": "#count",
+                    "aggregateFunction": "count",
+                    "dateColumn": null,
+                    "comparisonValueColumn": null,
+                    "comparisonOperator": null,
+                    "filters": {},
+                    "description": ""
+                },
+                "type": "chart",
+                "errorMsg": null,
+                "computedProperties": {
+                    "explainedFiltersMap": {},
+                    "pieChart": false,
+                    "title": "Row Count by region_name",
+                    "dataTitle": "#count"
+                },
+                "uiProperties": {
+                    "swapAxis": true,
+                    "showGrid": false,
+                    "color": "#1ebfb3",
+                    "sortingByValue1": "DESC",
+                    "sortingByCategory1": null,
+                    "internalColorPattern": [
+                        "#1ebfb3",
+                        "#0077ce",
+                        "#f2645a",
+                        "#9C27B0"
+                    ],
+                    "limit": 100,
+                    "title": "New title 3"
+                },
+                "dataProperties": {},
+                "displayCategory": "Charts",
+                "hashCode": 1314285494
+            }
+        ],
+        "cookbookName": "generic"
+    },
+    "package_id": "611e5179-968d-499a-962a-33d61d1f3cb4"
+}

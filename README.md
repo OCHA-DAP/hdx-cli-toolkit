@@ -58,6 +58,7 @@ Commands:
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
+  quickcharts                Upload QuickChart JSON description to HDX
   update                     Update datasets in HDX
 ```
 

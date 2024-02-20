@@ -6,6 +6,7 @@ import fnmatch
 import json
 import os
 import time
+import yaml
 from collections.abc import Callable
 
 import click
@@ -421,6 +422,10 @@ def quickcharts(
 ):
     """Upload QuickChart JSON description to HDX"""
     print_banner("quickcharts")
+    print(
+        f"Adding Quick Chart defined at '{hdx_hxl_preview_file_path}' to dataset "
+        f"'{dataset_filter}', resource '{resource_name}'"
+    )
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -431,20 +436,35 @@ def quickcharts(
     except ConfigurationError:
         pass
 
+    # read the json file
+    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
+        recipe = json.load(json_file)
+    # extract appropriate keys
+    processed_recipe = {
+        "description": "",
+        "title": "Quick Charts",
+        "view_type": "hdx_hxl_preview",
+        "hxl_preview_config": "",
+    }
+
+    # convert the configuration to a string
+    stringified_config = json.dumps(
+        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
+    )
+    processed_recipe["hxl_preview_config"] = stringified_config
+    # write out yaml to a temp file
+    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
+    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
+        yaml.dump(processed_recipe, yaml_file)
+
     dataset = Dataset.read_from_hdx(dataset_filter)
 
-    dataset.generate_quickcharts(path=hdx_hxl_preview_file_path)
+    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
     dataset.update_in_hdx()
-    # resource_view = ResourceView()
-    # resource_view.update_from_json(hdx_hxl_preview_file_path)
 
-    # hxl_preview_config = resource_view["hxl_preview_config"]
-    # hxl_preview_config = json.dumps(hxl_preview_config, indent=None, separators=(",", ":"))
-    # print(hxl_preview_config, flush=True)
-    # resource_view["hxl_preview_config"] = hxl_preview_config
-    # print(resource_view, flush=True)
-    # resource_view["hxl_preview_config"] = hxl_preview_config
-    # resource_view.create_in_hdx()
+    # delete the temp file
+    if os.path.exists(temp_yaml_path):
+        os.remove(temp_yaml_path)
 
 
 def get_filtered_datasets(
