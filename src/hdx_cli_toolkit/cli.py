@@ -388,6 +388,65 @@ def show_configuration():
         print(config_file_contents, flush=True)
 
 
+@hdx_toolkit.command(name="quickcharts")
+@click.option(
+    "--dataset_filter",
+    is_flag=False,
+    default="*",
+    help="a dataset name",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--resource_name",
+    is_flag=False,
+    default="stage",
+    help="name of resource to which the QuickCharts are attached",
+)
+@click.option(
+    "--hdx_hxl_preview_file_path",
+    is_flag=False,
+    default="stage",
+    help="name of resource to which the QuickCharts are attached",
+)
+def quickcharts(
+    dataset_filter: str = "",
+    hdx_site: str = "stage",
+    resource_name: str = "",
+    hdx_hxl_preview_file_path: str = "",
+):
+    """Upload QuickChart JSON description to HDX"""
+    print_banner("quickcharts")
+    try:
+        Configuration.create(
+            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+            user_agent_lookup="hdx-cli-toolkit",
+            hdx_site=hdx_site,
+            hdx_read_only=False,
+        )
+    except ConfigurationError:
+        pass
+
+    dataset = Dataset.read_from_hdx(dataset_filter)
+
+    dataset.generate_quickcharts(path=hdx_hxl_preview_file_path)
+    dataset.update_in_hdx()
+    # resource_view = ResourceView()
+    # resource_view.update_from_json(hdx_hxl_preview_file_path)
+
+    # hxl_preview_config = resource_view["hxl_preview_config"]
+    # hxl_preview_config = json.dumps(hxl_preview_config, indent=None, separators=(",", ":"))
+    # print(hxl_preview_config, flush=True)
+    # resource_view["hxl_preview_config"] = hxl_preview_config
+    # print(resource_view, flush=True)
+    # resource_view["hxl_preview_config"] = hxl_preview_config
+    # resource_view.create_in_hdx()
+
+
 def get_filtered_datasets(
     organization: str = "",
     dataset_filter: str = "*",
