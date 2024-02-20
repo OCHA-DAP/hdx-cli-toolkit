@@ -97,7 +97,7 @@ specifies a single dataset and the `resource_name` specifies the resource to whi
 ```
 
 The `hdx_hxl_preview_file_path` points to a JSON format file with the key `hxl_preview_config` which
-contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Example Quick Chart recipes can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file)
+contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Quick Chart recipe documentation can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file). There is an example file in the `hdx-cli-toolkit` [repo](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/tests/fixtures/quickchart-flood.json).
 
 ## Future Work
 
