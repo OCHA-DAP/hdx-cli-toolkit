@@ -203,3 +203,31 @@ def make_conversion_func(value: Any) -> tuple[Callable | None, str]:
         conversion_func = None
 
     return conversion_func, value_type.__name__
+
+
+def read_attributes(dataset_name: str, attributes_filepath: str) -> dict:
+    """A function for reading attributes from a standard attributes.csv file with columns:
+    dataset_name,timestamp,attribute,value,secondary_value
+
+    Arguments:
+        dataset_name {str} -- the name of the dataset for which attributes are required
+
+    Returns:
+        dict -- a dictionary containing the attributes
+    """
+    with open(attributes_filepath, "r", encoding="UTF-8") as attributes_filehandle:
+        attribute_rows = csv.DictReader(attributes_filehandle)
+
+        attributes = {}
+        for row in attribute_rows:
+            if row["dataset_name"] != dataset_name:
+                continue
+            if row["attribute"] in ["resource", "skip_country", "showcase", "tags"]:
+                if row["attribute"] not in attributes:
+                    attributes[row["attribute"]] = [row["value"]]
+                else:
+                    attributes[row["attribute"]].append(row["value"])
+            else:
+                attributes[row["attribute"]] = row["value"]
+
+    return attributes

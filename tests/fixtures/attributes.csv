@@ -1,0 +1,11 @@
+dataset_name,timestamp,attribute,value,secondary_value
+climada-litpop-showcase,2024-02-21T08:11:10.725670,entity_type,"showcase",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,name,"climada-litpop-showcase",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,parent_dataset,"climada-litpop-dataset",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,title,"CLIMADA LitPop Methodology Documentation",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,notes,"Click the image to go to the original source for this data",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,url,https://climada-python.readthedocs.io/en/stable/tutorial/climada_entity_LitPop.html,
+climada-litpop-showcase,2024-02-21T08:11:10.725670,image_url,https://github.com/OCHA-DAP/hdx-scraper-climada/blob/main/src/hdx_scraper_climada/output/litpop/litpop-haiti-showcase.png,
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"economics",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"gross domestic product-gdp",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"population",

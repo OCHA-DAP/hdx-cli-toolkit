@@ -27,6 +27,8 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
 )
 
+from hdx_cli_toolkit.hdx_utilities import add_showcase, configure_hdx_connection
+
 
 @click.group()
 def hdx_toolkit() -> None:
@@ -468,6 +470,41 @@ def quickcharts(
         os.remove(temp_yaml_path)
 
     print(f"Quick Chart update took {time.time() - t0:.2f} seconds")
+
+
+@hdx_toolkit.command(name="showcase")
+@click.option(
+    "--showcase_name",
+    is_flag=False,
+    default="*",
+    help="showcase name",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--attributes_file_path",
+    is_flag=False,
+    default="stage",
+    help="path to the attributes file describing the showcase",
+)
+def showcase(
+    showcase_name: str = "",
+    hdx_site: str = "stage",
+    attributes_file_path: str = "",
+):
+    """Upload showcase to HDX"""
+    print_banner("showcase")
+    print(f"Adding showcase defined at '{attributes_file_path}'")
+    t0 = time.time()
+    statuses = add_showcase(showcase_name, hdx_site, attributes_file_path)
+    for status in statuses:
+        print(status, flush=True)
+
+    print(f"Showcase update took {time.time() - t0:.2f} seconds")
 
 
 def get_filtered_datasets(
