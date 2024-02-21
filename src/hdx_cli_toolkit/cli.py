@@ -426,6 +426,7 @@ def quickcharts(
         f"Adding Quick Chart defined at '{hdx_hxl_preview_file_path}' to dataset "
         f"'{dataset_filter}', resource '{resource_name}'"
     )
+    t0 = time.time()
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -460,11 +461,13 @@ def quickcharts(
     dataset = Dataset.read_from_hdx(dataset_filter)
 
     dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-    dataset.update_in_hdx()
+    dataset.update_in_hdx(update_resources=False, hxl_update=False)
 
     # delete the temp file
     if os.path.exists(temp_yaml_path):
         os.remove(temp_yaml_path)
+
+    print(f"Quick Chart update took {time.time() - t0:.2f} seconds")
 
 
 def get_filtered_datasets(
