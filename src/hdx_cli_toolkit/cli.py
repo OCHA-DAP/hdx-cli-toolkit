@@ -270,15 +270,7 @@ def print_datasets(
 def get_organization_metadata(organization: str, hdx_site: str = "stage", verbose: bool = False):
     """Get an organization id and other metadata"""
     print_banner("Get organization Metadata")
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-cli-toolkit",
-            hdx_site=hdx_site,
-            hdx_read_only=False,
-        )
-    except ConfigurationError:
-        pass
+    configure_hdx_connection(hdx_site=hdx_site)
 
     all_organizations = Organization.get_all_organization_names(include_extras=True)
     for an_organization in all_organizations:
@@ -315,15 +307,7 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
 def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False):
     """Get user id and other metadata"""
     print_banner("Get User Metadata")
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-cli-toolkit",
-            hdx_site=hdx_site,
-            hdx_read_only=False,
-        )
-    except ConfigurationError:
-        pass
+    configure_hdx_connection(hdx_site=hdx_site)
 
     user_list = User.get_all_users(q=user)
     for a_user in user_list:
@@ -429,15 +413,7 @@ def quickcharts(
         f"'{dataset_filter}', resource '{resource_name}'"
     )
     t0 = time.time()
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-cli-toolkit",
-            hdx_site=hdx_site,
-            hdx_read_only=False,
-        )
-    except ConfigurationError:
-        pass
+    configure_hdx_connection(hdx_site=hdx_site)
 
     # read the json file
     with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
@@ -530,15 +506,7 @@ def get_filtered_datasets(
     Returns:
         list[Dataset] -- a list of datasets satisfying the selection criteria
     """
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-cli-toolkit",
-            hdx_site=hdx_site,
-            hdx_read_only=False,
-        )
-    except ConfigurationError:
-        pass
+    configure_hdx_connection(hdx_site=hdx_site)
 
     if organization != "":
         organization = Organization.read_from_hdx(organization)
