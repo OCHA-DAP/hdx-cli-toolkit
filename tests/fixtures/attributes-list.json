@@ -1,0 +1,16 @@
+[
+    {
+        "entity_type": "showcase",
+        "name": "climada-litpop-showcase",
+        "parent_dataset": "climada-litpop-dataset",
+        "title": "CLIMADA LitPop Methodology Documentation",
+        "notes": "Click the image to go to the original source for this data",
+        "url": "https://climada-python.readthedocs.io/en/stable/tutorial/climada_entity_LitPop.html",
+        "image_url": "https://github.com/OCHA-DAP/hdx-scraper-climada/blob/main/src/hdx_scraper_climada/output/litpop/litpop-haiti-showcase.png",
+        "tags": [
+            "economics",
+            "gross domestic product-gdp",
+            "population"
+        ]
+    }
+]
