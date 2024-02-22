@@ -223,7 +223,21 @@ def read_attributes(dataset_name: str, attributes_filepath: str) -> dict:
         with open(attributes_filepath, "r", encoding="UTF-8") as attributes_filehandle:
             attribute_rows = csv.DictReader(attributes_filehandle)
             attributes = {}
+
             for row in attribute_rows:
+                if list(row.keys()) != [
+                    "dataset_name",
+                    "timestamp",
+                    "attribute",
+                    "value",
+                    "secondary_value",
+                ]:
+                    print(
+                        "Attributes.csv file must have columns: "
+                        "dataset_name, timestamp, attribute, value, secondary_value"
+                    )
+                    return attributes
+
                 if row["dataset_name"] != dataset_name:
                     continue
                 if row["attribute"] in ["resource", "skip_country", "showcase", "tags"]:
