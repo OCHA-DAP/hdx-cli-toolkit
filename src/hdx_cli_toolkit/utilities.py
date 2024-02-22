@@ -3,6 +3,7 @@
 
 import csv
 import dataclasses
+import json
 import os
 
 from collections.abc import Callable
@@ -203,3 +204,62 @@ def make_conversion_func(value: Any) -> tuple[Callable | None, str]:
         conversion_func = None
 
     return conversion_func, value_type.__name__
+
+
+def read_attributes(dataset_name: str, attributes_filepath: str) -> dict:
+    """A function for reading attributes from a standard attributes.csv file with columns:
+    dataset_name,timestamp,attribute,value,secondary_value or a JSON format file containing
+    either a list or a single dictionary.
+
+    Arguments:
+        dataset_name {str} -- the name of the dataset for which attributes are required
+        attributes_filepath {str} -- path to attributes file either CSV or JSON
+
+    Returns:
+        dict -- a dictionary containing the attributes
+    """
+
+    if attributes_filepath.lower().endswith(".csv"):
+        with open(attributes_filepath, "r", encoding="UTF-8") as attributes_filehandle:
+            attribute_rows = csv.DictReader(attributes_filehandle)
+            attributes = {}
+
+            for row in attribute_rows:
+                if list(row.keys()) != [
+                    "dataset_name",
+                    "timestamp",
+                    "attribute",
+                    "value",
+                    "secondary_value",
+                ]:
+                    print(
+                        "Attributes.csv file must have columns: "
+                        "dataset_name, timestamp, attribute, value, secondary_value"
+                    )
+                    return attributes
+
+                if row["dataset_name"] != dataset_name:
+                    continue
+                if row["attribute"] in ["resource", "skip_country", "showcase", "tags"]:
+                    if row["attribute"] not in attributes:
+                        attributes[row["attribute"]] = [row["value"]]
+                    else:
+                        attributes[row["attribute"]].append(row["value"])
+                else:
+                    attributes[row["attribute"]] = row["value"]
+    elif attributes_filepath.lower().endswith(".json"):
+        with open(attributes_filepath, "r", encoding="utf-8") as attributes_filehandle:
+            raw_json = json.load(attributes_filehandle)
+            if isinstance(raw_json, dict):
+                attributes = raw_json
+            elif isinstance(raw_json, list):
+                for entry in raw_json:
+                    if entry["name"] == dataset_name:
+                        attributes = entry
+                        break
+
+    else:
+        print(f"File type at {attributes_filepath} is not recognised")
+        attributes = {}
+
+    return attributes

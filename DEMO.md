@@ -99,6 +99,44 @@ specifies a single dataset and the `resource_name` specifies the resource to whi
 The `hdx_hxl_preview_file_path` points to a JSON format file with the key `hxl_preview_config` which
 contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Quick Chart recipe documentation can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file). There is an example file in the `hdx-cli-toolkit` [repo](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/tests/fixtures/quickchart-flood.json).
 
+A showcase can be uploaded from attributes found in either a CSV format file like this:
+```
+dataset_name,timestamp,attribute,value,secondary_value
+climada-litpop-showcase,2024-02-21T08:11:10.725670,entity_type,"showcase",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,name,"climada-litpop-showcase",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,parent_dataset,"climada-litpop-dataset",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,title,"CLIMADA LitPop Methodology Documentation",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,notes,"Click the image to go to the original source for this data",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,url,https://climada-python.readthedocs.io/en/stable/tutorial/climada_entity_LitPop.html,
+climada-litpop-showcase,2024-02-21T08:11:10.725670,image_url,https://github.com/OCHA-DAP/hdx-scraper-climada/blob/main/src/hdx_scraper_climada/output/litpop/litpop-haiti-showcase.png,
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"economics",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"gross domestic product-gdp",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,tags,"population",
+```
+
+or a JSON file:
+
+```
+{
+    "entity_type": "showcase",
+    "name": "climada-litpop-showcase",
+    "parent_dataset": "climada-litpop-dataset",
+    "title": "CLIMADA LitPop Methodology Documentation",
+    "notes": "Click the image to go to the original source for this data",
+    "url": "https://climada-python.readthedocs.io/en/stable/tutorial/climada_entity_LitPop.html",
+    "image_url": "https://github.com/OCHA-DAP/hdx-scraper-climada/blob/main/src/hdx_scraper_climada/output/litpop/litpop-haiti-showcase.png",
+    "tags": [
+        "economics",
+        "gross domestic product-gdp",
+        "population"
+    ]
+}
+```
+
+Using a commandline like:
+```
+hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
+```
 ## Future Work
 
 Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
@@ -119,4 +157,5 @@ hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
+hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
 ```

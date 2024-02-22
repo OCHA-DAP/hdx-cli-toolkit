@@ -4,7 +4,12 @@
 import csv
 import os
 
-from hdx_cli_toolkit.utilities import write_dictionary, censor_secret
+from hdx_cli_toolkit.utilities import write_dictionary, censor_secret, read_attributes
+
+
+ATTRIBUTES_FILE_PATH = os.path.join(os.path.dirname(__file__), "fixtures", "attributes.csv")
+DATASET_NAME = "climada-litpop-showcase"
+REFERENCE_ATTRIBUTES = read_attributes(DATASET_NAME, attributes_filepath=ATTRIBUTES_FILE_PATH)
 
 
 def test_write_dictionary_to_local_file():
@@ -37,3 +42,32 @@ def test_censor_short_secret():
 def test_censor_long_secret():
     censored_secret = censor_secret("ABCDEF0123456789")
     assert censored_secret == "******0123456789"
+
+
+def test_read_attributes():
+    assert len(REFERENCE_ATTRIBUTES["tags"]) == 3
+    assert REFERENCE_ATTRIBUTES["parent_dataset"] == "climada-litpop-dataset"
+
+
+def test_read_attributes_json():
+    attributes_json_file_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "attributes-single.json"
+    )
+
+    dataset_attributes = read_attributes(
+        DATASET_NAME, attributes_filepath=attributes_json_file_path
+    )
+
+    assert REFERENCE_ATTRIBUTES == dataset_attributes
+
+
+def test_read_attributes_json_list():
+    attributes_json_list_file_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "attributes-list.json"
+    )
+
+    dataset_attributes = read_attributes(
+        DATASET_NAME, attributes_filepath=attributes_json_list_file_path
+    )
+
+    assert REFERENCE_ATTRIBUTES == dataset_attributes

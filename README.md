@@ -108,5 +108,7 @@ PREPREFIX - - environment variable. Value: [YOUR_organization]
 
 Testing uses a mock for the HDX so a live HDX_KEY is not required.
 
+New features should be developed against a GitHub issue on a separate branch with a name starting GH[issue number]_ . `PULL_REQUEST_TEMPLATE.md` should be used in preparing pull requests. Versioning is updated manually in `pyproject.toml` and is described in the template, in brief it is CalVer `YYYY.MM.Micro`.
+
 
 
