@@ -6,9 +6,9 @@ import fnmatch
 import json
 import os
 import time
-import yaml
 from collections.abc import Callable
 
+import yaml
 import click
 from click.decorators import FC
 
@@ -27,7 +27,11 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
 )
 
-from hdx_cli_toolkit.hdx_utilities import add_showcase, configure_hdx_connection
+from hdx_cli_toolkit.hdx_utilities import (
+    add_showcase,
+    configure_hdx_connection,
+    update_resource_in_hdx,
+)
 
 
 @click.group()
@@ -481,6 +485,57 @@ def showcase(
         print(status, flush=True)
 
     print(f"Showcase update took {time.time() - t0:.2f} seconds")
+
+
+@hdx_toolkit.command(name="update_resource")
+@click.option(
+    "--dataset_name",
+    is_flag=False,
+    default="*",
+    help="name of the dataset to update",
+)
+@click.option(
+    "--resource_name",
+    is_flag=False,
+    default="*",
+    help="name of the resource in the dataset to update",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--resource_file_path",
+    is_flag=False,
+    default="stage",
+    help="path to the resource file to upload",
+)
+@click.option(
+    "--dry_run",
+    is_flag=True,
+    default=True,
+    help="if true no action is taken on HDX",
+)
+def update_resource(
+    dataset_name: str = "",
+    resource_name: str = "",
+    hdx_site: str = "stage",
+    resource_file_path: str = "",
+    dry_run: bool = True,
+):
+    """Update a resource in HDX"""
+    print_banner("Update resource")
+    print(f"Updating '{resource_name}' in '{dataset_name}' with file at '{resource_file_path}'")
+    t0 = time.time()
+    statuses = update_resource_in_hdx(
+        dataset_name, resource_name, hdx_site, resource_file_path, dry_run
+    )
+    for status in statuses:
+        print(status, flush=True)
+
+    print(f"Resource update took {time.time() - t0:.2f} seconds")
 
 
 def get_filtered_datasets(
