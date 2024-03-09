@@ -49,22 +49,22 @@ def update_resource_in_hdx(
     for resource in resources:
         if resource["name"] == resource_name:
             resource_to_update = resource
-    # Check we found a dataset
+    # Check we found a resource
     if resource_to_update is None:
         return [f"No resource with the name '{resource_name}' found on dataset '{dataset_name}'"]
-
-    print(json.dumps(resource_to_update.data, indent=4), flush=True)
 
     if not os.path.exists(resource_file_path):
         return [f"No file found at file path '{resource_file_path}'"]
 
+    # Check the file provided is a reasonable alternative to the original
+
     resource_to_update.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
 
     if not dry_run:
-        # resource_to_update.update_in_hdx()
+        resource_to_update.update_in_hdx()
         return ["Update successful"]
-    else:
-        return ["Dry run True so no update to HDX made"]
+
+    return ["Dry run True so no update to HDX made"]
 
 
 def configure_hdx_connection(hdx_site: str):
