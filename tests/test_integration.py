@@ -50,8 +50,8 @@ def setup_and_teardown_dataset_in_hdx():
     dataset.create_in_hdx(hxl_update=False, updated_by_script="hdx_cli_toolkit_ignore")
 
     assert Dataset.read_from_hdx(DATASET_NAME) is not None
-    yield
     # This is pytest teardown
+    yield
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     if dataset:
         dataset.delete_from_hdx()
@@ -64,7 +64,7 @@ def test_update_resource():
 
     new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
     statuses = update_resource_in_hdx(
-        DATASET_NAME, TEST_RESOURCE_NAME, "stage", new_resource_file_path, dry_run=False
+        DATASET_NAME, TEST_RESOURCE_NAME, "stage", new_resource_file_path, live=True
     )
 
     for status in statuses:

@@ -513,24 +513,24 @@ def showcase(
     help="path to the resource file to upload",
 )
 @click.option(
-    "--dry_run",
+    "--live",
     is_flag=True,
-    default=True,
-    help="if true no action is taken on HDX",
+    default=False,
+    help="if present then update to HDX is made, if absent then a dry run is done",
 )
 def update_resource(
     dataset_name: str = "",
     resource_name: str = "",
     hdx_site: str = "stage",
     resource_file_path: str = "",
-    dry_run: bool = True,
+    live: bool = False,
 ):
     """Update a resource in HDX"""
     print_banner("Update resource")
     print(f"Updating '{resource_name}' in '{dataset_name}' with file at '{resource_file_path}'")
     t0 = time.time()
     statuses = update_resource_in_hdx(
-        dataset_name, resource_name, hdx_site, resource_file_path, dry_run
+        dataset_name, resource_name, hdx_site, resource_file_path, live
     )
     for status in statuses:
         print(status, flush=True)
@@ -615,10 +615,10 @@ def decorate_dataset_with_extras(dataset: Dataset) -> dict:
         resource_dict = resource.data
         if "fs_check_info" in resource_dict:
             resource_dict["fs_check_info"] = json.loads(resource_dict["fs_check_info"])
-        quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
+        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
         resource_dict["quickcharts"] = []
         if quickcharts is not None:
-            for quickchart in quickcharts:
+            for quickchart in dataset_quickcharts:
                 quickchart_dict = quickchart.data
                 if "hxl_preview_config" in quickchart_dict:
                     quickchart_dict["hxl_preview_config"] = json.loads(

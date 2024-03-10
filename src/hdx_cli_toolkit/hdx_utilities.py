@@ -2,7 +2,6 @@
 # encoding: utf-8
 
 import os
-import json
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
@@ -37,7 +36,7 @@ def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -
 
 
 def update_resource_in_hdx(
-    dataset_name: str, resource_name: str, hdx_site: str, resource_file_path: str, dry_run: bool
+    dataset_name: str, resource_name: str, hdx_site: str, resource_file_path: str, live: bool
 ):
     configure_hdx_connection(hdx_site)
     statuses = []
@@ -46,8 +45,8 @@ def update_resource_in_hdx(
     if dataset is None:
         statuses.append(f"No dataset with the name '{dataset_name}' found on HDX site '{hdx_site}'")
         return statuses
-    else:
-        statuses.append(f"Found dataset with the name '{dataset_name}' on HDX site '{hdx_site}'")
+
+    statuses.append(f"Found dataset with the name '{dataset_name}' on HDX site '{hdx_site}'")
     # Check we found a resource
     resources = dataset.get_resources()
     resource_to_update = None
@@ -62,12 +61,12 @@ def update_resource_in_hdx(
         # Make a new resource
         return statuses
 
-    # Check the file provided is a reasonable alternative to the original
+    # Report on the characteristics of the selected file for upload
     if not os.path.exists(resource_file_path):
         statuses.append(f"No file found at file path '{resource_file_path}'")
         return statuses
-    else:
-        statuses.append(f"Found file to upload at '{resource_file_path}'")
+
+    statuses.append(f"Found file to upload at '{resource_file_path}'")
 
     url = resource_to_update["url"]
     original_filename = url[(url.rfind("/") + 1) :]  # noqa: E203
@@ -83,12 +82,12 @@ def update_resource_in_hdx(
 
     resource_to_update.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
 
-    if not dry_run:
+    if live:
         resource_to_update.update_in_hdx()
         statuses.append("Update to HDX successful")
         return statuses
 
-    statuses.append("Dry run True so no update to HDX made, otherwise successful")
+    statuses.append("No '--live' flag supplied so no update to HDX made, otherwise successful")
     return statuses
 
 
