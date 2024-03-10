@@ -41,7 +41,7 @@ hdx-cli-toolkit:
 
 ## Usage
 
-The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running:
+The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`:
 
 ```
 $ hdx-toolkit --help
@@ -59,39 +59,16 @@ Commands:
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
   quickcharts                Upload QuickChart JSON description to HDX
+  showcase                   Upload showcase to HDX
   update                     Update datasets in HDX
+  update_resource            Update a resource in HDX
 ```
-
-The output from the `print` command is designed to be piped to file to make a valid JSON fixture.
 
 And details of the arguments for a command can be found using:
 
-```
+```shell
 hdx-toolkit [COMMAND] --help
 ```
-
-`update` is clearly an operation with potential negative side-effects. Commands can be tested on the HDX `stage` site by setting `--hdx_site=stage`. In addition the `list` command can be used to check the datasets to be affected since `list` and `update` both take the same arguments and use the same filtering function although for `list` the `--value` argument is ignored:
-
-The original purpose of the `hdx-cli-toolkit` was to quarantine the Healthsites datasets, for which the process was a cautious single dataset update
-```shell
-hdx-toolkit list --organization=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organization=healthsites --dataset_filter=mali-healthsites --hdx_site=stage --key=private --value=True
-```
-
-A slightly more adventurous update that selects 29 datasets using the `*la*` wildcard:
-
-```shell
-hdx-toolkit list --organization=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organization=healthsites --dataset_filter=*la* --hdx_site=stage --key=private --value=True
-```
-
-Then applying to all the datasets in the organization, those already updated are skipped:
-
-```shell
-hdx-toolkit list --organization=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
-hdx-toolkit update --organization=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
-```
-The initial update takes approximately 10 seconds but subsequent updates in a list take only a couple of seconds.
 
 A detailed walk through of commands can be found in the [DEMO.md](DEMO.md) file
 
@@ -101,6 +78,7 @@ This project users a GitHub Action to run tests and linting. It requires the fol
 
 ```
 HDX_KEY - secret. Value: fake secret
+HDX_KEY_STAGE - secret. Value: a live API key for the stage server
 HDX_SITE - environment variable. Value: stage
 USER_AGENT - environment variable. Value: hdx_cli_toolkit_gha
 PREPREFIX - - environment variable. Value: [YOUR_organization]
