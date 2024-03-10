@@ -358,7 +358,7 @@ def show_configuration():
             print(user_agents_file_contents, flush=True)
 
     # Check Environment variables
-    environment_variables = ["HDX_KEY", "HDX_SITE", "HDX_URL"]
+    environment_variables = ["HDX_KEY", "HDX_KEY_STAGE", "HDX_SITE", "HDX_URL"]
     click.secho(
         "Values of relevant environment variables (used in absence of supplied values):", bold=True
     )
