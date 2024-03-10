@@ -40,31 +40,56 @@ def update_resource_in_hdx(
     dataset_name: str, resource_name: str, hdx_site: str, resource_file_path: str, dry_run: bool
 ):
     configure_hdx_connection(hdx_site)
+    statuses = []
     dataset = Dataset.read_from_hdx(dataset_name)
     # Check we found a dataset
     if dataset is None:
-        return [f"No dataset with the name '{dataset_name}' found on HDX site '{hdx_site}'"]
+        statuses.append(f"No dataset with the name '{dataset_name}' found on HDX site '{hdx_site}'")
+        return statuses
+    else:
+        statuses.append(f"Found dataset with the name '{dataset_name}' on HDX site '{hdx_site}'")
+    # Check we found a resource
     resources = dataset.get_resources()
     resource_to_update = None
     for resource in resources:
         if resource["name"] == resource_name:
             resource_to_update = resource
-    # Check we found a resource
-    if resource_to_update is None:
-        return [f"No resource with the name '{resource_name}' found on dataset '{dataset_name}'"]
 
-    if not os.path.exists(resource_file_path):
-        return [f"No file found at file path '{resource_file_path}'"]
+    if resource_to_update is None:
+        statuses.append(
+            f"No resource with the name '{resource_name}' found on dataset '{dataset_name}'"
+        )
+        # Make a new resource
+        return statuses
 
     # Check the file provided is a reasonable alternative to the original
+    if not os.path.exists(resource_file_path):
+        statuses.append(f"No file found at file path '{resource_file_path}'")
+        return statuses
+    else:
+        statuses.append(f"Found file to upload at '{resource_file_path}'")
+
+    url = resource_to_update["url"]
+    original_filename = url[(url.rfind("/") + 1) :]  # noqa: E203
+    original_size = resource_to_update["size"]
+    statuses.append(f"Original resource filename '{original_filename}' with size {original_size}")
+
+    replacement_filename = os.path.basename(resource_file_path)
+    file_stats = os.stat(resource_file_path)
+    replacement_size = file_stats.st_size
+    statuses.append(
+        f"Replacement resource filename '{replacement_filename}' with size {replacement_size}"
+    )
 
     resource_to_update.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
 
     if not dry_run:
         resource_to_update.update_in_hdx()
-        return ["Update successful"]
+        statuses.append("Update to HDX successful")
+        return statuses
 
-    return ["Dry run True so no update to HDX made"]
+    statuses.append("Dry run True so no update to HDX made, otherwise successful")
+    return statuses
 
 
 def configure_hdx_connection(hdx_site: str):

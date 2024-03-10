@@ -67,7 +67,10 @@ def test_update_resource():
         DATASET_NAME, TEST_RESOURCE_NAME, "stage", new_resource_file_path, dry_run=False
     )
 
-    assert statuses[0] == "Update successful"
+    for status in statuses:
+        print(status, flush=True)
+
+    assert len(statuses) == 5
 
     revised_dataset = Dataset.read_from_hdx(DATASET_NAME)
     revised_resources = revised_dataset.get_resources()
