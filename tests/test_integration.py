@@ -21,7 +21,7 @@ TEST_RESOURCE_NAME = "test_resource_1"
 @pytest.fixture(autouse=True)
 def setup_and_teardown_dataset_in_hdx():
     # This is pytest setup
-    configure_hdx_connection("stage")
+    configure_hdx_connection(hdx_site="stage")
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     if dataset:
         dataset.delete_from_hdx()

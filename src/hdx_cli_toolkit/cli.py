@@ -365,7 +365,7 @@ def show_configuration():
     for variable in environment_variables:
         env_variable = os.getenv(variable)
         if env_variable is not None:
-            if variable == "HDX_KEY":
+            if "HDX_KEY" in variable:
                 env_variable = censor_secret(env_variable)
             print(f"{variable}:{env_variable}", flush=True)
         else:
