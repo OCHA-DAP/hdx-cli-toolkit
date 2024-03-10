@@ -35,4 +35,5 @@ jobs:
             USER_AGENT: ${{ vars.USER_AGENT }}
             PREPREFIX: ${{ vars.PREPREFIX }}
         run: |
+          hdx-toolkit configuration
           make unit_tests
