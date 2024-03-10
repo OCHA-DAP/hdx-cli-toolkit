@@ -6,66 +6,77 @@
 import json
 import os
 
+import pytest
+
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 
 from hdx_cli_toolkit.hdx_utilities import update_resource_in_hdx, configure_hdx_connection
 
 
-class TestHDXToolkit:
-    def test_update_resource(
-        self,
-    ):
-        configure_hdx_connection("stage")
-        dataset_name = "hdx_cli_toolkit_test"
-        dataset = Dataset.read_from_hdx(dataset_name)
-        if dataset:
-            dataset.delete_from_hdx()
-        title = "HDX CLI toolkit test"
-        dataset = Dataset({"name": dataset_name, "title": title})
-        dataset.update_from_yaml(
-            os.path.join(os.path.dirname(__file__), "fixtures", "hdx_dataset_static.yaml")
-        )
-        countryiso3s = ["AFG", "PSE", "SYR", "YEM"]
-        dataset.add_country_locations(countryiso3s)
-        tags = ["conflict-violence", "displacement", "hxl"]
-        dataset.add_tags(tags)
+DATASET_NAME = "hdx_cli_toolkit_test"
+TEST_RESOURCE_NAME = "test_resource_1"
 
-        test_resource_name = "test_resource_1"
-        resource = Resource(
-            {
-                "name": test_resource_name,
-                "description": "Test Resource 1",
-            }
-        )
-        resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test.csv")
-        resource.set_format("csv")
-        resource.set_file_to_upload(resource_file_path)
 
-        dataset.add_update_resource(resource)
+@pytest.fixture(autouse=True)
+def setup_and_teardown_dataset_in_hdx():
+    # This is pytest setup
+    configure_hdx_connection("stage")
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    if dataset:
+        dataset.delete_from_hdx()
+    title = "HDX CLI toolkit test"
+    dataset = Dataset({"name": DATASET_NAME, "title": title})
+    dataset.update_from_yaml(
+        os.path.join(os.path.dirname(__file__), "fixtures", "hdx_dataset_static.yaml")
+    )
+    countryiso3s = ["AFG", "PSE", "SYR", "YEM"]
+    dataset.add_country_locations(countryiso3s)
+    tags = ["conflict-violence", "displacement", "hxl"]
+    dataset.add_tags(tags)
 
-        dataset.create_in_hdx(hxl_update=False, updated_by_script="hdx_cli_toolkit_ignore")
+    resource = Resource(
+        {
+            "name": TEST_RESOURCE_NAME,
+            "description": "Test Resource 1",
+        }
+    )
+    resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test.csv")
+    resource.set_format("csv")
+    resource.set_file_to_upload(resource_file_path)
 
-        assert Dataset.read_from_hdx(dataset_name) is not None
+    dataset.add_update_resource(resource)
 
-        # This is the test of update_resource_in_hdx
-        original_resources = dataset.get_resources()
+    dataset.create_in_hdx(hxl_update=False, updated_by_script="hdx_cli_toolkit_ignore")
 
-        new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
-        statuses = update_resource_in_hdx(
-            dataset_name, test_resource_name, "stage", new_resource_file_path, dry_run=False
-        )
+    assert Dataset.read_from_hdx(DATASET_NAME) is not None
+    yield
+    # This is pytest teardown
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    if dataset:
+        dataset.delete_from_hdx()
 
-        assert statuses[0] == "Update successful"
 
-        revised_dataset = Dataset.read_from_hdx(dataset_name)
-        revised_resources = revised_dataset.get_resources()
+def test_update_resource():
+    # This is the test of update_resource_in_hdx
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    original_resources = dataset.get_resources()
 
-        assert len(original_resources) == len(revised_resources)
-        assert original_resources[0].data["name"] == "test_resource_1"
-        assert revised_resources[0].data["name"] == "test_resource_1"
+    new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
+    statuses = update_resource_in_hdx(
+        DATASET_NAME, TEST_RESOURCE_NAME, "stage", new_resource_file_path, dry_run=False
+    )
 
-        assert original_resources[0].data["url"].endswith("test.csv")
-        assert revised_resources[0].data["url"].endswith("test-2.csv")
+    assert statuses[0] == "Update successful"
 
-        assert revised_resources[0].data["size"] > original_resources[0].data["size"]
+    revised_dataset = Dataset.read_from_hdx(DATASET_NAME)
+    revised_resources = revised_dataset.get_resources()
+
+    assert len(original_resources) == len(revised_resources)
+    assert original_resources[0].data["name"] == "test_resource_1"
+    assert revised_resources[0].data["name"] == "test_resource_1"
+
+    assert original_resources[0].data["url"].endswith("test.csv")
+    assert revised_resources[0].data["url"].endswith("test-2.csv")
+
+    assert revised_resources[0].data["size"] > original_resources[0].data["size"]
