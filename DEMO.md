@@ -102,7 +102,7 @@ This output is valid JSON and can be piped into a file to use as a test fixture 
 
 It is possible to include resource, showcase and QuickChart (resource_view) metadata into the `print` view using the `--with_extras` flag:
 
-```
+```shell
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 ```
 

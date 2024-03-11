@@ -5,6 +5,7 @@ import os
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
+from hdx.data.resource import Resource
 
 from hdx_cli_toolkit.utilities import read_attributes
 
@@ -54,24 +55,20 @@ def update_resource_in_hdx(
         if resource["name"] == resource_name:
             resource_to_update = resource
 
-    if resource_to_update is None:
-        statuses.append(
-            f"No resource with the name '{resource_name}' found on dataset '{dataset_name}'"
-        )
-        # Make a new resource
-        return statuses
-
-    # Report on the characteristics of the selected file for upload
+    # Report on the characteristics of the selected file for upload cf the original if available
     if not os.path.exists(resource_file_path):
         statuses.append(f"No file found at file path '{resource_file_path}'")
         return statuses
 
     statuses.append(f"Found file to upload at '{resource_file_path}'")
 
-    url = resource_to_update["url"]
-    original_filename = url[(url.rfind("/") + 1) :]  # noqa: E203
-    original_size = resource_to_update["size"]
-    statuses.append(f"Original resource filename '{original_filename}' with size {original_size}")
+    if resource_to_update is not None:
+        url = resource_to_update["url"]
+        original_filename = url[(url.rfind("/") + 1) :]  # noqa: E203
+        original_size = resource_to_update["size"]
+        statuses.append(
+            f"Original resource filename '{original_filename}' with size {original_size}"
+        )
 
     replacement_filename = os.path.basename(resource_file_path)
     file_stats = os.stat(resource_file_path)
@@ -80,12 +77,47 @@ def update_resource_in_hdx(
         f"Replacement resource filename '{replacement_filename}' with size {replacement_size}"
     )
 
-    resource_to_update.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
+    #
+    if resource_to_update is None:
+        statuses.append(
+            f"No resource with the name '{resource_name}' found on dataset '{dataset_name}', "
+            "adding file as new resource."
+        )
+        # Make a new resource
+        new_resource = Resource(
+            {
+                "name": resource_name,
+                "description": "new resource",
+            }
+        )
 
-    if live:
-        resource_to_update.update_in_hdx()
-        statuses.append("Update to HDX successful")
-        return statuses
+        new_resource.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
+        resource_list = [new_resource]
+        resource_list.extend(resources)
+        dataset.add_update_resources(resource_list, ignore_datasetid=True)
+        if live:
+            # (resources_to_update, resources_to_delete, filestore_resources, new_resource_order) = (
+            #     dataset._dataset_update_resources(
+            #         update_resources=True,
+            #         match_resources_by_metadata=False,
+            #         remove_additional_resources=True,
+            #         match_resource_order=True,
+            #     )
+            # )
+            # print(resources_to_update, flush=True)
+            # print(resources_to_delete, flush=True)
+            # print(filestore_resources, flush=True)
+            # print(new_resource_order, flush=True)
+
+            dataset.update_in_hdx(match_resource_order=True)
+            statuses.append("Addition to HDX successful")
+            return statuses
+    else:
+        resource_to_update.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
+        if live:
+            resource_to_update.update_in_hdx()
+            statuses.append("Update to HDX successful")
+            return statuses
 
     statuses.append("No '--live' flag supplied so no update to HDX made, otherwise successful")
     return statuses
