@@ -6,6 +6,8 @@ import fnmatch
 import json
 import os
 import time
+import traceback
+
 from collections.abc import Callable
 
 import yaml
@@ -197,14 +199,27 @@ def update(
                 skip_validation=True,
                 ignore_check=True,
             )
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
         except (HDXError, KeyError):
-            n_failures += 0
-            print(f"Could not update {dataset['name']}")
-        print(
-            f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-            f"{time.time()-t0:0.2f}",
-            flush=True,
-        )
+            if "Authorization Error" in traceback.format_exc():
+                print(
+                    f"Could not update {dataset['name']} on '{hdx_site}' "
+                    "because of an Authorization Error",
+                    flush=True,
+                )
+            else:
+                print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            n_failures += 1
+
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
