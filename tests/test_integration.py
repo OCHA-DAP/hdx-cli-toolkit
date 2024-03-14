@@ -58,7 +58,6 @@ def setup_and_teardown_dataset_in_hdx():
 
 
 def test_update_resource():
-    # This is the test of update_resource_in_hdx
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     original_resources = dataset.get_resources()
 
@@ -86,7 +85,6 @@ def test_update_resource():
 
 
 def test_add_resource():
-    # This is the test of update_resource_in_hdx
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     original_resources = dataset.get_resources()
     new_resource_name = "test_resource_2"

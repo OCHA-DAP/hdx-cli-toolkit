@@ -37,7 +37,12 @@ def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -
 
 
 def update_resource_in_hdx(
-    dataset_name: str, resource_name: str, hdx_site: str, resource_file_path: str, live: bool
+    dataset_name: str,
+    resource_name: str,
+    hdx_site: str,
+    resource_file_path: str,
+    live: bool,
+    description: str = "new resource",
 ):
     configure_hdx_connection(hdx_site)
     statuses = []
@@ -87,12 +92,11 @@ def update_resource_in_hdx(
         new_resource = Resource(
             {
                 "name": resource_name,
-                "description": "new resource",
+                "description": description,
             }
         )
 
         new_resource.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
-        new_resource.set_format("CSV")
         resource_list = [new_resource]
         resource_list.extend(resources)
         dataset.add_update_resources(resource_list, ignore_datasetid=True)

@@ -533,19 +533,29 @@ def showcase(
     default=False,
     help="if present then update to HDX is made, if absent then a dry run is done",
 )
+@click.option(
+    "--description",
+    is_flag=False,
+    default="new resource",
+    help="if the resource is to be added, rather than updated this provides the description",
+)
 def update_resource(
     dataset_name: str = "",
     resource_name: str = "",
     hdx_site: str = "stage",
     resource_file_path: str = "",
     live: bool = False,
+    description: str = "new resource",
 ):
     """Update a resource in HDX"""
     print_banner("Update resource")
-    print(f"Updating '{resource_name}' in '{dataset_name}' with file at '{resource_file_path}'")
+    print(
+        f"Updating/adding '{resource_name}' in '{dataset_name}' "
+        f"with file at '{resource_file_path}'"
+    )
     t0 = time.time()
     statuses = update_resource_in_hdx(
-        dataset_name, resource_name, hdx_site, resource_file_path, live
+        dataset_name, resource_name, hdx_site, resource_file_path, live, description=description
     )
     for status in statuses:
         print(status, flush=True)
