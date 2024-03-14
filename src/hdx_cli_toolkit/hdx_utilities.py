@@ -77,7 +77,7 @@ def update_resource_in_hdx(
         f"Replacement resource filename '{replacement_filename}' with size {replacement_size}"
     )
 
-    #
+    # This is the "add resource branch"
     if resource_to_update is None:
         statuses.append(
             f"No resource with the name '{resource_name}' found on dataset '{dataset_name}', "
@@ -92,24 +92,25 @@ def update_resource_in_hdx(
         )
 
         new_resource.set_file_to_upload(resource_file_path, guess_format_from_suffix=True)
+        new_resource.set_format("CSV")
         resource_list = [new_resource]
         resource_list.extend(resources)
         dataset.add_update_resources(resource_list, ignore_datasetid=True)
         if live:
-            # (resources_to_update, resources_to_delete, filestore_resources, new_resource_order) = (
-            #     dataset._dataset_update_resources(
-            #         update_resources=True,
-            #         match_resources_by_metadata=False,
-            #         remove_additional_resources=True,
-            #         match_resource_order=True,
-            #     )
-            # )
-            # print(resources_to_update, flush=True)
-            # print(resources_to_delete, flush=True)
-            # print(filestore_resources, flush=True)
-            # print(new_resource_order, flush=True)
-
+            # It seems this match_resource_order keyword is not respected
             dataset.update_in_hdx(match_resource_order=True)
+            # So we reload the dataset from HDX and force a reorder
+            revised_dataset = Dataset.read_from_hdx(dataset_name)
+            resources_check = revised_dataset.get_resources()
+
+            reordered_resource_ids = [
+                x["id"] for x in resources_check if x["name"] == resource_name
+            ]
+            reordered_resource_ids.extend(
+                [x["id"] for x in resources_check if x["name"] != resource_name]
+            )
+
+            revised_dataset.reorder_resources(resource_ids=reordered_resource_ids)
             statuses.append("Addition to HDX successful")
             return statuses
     else:
