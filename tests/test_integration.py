@@ -87,7 +87,7 @@ def test_update_resource():
 def test_add_resource():
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     original_resources = dataset.get_resources()
-    new_resource_name = "test_resource_2"
+    new_resource_name = "inserted_resource"
 
     new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
     statuses = update_resource_in_hdx(
@@ -101,11 +101,13 @@ def test_add_resource():
 
     revised_dataset = Dataset.read_from_hdx(DATASET_NAME)
     revised_resources = revised_dataset.get_resources()
+    for revised_ in revised_resources:
+        print(revised_["name"], flush=True)
 
     assert len(original_resources) == 1
     assert len(revised_resources) == 2
 
-    assert revised_resources[0].data["name"] == "test_resource_2"
+    assert revised_resources[0].data["name"] == "inserted_resource"
     assert revised_resources[1].data["name"] == "test_resource_1"
 
     assert revised_resources[0].data["url"].endswith("test-2.csv")

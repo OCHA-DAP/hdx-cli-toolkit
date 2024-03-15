@@ -10,3 +10,5 @@ cov.xml
 
 
 tests/fixtures/test.csv
+
+src/temp/
