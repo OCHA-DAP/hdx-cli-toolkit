@@ -1,0 +1,13 @@
+license_id: "cc-by-sa"
+notes: "Some notes."
+caveats: "None"
+methodology: "Registry"
+dataset_source: "Someone"
+package_creator: "ianhopkinson"
+private: False  # has to be True or False
+url: ~
+state: "active"  # always "active".
+owner_org: "hdx"
+maintainer: "972627a5-4f23-4922-8892-371ece6531b6" # it me
+dataset_date: "[1905-02-17T00:00:00 TO 2017-12-03T00:00:00]"
+data_update_frequency: "7"

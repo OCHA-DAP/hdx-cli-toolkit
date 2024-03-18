@@ -6,9 +6,11 @@ import fnmatch
 import json
 import os
 import time
-import yaml
+import traceback
+
 from collections.abc import Callable
 
+import yaml
 import click
 from click.decorators import FC
 
@@ -27,7 +29,11 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
 )
 
-from hdx_cli_toolkit.hdx_utilities import add_showcase, configure_hdx_connection
+from hdx_cli_toolkit.hdx_utilities import (
+    add_showcase,
+    configure_hdx_connection,
+    update_resource_in_hdx,
+)
 
 
 @click.group()
@@ -193,14 +199,27 @@ def update(
                 skip_validation=True,
                 ignore_check=True,
             )
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
         except (HDXError, KeyError):
-            n_failures += 0
-            print(f"Could not update {dataset['name']}")
-        print(
-            f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-            f"{time.time()-t0:0.2f}",
-            flush=True,
-        )
+            if "Authorization Error" in traceback.format_exc():
+                print(
+                    f"Could not update {dataset['name']} on '{hdx_site}' "
+                    "because of an Authorization Error",
+                    flush=True,
+                )
+            else:
+                print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            n_failures += 1
+
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
@@ -354,14 +373,14 @@ def show_configuration():
             print(user_agents_file_contents, flush=True)
 
     # Check Environment variables
-    environment_variables = ["HDX_KEY", "HDX_SITE", "HDX_URL"]
+    environment_variables = ["HDX_KEY", "HDX_KEY_STAGE", "HDX_SITE", "HDX_URL"]
     click.secho(
         "Values of relevant environment variables (used in absence of supplied values):", bold=True
     )
     for variable in environment_variables:
         env_variable = os.getenv(variable)
         if env_variable is not None:
-            if variable == "HDX_KEY":
+            if "HDX_KEY" in variable:
                 env_variable = censor_secret(env_variable)
             print(f"{variable}:{env_variable}", flush=True)
         else:
@@ -483,6 +502,67 @@ def showcase(
     print(f"Showcase update took {time.time() - t0:.2f} seconds")
 
 
+@hdx_toolkit.command(name="update_resource")
+@click.option(
+    "--dataset_name",
+    is_flag=False,
+    default="*",
+    help="name of the dataset to update",
+)
+@click.option(
+    "--resource_name",
+    is_flag=False,
+    default="*",
+    help="name of the resource in the dataset to update",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--resource_file_path",
+    is_flag=False,
+    default="stage",
+    help="path to the resource file to upload",
+)
+@click.option(
+    "--live",
+    is_flag=True,
+    default=False,
+    help="if present then update to HDX is made, if absent then a dry run is done",
+)
+@click.option(
+    "--description",
+    is_flag=False,
+    default="new resource",
+    help="if the resource is to be added, rather than updated this provides the description",
+)
+def update_resource(
+    dataset_name: str = "",
+    resource_name: str = "",
+    hdx_site: str = "stage",
+    resource_file_path: str = "",
+    live: bool = False,
+    description: str = "new resource",
+):
+    """Update a resource in HDX"""
+    print_banner("Update resource")
+    print(
+        f"Updating/adding '{resource_name}' in '{dataset_name}' "
+        f"with file at '{resource_file_path}'"
+    )
+    t0 = time.time()
+    statuses = update_resource_in_hdx(
+        dataset_name, resource_name, hdx_site, resource_file_path, live, description=description
+    )
+    for status in statuses:
+        print(status, flush=True)
+
+    print(f"Resource update took {time.time() - t0:.2f} seconds")
+
+
 def get_filtered_datasets(
     organization: str = "",
     dataset_filter: str = "*",
@@ -560,10 +640,10 @@ def decorate_dataset_with_extras(dataset: Dataset) -> dict:
         resource_dict = resource.data
         if "fs_check_info" in resource_dict:
             resource_dict["fs_check_info"] = json.loads(resource_dict["fs_check_info"])
-        quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
+        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
         resource_dict["quickcharts"] = []
         if quickcharts is not None:
-            for quickchart in quickcharts:
+            for quickchart in dataset_quickcharts:
                 quickchart_dict = quickchart.data
                 if "hxl_preview_config" in quickchart_dict:
                     quickchart_dict["hxl_preview_config"] = json.loads(
