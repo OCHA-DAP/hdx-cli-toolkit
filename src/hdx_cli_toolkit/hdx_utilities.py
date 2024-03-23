@@ -5,6 +5,7 @@
 import fnmatch
 import json
 import os
+import yaml
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.organization import Organization
 from hdx.data.resource_view import ResourceView
@@ -39,7 +40,7 @@ def get_filtered_datasets(
     Returns:
         list[Dataset] -- a list of datasets satisfying the selection criteria
     """
-    configure_hdx_connection(hdx_site=hdx_site)
+    configure_hdx_connection(hdx_site=hdx_site, verbose=False)
 
     if organization != "":
         organization = Organization.read_from_hdx(organization)
@@ -94,7 +95,9 @@ def get_users_from_hdx(user: str, hdx_site: str = "stage"):
     return user_list
 
 
-def decorate_dataset_with_extras(dataset: Dataset) -> dict:
+def decorate_dataset_with_extras(
+    dataset: Dataset, hdx_site: str = "stage", verbose: bool = False
+) -> dict:
     """A function to add resource, quickcharts (resource_view) and showcases keys to a dataset
     dictionary representation for the print command. fs_check_info and hxl_preview_config are
     converted from JSON objects serialised as single strings to dictionaries to make printed output
@@ -106,6 +109,7 @@ def decorate_dataset_with_extras(dataset: Dataset) -> dict:
     Returns:
         dict -- a dictionary containing the dataset metadata
     """
+    configure_hdx_connection(hdx_site, verbose=verbose)
     output_dict = dataset.data
     resources = dataset.get_resources()
     output_dict["resources"] = []
@@ -249,7 +253,43 @@ def update_resource_in_hdx(
     return statuses
 
 
-def configure_hdx_connection(hdx_site: str):
+def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_path):
+    configure_hdx_connection(hdx_site=hdx_site)
+    status = "Successful"
+
+    # read the json file
+    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
+        recipe = json.load(json_file)
+    # extract appropriate keys
+    processed_recipe = {
+        "description": "",
+        "title": "Quick Charts",
+        "view_type": "hdx_hxl_preview",
+        "hxl_preview_config": "",
+    }
+
+    # convert the configuration to a string
+    stringified_config = json.dumps(
+        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
+    )
+    processed_recipe["hxl_preview_config"] = stringified_config
+    # write out yaml to a temp file
+    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
+    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
+        yaml.dump(processed_recipe, yaml_file)
+
+    dataset = Dataset.read_from_hdx(dataset_name)
+    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
+    dataset.update_in_hdx(update_resources=False, hxl_update=False)
+
+    # delete the temp file
+    if os.path.exists(temp_yaml_path):
+        os.remove(temp_yaml_path)
+
+    return status
+
+
+def configure_hdx_connection(hdx_site: str, verbose: bool = True):
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -257,5 +297,7 @@ def configure_hdx_connection(hdx_site: str):
             hdx_site=hdx_site,
             hdx_read_only=False,
         )
+        if verbose:
+            print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
     except ConfigurationError:
         pass

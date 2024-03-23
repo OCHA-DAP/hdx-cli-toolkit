@@ -27,6 +27,7 @@ from hdx_cli_toolkit.utilities import (
 
 from hdx_cli_toolkit.hdx_utilities import (
     add_showcase,
+    add_quickcharts,
     get_organizations_from_hdx,
     get_users_from_hdx,
     configure_hdx_connection,
@@ -429,37 +430,9 @@ def quickcharts(
         f"'{dataset_filter}', resource '{resource_name}'"
     )
     t0 = time.time()
-    configure_hdx_connection(hdx_site=hdx_site)
+    status = add_quickcharts(dataset_filter, hdx_site, resource_name, hdx_hxl_preview_file_path)
 
-    # read the json file
-    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
-        recipe = json.load(json_file)
-    # extract appropriate keys
-    processed_recipe = {
-        "description": "",
-        "title": "Quick Charts",
-        "view_type": "hdx_hxl_preview",
-        "hxl_preview_config": "",
-    }
-
-    # convert the configuration to a string
-    stringified_config = json.dumps(
-        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
-    )
-    processed_recipe["hxl_preview_config"] = stringified_config
-    # write out yaml to a temp file
-    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
-    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
-        yaml.dump(processed_recipe, yaml_file)
-
-    dataset = Dataset.read_from_hdx(dataset_filter)
-
-    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-    dataset.update_in_hdx(update_resources=False, hxl_update=False)
-
-    # delete the temp file
-    if os.path.exists(temp_yaml_path):
-        os.remove(temp_yaml_path)
+    print(status, flush=True)
 
     print(f"Quick Chart update took {time.time() - t0:.2f} seconds")
 
