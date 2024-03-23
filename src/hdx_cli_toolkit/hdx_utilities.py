@@ -1,13 +1,113 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+
+import fnmatch
+import json
 import os
 from hdx.api.configuration import Configuration, ConfigurationError
+from hdx.data.organization import Organization
+from hdx.data.resource_view import ResourceView
 from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
 from hdx.data.resource import Resource
 
 from hdx_cli_toolkit.utilities import read_attributes
+
+
+def get_filtered_datasets(
+    organization: str = "",
+    dataset_filter: str = "*",
+    query: str = None,
+    hdx_site: str = "stage",
+    verbose: bool = True,
+) -> list[Dataset]:
+    """A function to return a list of datasets selected by some selection criteria based on
+    organization, dataset name, or CKAN query strings. The verbose flag is provided so
+    summary output can be suppressed for output to file in the print command.
+
+    Keyword Arguments:
+        organization {str} -- an organization name (default: {""})
+        key {str} -- _description_ (default: {"private"})
+        value {str} -- _description_ (default: {"value"})
+        dataset_filter {str} -- a filter for dataset name, can contain wildcards (default: {"*"})
+        query {str} -- a query string to use in the CKAN search API (default: {None})
+        hdx_site {str} -- target HDX site {prod|stage} (default: {"stage"})
+        verbose {bool} -- if True prints summary information (default: {True})
+
+    Returns:
+        list[Dataset] -- a list of datasets satisfying the selection criteria
+    """
+    configure_hdx_connection(hdx_site=hdx_site)
+
+    if organization != "":
+        organization = Organization.read_from_hdx(organization)
+        datasets = organization.get_datasets(include_private=True)
+    elif query is not None:
+        datasets = Dataset.search_in_hdx(query=query)
+        organization = {"display_name": "", "name": ""}
+    else:
+        dataset = Dataset.read_from_hdx(dataset_filter)
+        if dataset is None:
+            datasets = []
+            organization = {"display_name": "", "name": ""}
+        else:
+            datasets = [dataset]
+            organization = dataset.get_organization()
+            organization = {"display_name": organization["title"], "name": organization["name"]}
+
+    filtered_datasets = []
+    for dataset in datasets:
+        if fnmatch.fnmatch(dataset["name"], dataset_filter):
+            filtered_datasets.append(dataset)
+
+    if verbose:
+        print(Configuration.read().hdx_site, flush=True)
+        print(
+            f"Found {len(filtered_datasets)} datasets for organization "
+            f"'{organization['display_name']} "
+            f"({organization['name']})' matching filter conditions:",
+            flush=True,
+        )
+
+    return filtered_datasets
+
+
+def decorate_dataset_with_extras(dataset: Dataset) -> dict:
+    """A function to add resource, quickcharts (resource_view) and showcases keys to a dataset
+    dictionary representation for the print command. fs_check_info and hxl_preview_config are
+    converted from JSON objects serialised as single strings to dictionaries to make printed output
+    more readable. This decoration means that the dataset dictionary cannot be uploaded to HDX.
+
+    Arguments:
+        dataset {Dataset} -- a Dataset object to process
+
+    Returns:
+        dict -- a dictionary containing the dataset metadata
+    """
+    output_dict = dataset.data
+    resources = dataset.get_resources()
+    output_dict["resources"] = []
+    for resource in resources:
+        resource_dict = resource.data
+        if "fs_check_info" in resource_dict:
+            resource_dict["fs_check_info"] = json.loads(resource_dict["fs_check_info"])
+        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
+        resource_dict["quickcharts"] = []
+        if dataset_quickcharts is not None:
+            for quickchart in dataset_quickcharts:
+                quickchart_dict = quickchart.data
+                if "hxl_preview_config" in quickchart_dict:
+                    quickchart_dict["hxl_preview_config"] = json.loads(
+                        quickchart_dict["hxl_preview_config"]
+                    )
+                resource_dict["quickcharts"].append(quickchart_dict)
+        output_dict["resources"].append(resource_dict)
+
+    showcases = dataset.get_showcases()
+    output_dict["showcases"] = [x.data for x in showcases]
+
+    return output_dict
 
 
 def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -> list[str]:
