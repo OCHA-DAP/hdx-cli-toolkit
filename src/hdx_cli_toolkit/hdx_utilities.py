@@ -5,10 +5,13 @@
 import fnmatch
 import json
 import os
+import time
+import traceback
 import yaml
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.organization import Organization
 from hdx.data.resource_view import ResourceView
+from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
 from hdx.data.resource import Resource
@@ -73,6 +76,58 @@ def get_filtered_datasets(
         )
 
     return filtered_datasets
+
+
+def update_values_in_hdx(
+    filtered_datasets: list[Dataset], key, value, conversion_func, hdx_site: str = "stage"
+):
+    n_changed = 0
+    n_failures = 0
+    for dataset in filtered_datasets:
+        t0 = time.time()
+        old_value = str(dataset[key])
+        dataset[key] = conversion_func(value)
+        if old_value != str(dataset[key]):
+            n_changed += 1
+        else:
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+                f"{'No update required':<25.25}",
+                flush=True,
+            )
+            continue
+        try:
+            dataset.update_in_hdx(
+                update_resources=False,
+                hxl_update=False,
+                operation="patch",
+                batch_mode="KEEP_OLD",
+                skip_validation=True,
+                ignore_check=True,
+            )
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
+        except (HDXError, KeyError):
+            if "Authorization Error" in traceback.format_exc():
+                print(
+                    f"Could not update {dataset['name']} on '{hdx_site}' "
+                    "because of an Authorization Error",
+                    flush=True,
+                )
+            else:
+                print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            n_failures += 1
+
+            print(
+                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
+                f"{time.time()-t0:0.2f}",
+                flush=True,
+            )
+
+    return n_changed, n_failures
 
 
 def get_organizations_from_hdx(organization: str, hdx_site: str = "stage"):
