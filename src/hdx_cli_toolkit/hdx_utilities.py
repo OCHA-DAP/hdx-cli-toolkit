@@ -11,6 +11,7 @@ from hdx.data.resource_view import ResourceView
 from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
 from hdx.data.resource import Resource
+from hdx.data.user import User
 
 from hdx_cli_toolkit.utilities import read_attributes
 
@@ -71,6 +72,26 @@ def get_filtered_datasets(
         )
 
     return filtered_datasets
+
+
+def get_organizations_from_hdx(organization: str, hdx_site: str = "stage"):
+    configure_hdx_connection(hdx_site)
+    filtered_organizations = []
+    all_organizations = Organization.get_all_organization_names(include_extras=True)
+    for an_organization in all_organizations:
+        if fnmatch.fnmatch(an_organization, f"*{organization}*"):
+            organization_metadata = Organization.read_from_hdx(an_organization)
+            filtered_organizations.append(organization_metadata)
+
+    return filtered_organizations
+
+
+def get_users_from_hdx(user: str, hdx_site: str = "stage"):
+    configure_hdx_connection(hdx_site=hdx_site)
+
+    user_list = User.get_all_users(q=user)
+
+    return user_list
 
 
 def decorate_dataset_with_extras(dataset: Dataset) -> dict:

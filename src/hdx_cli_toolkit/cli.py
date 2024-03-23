@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import fnmatch
 import json
 import os
 import time
@@ -16,8 +15,6 @@ from click.decorators import FC
 from hdx.api.configuration import ConfigurationError
 from hdx.data.hdxobject import HDXError
 from hdx.data.dataset import Dataset
-from hdx.data.organization import Organization
-from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
 
 from hdx_cli_toolkit.utilities import (
@@ -30,6 +27,8 @@ from hdx_cli_toolkit.utilities import (
 
 from hdx_cli_toolkit.hdx_utilities import (
     add_showcase,
+    get_organizations_from_hdx,
+    get_users_from_hdx,
     configure_hdx_connection,
     update_resource_in_hdx,
     get_filtered_datasets,
@@ -292,17 +291,15 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
     print_banner("Get organization Metadata")
     configure_hdx_connection(hdx_site=hdx_site)
 
-    all_organizations = Organization.get_all_organization_names(include_extras=True)
-    for an_organization in all_organizations:
-        if fnmatch.fnmatch(an_organization, f"*{organization}*"):
-            organization_metadata = Organization.read_from_hdx(an_organization)
-            if verbose:
-                print(json.dumps(organization_metadata.data, indent=2), flush=True)
-            else:
-                print(
-                    f"{organization_metadata['name']:<50.50}: {organization_metadata['id']}",
-                    flush=True,
-                )
+    filtered_organizations = get_organizations_from_hdx(organization, hdx_site=hdx_site)
+    for filtered_organization in filtered_organizations:
+        if verbose:
+            print(json.dumps(filtered_organization.data, indent=2), flush=True)
+        else:
+            print(
+                f"{organization['name']:<50.50}: {filtered_organization['id']}",
+                flush=True,
+            )
 
 
 @hdx_toolkit.command(name="get_user_metadata")
@@ -327,9 +324,8 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
 def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False):
     """Get user id and other metadata"""
     print_banner("Get User Metadata")
-    configure_hdx_connection(hdx_site=hdx_site)
 
-    user_list = User.get_all_users(q=user)
+    user_list = get_users_from_hdx(user, hdx_site=hdx_site)
     for a_user in user_list:
         if verbose:
             print(json.dumps(a_user.data, indent=2), flush=True)
