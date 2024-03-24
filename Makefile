@@ -10,4 +10,4 @@ unit_tests:
 publish:
 	rm -rf build dist *.egg-info
 	hatch build
-	hatch publish -r test
+	hatch publish
