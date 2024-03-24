@@ -2,27 +2,32 @@
 
 ## Overview
 
-This toolkit is intended to provide a commandline interface to HDX to allow for bulk modification operations and other administrative activities, in the first instance to carry out a bulk quarantine action on all the datasets in an organization. It is inspired by [hdx-update-cods-level](https://github.com/b-j-mills/hdx-update-cods-level/tree/main).
+This toolkit provides a commandline interface to the [Humanitarian Data Exchange](https://data.humdata.org/) (HDX) to allow for bulk modification operations and other administrative activities such as getting `id` values for users and organization. It is useful for those managing HDX and developers building data pipelines for HDX. The currently supported commands are as follows:
+
+```
+  configuration              Print configuration information to terminal
+  get_organization_metadata  Get an organization id and other metadata
+  get_user_metadata          Get user id and other metadata
+  list                       List datasets in HDX
+  print                      Print datasets in HDX to the terminal
+  quickcharts                Upload QuickChart JSON description to HDX
+  showcase                   Upload showcase to HDX
+  update                     Update datasets in HDX
+  update_resource            Update a resource in HDX
+```
+
+It is a thin wrapper to the [hdx-python-api](https://github.com/OCHA-DAP/hdx-python-api) written by Mike Rans.
+
+The library requires some configuration, described below, to authenticate to the HDX instance.
 
 ## Installation
-`hdx-cli-toolkit` is a Python application. 
+`hdx-cli-toolkit` is a Python application published to the PyPI package repository, therefore it can be installed easily with:
 
-For developers the code should be cloned installed from the [GitHub repo](https://github.com/OCHA-DAP/hdx-cli-toolkit), and a virtual enviroment created:
+```pip install hdx-cli-toolkit```
 
-```shell
-python -m venv venv
-source venv/Scripts/activate
-```
+Users may prefer to make a global, isolated installation using [pipx](https://pypi.org/project/pipx/) which will make the `hdx-toolkit` commands available across their projects:
 
-And then an editable installation created:
-
-```shell
-pip install -e .
-```
-
-For users the best route is probably to use [pipx](https://pypi.org/project/pipx/) to install which will provide `hdx-toolkit` globally in its own environment.
-
-In either case there is a small amount of configuration required.
+```pipx install hdx-cli-toolkit```
 
 `hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
@@ -37,7 +42,6 @@ hdx-cli-toolkit:
     preprefix: [YOUR_ORGANIZATION]
     user_agent: hdx_cli_toolkit_ih
 ```
-
 
 ## Usage
 
@@ -74,6 +78,21 @@ A detailed walk through of commands can be found in the [DEMO.md](DEMO.md) file
 
 ## Contributions
 
+For developers the code should be cloned installed from the [GitHub repo](https://github.com/OCHA-DAP/hdx-cli-toolkit), and a virtual enviroment created:
+
+```shell
+python -m venv venv
+source venv/Scripts/activate
+```
+
+And then an editable installation created:
+
+```shell
+pip install -e .
+```
+
+The library is then configured, as described above.
+
 This project users a GitHub Action to run tests and linting. It requires the following environment variables/secrets to be set in the `test` environment:
 
 ```
@@ -84,9 +103,7 @@ USER_AGENT - environment variable. Value: hdx_cli_toolkit_gha
 PREPREFIX - - environment variable. Value: [YOUR_organization]
 ```
 
-Testing uses a mock for the HDX so a live HDX_KEY is not required.
+Most tests use mocking in place of HDX, although the `test_integration.py` suite runs against the `stage` server.
 
 New features should be developed against a GitHub issue on a separate branch with a name starting GH[issue number]_ . `PULL_REQUEST_TEMPLATE.md` should be used in preparing pull requests. Versioning is updated manually in `pyproject.toml` and is described in the template, in brief it is CalVer `YYYY.MM.Micro`.
-
-
 
