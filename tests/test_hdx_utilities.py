@@ -5,7 +5,7 @@ import os
 from unittest import mock
 from unittest.mock import patch
 
-from hdx_cli_toolkit.hdx_utilities import add_showcase
+from hdx_cli_toolkit.hdx_utilities import add_showcase, get_filtered_datasets
 
 
 # @patch("hdx.data.showcase.Showcase")
@@ -28,3 +28,36 @@ def test_add_showcase(mock_hdx, mock_showcase):
     )
     mock_showcase().create_in_hdx.assert_called_with()
     mock_showcase().add_dataset.assert_called_with({"name": "mock name"})
+
+
+@patch("hdx.data.dataset.Dataset.search_in_hdx")
+def test_get_filtered_datasets_1(mock_hdx):
+    _ = get_filtered_datasets(
+        organization="",
+        dataset_filter="*",
+        query="archived:true",
+    )
+
+    mock_hdx.assert_called_with(query="archived:true")
+
+
+@patch("hdx.data.organization.Organization.read_from_hdx")
+def test_get_filtered_datasets_2(mock_hdx):
+    _ = get_filtered_datasets(
+        organization="healthsites",
+        dataset_filter="*",
+        query=None,
+    )
+
+    mock_hdx.assert_called_with("healthsites")
+
+
+@patch("hdx.data.dataset.Dataset.read_from_hdx")
+def test_get_filtered_datasets_3(mock_hdx):
+    _ = get_filtered_datasets(
+        organization="",
+        dataset_filter="a-full-dataset-name",
+        query=None,
+    )
+
+    mock_hdx.assert_called_with("a-full-dataset-name")

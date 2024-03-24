@@ -1,8 +1,9 @@
 [project]
 name = "hdx_cli_toolkit"
-version = "2024.3.1"
+version = "2024.3.3"
 description = "HDX CLI tool kit for commandline interaction with HDX"
-readme = "README.md"
+readme = {file = "README.md", content-type = "text/markdown"}
+license = {file = "LICENSE"}
 requires-python = ">=3.11"
 authors = [
   {email = "ian.hopkinson@un.org"},
@@ -14,6 +15,7 @@ dependencies = [
   "hdx-python-country",
   "quantulum3[classifier]", # This stops the UserWarning but has a number of large dependencies
   "click",
+  "hatch",
   "pytest",
   "pytest-cov",
   "black==23.10.0",

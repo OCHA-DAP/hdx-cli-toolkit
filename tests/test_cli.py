@@ -3,12 +3,11 @@
 
 import os
 from unittest import mock
-from unittest.mock import patch
 from click.testing import CliRunner
 
 from hdx.data.dataset import Dataset
 from hdx.api.configuration import Configuration, ConfigurationError
-from hdx_cli_toolkit.cli import list_datasets, get_filtered_datasets
+from hdx_cli_toolkit.cli import list_datasets
 
 try:
     Configuration.create(
@@ -45,39 +44,6 @@ def test_list_datasets(mock_hdx, json_fixture):
     )
 
     cli_test_template(command, cli_arguments, expected_output, forbidden_output="")
-
-
-@patch("hdx.data.dataset.Dataset.search_in_hdx")
-def test_get_filtered_datasets_1(mock_hdx):
-    _ = get_filtered_datasets(
-        organization="",
-        dataset_filter="*",
-        query="archived:true",
-    )
-
-    mock_hdx.assert_called_with(query="archived:true")
-
-
-@patch("hdx.data.organization.Organization.read_from_hdx")
-def test_get_filtered_datasets_2(mock_hdx):
-    _ = get_filtered_datasets(
-        organization="healthsites",
-        dataset_filter="*",
-        query=None,
-    )
-
-    mock_hdx.assert_called_with("healthsites")
-
-
-@patch("hdx.data.dataset.Dataset.read_from_hdx")
-def test_get_filtered_datasets_3(mock_hdx):
-    _ = get_filtered_datasets(
-        organization="",
-        dataset_filter="a-full-dataset-name",
-        query=None,
-    )
-
-    mock_hdx.assert_called_with("a-full-dataset-name")
 
 
 def cli_test_template(command, cli_arguments, expected_output, forbidden_output=""):

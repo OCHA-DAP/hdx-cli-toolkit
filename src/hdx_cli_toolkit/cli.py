@@ -1,25 +1,16 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import datetime
-import fnmatch
 import json
 import os
 import time
-import traceback
 
 from collections.abc import Callable
 
-import yaml
 import click
 from click.decorators import FC
 
-from hdx.api.configuration import Configuration, ConfigurationError
-from hdx.data.hdxobject import HDXError
-from hdx.data.dataset import Dataset
-from hdx.data.organization import Organization
-from hdx.data.resource_view import ResourceView
-from hdx.data.user import User
+from hdx.api.configuration import ConfigurationError
 from hdx.utilities.path import script_dir_plus_file
 
 from hdx_cli_toolkit.utilities import (
@@ -27,12 +18,19 @@ from hdx_cli_toolkit.utilities import (
     print_table_from_list_of_dicts,
     censor_secret,
     make_conversion_func,
+    print_banner,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
     add_showcase,
+    add_quickcharts,
+    get_organizations_from_hdx,
+    get_users_from_hdx,
+    update_values_in_hdx,
     configure_hdx_connection,
     update_resource_in_hdx,
+    get_filtered_datasets,
+    decorate_dataset_with_extras,
 )
 
 
@@ -175,51 +173,9 @@ def update(
         f"{'Time to update/seconds':<25.25}",
         flush=True,
     )
-    n_changed = 0
-    n_failures = 0
-    for dataset in filtered_datasets:
-        t0 = time.time()
-        old_value = str(dataset[key])
-        dataset[key] = conversion_func(value)
-        if old_value != str(dataset[key]):
-            n_changed += 1
-        else:
-            print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{'No update required':<25.25}",
-                flush=True,
-            )
-            continue
-        try:
-            dataset.update_in_hdx(
-                update_resources=False,
-                hxl_update=False,
-                operation="patch",
-                batch_mode="KEEP_OLD",
-                skip_validation=True,
-                ignore_check=True,
-            )
-            print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{time.time()-t0:0.2f}",
-                flush=True,
-            )
-        except (HDXError, KeyError):
-            if "Authorization Error" in traceback.format_exc():
-                print(
-                    f"Could not update {dataset['name']} on '{hdx_site}' "
-                    "because of an Authorization Error",
-                    flush=True,
-                )
-            else:
-                print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
-            n_failures += 1
-
-            print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
-                f"{time.time()-t0:0.2f}",
-                flush=True,
-            )
+    n_changed, n_failures = update_values_in_hdx(
+        filtered_datasets, key, value, conversion_func, hdx_site=hdx_site
+    )
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
@@ -291,17 +247,15 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
     print_banner("Get organization Metadata")
     configure_hdx_connection(hdx_site=hdx_site)
 
-    all_organizations = Organization.get_all_organization_names(include_extras=True)
-    for an_organization in all_organizations:
-        if fnmatch.fnmatch(an_organization, f"*{organization}*"):
-            organization_metadata = Organization.read_from_hdx(an_organization)
-            if verbose:
-                print(json.dumps(organization_metadata.data, indent=2), flush=True)
-            else:
-                print(
-                    f"{organization_metadata['name']:<50.50}: {organization_metadata['id']}",
-                    flush=True,
-                )
+    filtered_organizations = get_organizations_from_hdx(organization, hdx_site=hdx_site)
+    for filtered_organization in filtered_organizations:
+        if verbose:
+            print(json.dumps(filtered_organization.data, indent=2), flush=True)
+        else:
+            print(
+                f"{organization['name']:<50.50}: {filtered_organization['id']}",
+                flush=True,
+            )
 
 
 @hdx_toolkit.command(name="get_user_metadata")
@@ -326,9 +280,8 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
 def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False):
     """Get user id and other metadata"""
     print_banner("Get User Metadata")
-    configure_hdx_connection(hdx_site=hdx_site)
 
-    user_list = User.get_all_users(q=user)
+    user_list = get_users_from_hdx(user, hdx_site=hdx_site)
     for a_user in user_list:
         if verbose:
             print(json.dumps(a_user.data, indent=2), flush=True)
@@ -432,37 +385,9 @@ def quickcharts(
         f"'{dataset_filter}', resource '{resource_name}'"
     )
     t0 = time.time()
-    configure_hdx_connection(hdx_site=hdx_site)
+    status = add_quickcharts(dataset_filter, hdx_site, resource_name, hdx_hxl_preview_file_path)
 
-    # read the json file
-    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
-        recipe = json.load(json_file)
-    # extract appropriate keys
-    processed_recipe = {
-        "description": "",
-        "title": "Quick Charts",
-        "view_type": "hdx_hxl_preview",
-        "hxl_preview_config": "",
-    }
-
-    # convert the configuration to a string
-    stringified_config = json.dumps(
-        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
-    )
-    processed_recipe["hxl_preview_config"] = stringified_config
-    # write out yaml to a temp file
-    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
-    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
-        yaml.dump(processed_recipe, yaml_file)
-
-    dataset = Dataset.read_from_hdx(dataset_filter)
-
-    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-    dataset.update_in_hdx(update_resources=False, hxl_update=False)
-
-    # delete the temp file
-    if os.path.exists(temp_yaml_path):
-        os.remove(temp_yaml_path)
+    print(status, flush=True)
 
     print(f"Quick Chart update took {time.time() - t0:.2f} seconds")
 
@@ -561,114 +486,3 @@ def update_resource(
         print(status, flush=True)
 
     print(f"Resource update took {time.time() - t0:.2f} seconds")
-
-
-def get_filtered_datasets(
-    organization: str = "",
-    dataset_filter: str = "*",
-    query: str = None,
-    hdx_site: str = "stage",
-    verbose: bool = True,
-) -> list[Dataset]:
-    """A function to return a list of datasets selected by some selection criteria based on
-    organization, dataset name, or CKAN query strings. The verbose flag is provided so
-    summary output can be suppressed for output to file in the print command.
-
-    Keyword Arguments:
-        organization {str} -- an organization name (default: {""})
-        key {str} -- _description_ (default: {"private"})
-        value {str} -- _description_ (default: {"value"})
-        dataset_filter {str} -- a filter for dataset name, can contain wildcards (default: {"*"})
-        query {str} -- a query string to use in the CKAN search API (default: {None})
-        hdx_site {str} -- target HDX site {prod|stage} (default: {"stage"})
-        verbose {bool} -- if True prints summary information (default: {True})
-
-    Returns:
-        list[Dataset] -- a list of datasets satisfying the selection criteria
-    """
-    configure_hdx_connection(hdx_site=hdx_site)
-
-    if organization != "":
-        organization = Organization.read_from_hdx(organization)
-        datasets = organization.get_datasets(include_private=True)
-    elif query is not None:
-        datasets = Dataset.search_in_hdx(query=query)
-        organization = {"display_name": "", "name": ""}
-    else:
-        dataset = Dataset.read_from_hdx(dataset_filter)
-        if dataset is None:
-            datasets = []
-            organization = {"display_name": "", "name": ""}
-        else:
-            datasets = [dataset]
-            organization = dataset.get_organization()
-            organization = {"display_name": organization["title"], "name": organization["name"]}
-
-    filtered_datasets = []
-    for dataset in datasets:
-        if fnmatch.fnmatch(dataset["name"], dataset_filter):
-            filtered_datasets.append(dataset)
-
-    if verbose:
-        print(Configuration.read().hdx_site, flush=True)
-        print(
-            f"Found {len(filtered_datasets)} datasets for organization "
-            f"'{organization['display_name']} "
-            f"({organization['name']})' matching filter conditions:",
-            flush=True,
-        )
-
-    return filtered_datasets
-
-
-def decorate_dataset_with_extras(dataset: Dataset) -> dict:
-    """A function to add resource, quickcharts (resource_view) and showcases keys to a dataset
-    dictionary representation for the print command. fs_check_info and hxl_preview_config are
-    converted from JSON objects serialised as single strings to dictionaries to make printed output
-    more readable. This decoration means that the dataset dictionary cannot be uploaded to HDX.
-
-    Arguments:
-        dataset {Dataset} -- a Dataset object to process
-
-    Returns:
-        dict -- a dictionary containing the dataset metadata
-    """
-    output_dict = dataset.data
-    resources = dataset.get_resources()
-    output_dict["resources"] = []
-    for resource in resources:
-        resource_dict = resource.data
-        if "fs_check_info" in resource_dict:
-            resource_dict["fs_check_info"] = json.loads(resource_dict["fs_check_info"])
-        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
-        resource_dict["quickcharts"] = []
-        if quickcharts is not None:
-            for quickchart in dataset_quickcharts:
-                quickchart_dict = quickchart.data
-                if "hxl_preview_config" in quickchart_dict:
-                    quickchart_dict["hxl_preview_config"] = json.loads(
-                        quickchart_dict["hxl_preview_config"]
-                    )
-                resource_dict["quickcharts"].append(quickchart_dict)
-        output_dict["resources"].append(resource_dict)
-
-    showcases = dataset.get_showcases()
-    output_dict["showcases"] = [x.data for x in showcases]
-
-    return output_dict
-
-
-def print_banner(action: str):
-    """Simple function to output a banner to console, uses click's secho command but not colour
-    because the underlying colorama does not output correctly to git-bash terminals.
-
-    Arguments:
-        action {str} -- _description_
-    """
-    title = f"HDX CLI toolkit - {action}"
-    timestamp = f"Invoked at: {datetime.datetime.now().isoformat()}"
-    width = max(len(title), len(timestamp))
-    click.secho((width + 4) * "*", bold=True)
-    click.secho(f"* {title:<{width}} *", bold=True)
-    click.secho(f"* {timestamp:<{width}} *", bold=True)
-    click.secho((width + 4) * "*", bold=True)
