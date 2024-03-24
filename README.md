@@ -107,3 +107,11 @@ Most tests use mocking in place of HDX, although the `test_integration.py` suite
 
 New features should be developed against a GitHub issue on a separate branch with a name starting `GH[issue number]_`. `PULL_REQUEST_TEMPLATE.md` should be used in preparing pull requests. Versioning is updated manually in `pyproject.toml` and is described in the template, in brief it is CalVer `YYYY.MM.Micro`.
 
+## Publication
+
+Publication to PyPI is done using `hatch` which requires the following environment variables:
+
+```
+HATCH_INDEX_USER - set to `__token__`
+HATCH_INDEX_AUTH - API key provided by PyPI
+```
