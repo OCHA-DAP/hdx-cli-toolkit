@@ -253,7 +253,7 @@ def get_organization_metadata(organization: str, hdx_site: str = "stage", verbos
             print(json.dumps(filtered_organization.data, indent=2), flush=True)
         else:
             print(
-                f"{organization['name']:<50.50}: {filtered_organization['id']}",
+                f"{filtered_organization['name']:<50.50}: {filtered_organization['id']}",
                 flush=True,
             )
 
