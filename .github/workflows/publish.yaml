@@ -24,7 +24,7 @@ jobs:
         pip install --upgrade hatch
     - name: Build and publish with hatch
       env:
-        HATCH_INDEX_USER: ${{secrets.HATCH_INDEX_USER}}
+        HATCH_INDEX_USER: ${{vars.HATCH_INDEX_USER}}
         HATCH_INDEX_AUTH: ${{secrets.HATCH_INDEX_AUTH}}
       run: |
         make publish
