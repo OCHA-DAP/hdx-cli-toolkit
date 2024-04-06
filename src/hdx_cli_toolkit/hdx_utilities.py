@@ -7,9 +7,10 @@ import json
 import os
 import time
 import traceback
-import yaml
 
 from pathlib import Path
+
+import yaml
 
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.organization import Organization
