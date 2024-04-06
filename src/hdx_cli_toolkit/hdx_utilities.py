@@ -8,6 +8,9 @@ import os
 import time
 import traceback
 import yaml
+
+from pathlib import Path
+
 from hdx.api.configuration import Configuration, ConfigurationError
 from hdx.data.organization import Organization
 from hdx.data.resource_view import ResourceView
@@ -342,6 +345,39 @@ def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_
         os.remove(temp_yaml_path)
 
     return status
+
+
+def download_hdx_datasets(
+    dataset_filter: str,
+    resource_filter: str = "*",
+    hdx_site: str = "stage",
+    download_directory: str = None,
+):
+    configure_hdx_connection(hdx_site=hdx_site)
+    if download_directory is None:
+        download_directory = os.path.join(os.path.dirname(__file__), "output")
+
+    Path(download_directory).mkdir(parents=True, exist_ok=True)
+
+    if resource_filter is None:
+        resource_filter = "*"
+
+    dataset = Dataset.read_from_hdx(dataset_filter)
+    resources = dataset.get_resources()
+    download_paths = []
+    for resource in resources:
+        if fnmatch.fnmatch(resource["name"], resource_filter):
+            expected_file_path = os.path.join(download_directory, f"{resource['name']}")
+            if os.path.exists(expected_file_path):
+                print(f"Expected file {expected_file_path} is already present, continuing")
+                download_paths.append(expected_file_path)
+            else:
+                print(f"Downloading {resource['name']}...")
+                resource_url, resource_file = resource.download(folder=download_directory)
+                print(f"...from {resource_url}")
+                download_paths.append(resource_file)
+
+    return download_paths
 
 
 def configure_hdx_connection(hdx_site: str, verbose: bool = True):
