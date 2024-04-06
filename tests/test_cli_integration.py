@@ -52,7 +52,10 @@ def test_configuration():
     command = show_configuration
     cli_arguments = []
 
-    expected_outputs = ['hdx_key: "*****', ' url: "https://stage.data-humdata-org.ahconu.org"']
+    expected_outputs = [
+        "Values of relevant environment variables (used in absence of supplied values):",
+        ' url: "https://stage.data-humdata-org.ahconu.org"',
+    ]
 
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
 

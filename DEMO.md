@@ -162,6 +162,13 @@ hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name=
 
 Without the `--live` flag no update on HDX is made.
 
+The resources of a dataset can be downloaded with a commandline like:
+
+```shell
+hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --resource_filter=* --hdx_site=stage
+```
+by default files are downloaded to a subdirectory `output` with no download if a file already exists.
+
 ## Future Work
 
 Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
