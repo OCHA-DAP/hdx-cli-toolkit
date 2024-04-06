@@ -6,6 +6,7 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
 
 ```
   configuration              Print configuration information to terminal
+  download                   Download dataset resources from HDX
   get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
@@ -110,9 +111,4 @@ New features should be developed against a GitHub issue on a separate branch wit
 
 ## Publication
 
-Publication to PyPI is done using `hatch` which requires the following environment variables:
-
-```
-HATCH_INDEX_USER - set to `__token__`
-HATCH_INDEX_AUTH - API key provided by PyPI
-```
+Publication to PyPI is done automatically when a release is created.
