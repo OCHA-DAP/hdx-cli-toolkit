@@ -14,3 +14,5 @@ tests/fixtures/test.csv
 src/temp/
 
 dist/
+
+src/hdx_cli_toolkit/output/

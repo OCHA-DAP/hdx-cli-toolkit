@@ -162,6 +162,13 @@ hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name=
 
 Without the `--live` flag no update on HDX is made.
 
+The resources of a dataset can be downloaded with a commandline like:
+
+```shell
+hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --resource_filter=* --hdx_site=stage
+```
+by default files are downloaded to a subdirectory `output` with no download if a file already exists.
+
 ## Future Work
 
 Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
@@ -184,4 +191,5 @@ hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
 hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
 hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name="test_resource_1" --hdx_site=stage --resource_file_path=test-2.csv --live
+ hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --hdx_site=stage
 ```

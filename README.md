@@ -58,6 +58,7 @@ Options:
 
 Commands:
   configuration              Print configuration information to terminal
+  download                   Download dataset resources from HDX
   get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX

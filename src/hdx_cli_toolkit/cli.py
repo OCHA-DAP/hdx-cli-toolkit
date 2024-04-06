@@ -31,6 +31,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     update_resource_in_hdx,
     get_filtered_datasets,
     decorate_dataset_with_extras,
+    download_hdx_datasets,
 )
 
 
@@ -486,3 +487,45 @@ def update_resource(
         print(status, flush=True)
 
     print(f"Resource update took {time.time() - t0:.2f} seconds")
+
+
+@hdx_toolkit.command(name="download")
+@click.option(
+    "--dataset",
+    is_flag=False,
+    default="all",
+    help="target dataset for download",
+)
+@click.option(
+    "--resource_filter",
+    is_flag=False,
+    default="*",
+    help=("a resource name filter"),
+)
+@click.option(
+    "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value",
+)
+@click.option("--download_directory", is_flag=False, default=None, help="target_directory")
+def download(
+    dataset: str = "",
+    resource_filter: str = "*",
+    hdx_site: str = "stage",
+    download_directory: str = None,
+):
+    """Download dataset resources from HDX"""
+    print_banner("download")
+    if download_directory is None:
+        download_directory = os.path.join(os.path.dirname(__file__), "output")
+    download_paths = download_hdx_datasets(
+        dataset_filter=dataset,
+        resource_filter=resource_filter,
+        hdx_site=hdx_site,
+        download_directory=download_directory,
+    )
+    print("The following files were downloaded:", flush=True)
+    for download_path in download_paths:
+        print(download_path, flush=True)
