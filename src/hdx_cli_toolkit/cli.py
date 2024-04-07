@@ -422,8 +422,9 @@ def showcase(
     print(f"Adding showcase defined at '{attributes_file_path}'")
     t0 = time.time()
     statuses = add_showcase(showcase_name, hdx_site, attributes_file_path)
-    for status in statuses:
-        print(status, flush=True)
+    if statuses:
+        for status in statuses:
+            print(status, flush=True)
 
     print(f"Showcase update took {time.time() - t0:.2f} seconds")
 
@@ -483,10 +484,11 @@ def update_resource(
     statuses = update_resource_in_hdx(
         dataset_name, resource_name, hdx_site, resource_file_path, live, description=description
     )
-    for status in statuses:
-        print(status, flush=True)
+    if statuses:
+        for status in statuses:
+            print(status, flush=True)
 
-    print(f"Resource update took {time.time() - t0:.2f} seconds")
+        print(f"Resource update took {time.time() - t0:.2f} seconds")
 
 
 @hdx_toolkit.command(name="download")
