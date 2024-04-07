@@ -10,6 +10,8 @@ from hdx_cli_toolkit.utilities import (
     read_attributes,
     print_banner,
     print_table_from_list_of_dicts,
+    str_to_bool,
+    make_conversion_func,
 )
 
 
@@ -104,3 +106,19 @@ def test_print_table_from_list_of_dicts(capfd):
         if len(part) == 0:
             continue
         assert len(part) in [29, 31]
+
+
+def test_str_to_bool():
+    result = str_to_bool("true")
+
+    assert result
+    result = str_to_bool("False")
+
+    assert not result
+
+
+def test_make_conversion_func():
+    test_values = [(1, "int"), ("string", "str"), (1.4, "float"), (True, "bool")]
+    for test_value in test_values:
+        _, func_name = make_conversion_func(test_value[0])
+        assert func_name == test_value[1]
