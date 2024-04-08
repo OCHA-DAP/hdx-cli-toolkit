@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import click
+
 import fnmatch
 import functools
 import json
@@ -11,6 +11,7 @@ import traceback
 
 from pathlib import Path
 
+import click
 import yaml
 
 from hdx.api.configuration import Configuration, ConfigurationError

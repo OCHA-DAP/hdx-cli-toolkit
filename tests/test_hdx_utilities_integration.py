@@ -11,7 +11,13 @@ import pytest
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
 
-from hdx_cli_toolkit.hdx_utilities import update_resource_in_hdx, configure_hdx_connection
+from hdx_cli_toolkit.hdx_utilities import (
+    update_resource_in_hdx,
+    configure_hdx_connection,
+    update_values_in_hdx,
+)
+
+from hdx_cli_toolkit.utilities import make_conversion_func
 
 
 DATASET_NAME = "hdx_cli_toolkit_test"
@@ -114,3 +120,19 @@ def test_add_resource():
     assert revised_resources[1].data["url"].endswith("test.csv")
 
     assert revised_resources[0].data["size"] > original_resources[0].data["size"]
+
+
+def test_update_key():
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    key = "notes"
+    value = "new notes"
+    conversion_func, _ = make_conversion_func(value)
+    n_changed, n_failures = update_values_in_hdx(
+        [dataset], key, value, conversion_func, hdx_site="stage"
+    )
+
+    assert n_changed == 1
+    assert n_failures == 0
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+
+    assert dataset["notes"] == "new notes"
