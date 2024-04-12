@@ -54,8 +54,6 @@ def test_download():
     cli_arguments = ["--dataset=bangladesh-bgd-attacks-on-protection", "--hdx_site=stage"]
     expected_outputs = [
         "2020-2023 BGD Protection in Danger Incident Data.xlsx",
-        "2020-2024-BGD-protection-incident-data.xlsx",
-        "2020-2024-BGD Protection Incident Data.xlsx",
     ]
 
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")

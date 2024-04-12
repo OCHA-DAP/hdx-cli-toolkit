@@ -54,7 +54,7 @@ def test_censor_long_secret():
 
 def test_read_attributes():
     assert len(REFERENCE_ATTRIBUTES["tags"]) == 3
-    assert REFERENCE_ATTRIBUTES["parent_dataset"] == "climada-litpop-dataset"
+    assert REFERENCE_ATTRIBUTES["parent_dataset"] == "hdx_cli_toolkit_test"
 
 
 def test_read_attributes_json():

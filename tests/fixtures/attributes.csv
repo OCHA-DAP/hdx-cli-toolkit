@@ -1,7 +1,7 @@
 dataset_name,timestamp,attribute,value,secondary_value
 climada-litpop-showcase,2024-02-21T08:11:10.725670,entity_type,"showcase",
 climada-litpop-showcase,2024-02-21T08:11:10.725670,name,"climada-litpop-showcase",
-climada-litpop-showcase,2024-02-21T08:11:10.725670,parent_dataset,"climada-litpop-dataset",
+climada-litpop-showcase,2024-02-21T08:11:10.725670,parent_dataset,"hdx_cli_toolkit_test",
 climada-litpop-showcase,2024-02-21T08:11:10.725670,title,"CLIMADA LitPop Methodology Documentation",
 climada-litpop-showcase,2024-02-21T08:11:10.725670,notes,"Click the image to go to the original source for this data",
 climada-litpop-showcase,2024-02-21T08:11:10.725670,url,https://climada-python.readthedocs.io/en/stable/tutorial/climada_entity_LitPop.html,

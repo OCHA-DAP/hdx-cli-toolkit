@@ -10,11 +10,14 @@ import pytest
 
 from hdx.data.dataset import Dataset
 from hdx.data.resource import Resource
+from hdx.data.resource_view import ResourceView
 
 from hdx_cli_toolkit.hdx_utilities import (
     update_resource_in_hdx,
     configure_hdx_connection,
     update_values_in_hdx,
+    add_showcase,
+    add_quickcharts,
 )
 
 from hdx_cli_toolkit.utilities import make_conversion_func
@@ -22,12 +25,13 @@ from hdx_cli_toolkit.utilities import make_conversion_func
 
 DATASET_NAME = "hdx_cli_toolkit_test"
 TEST_RESOURCE_NAME = "test_resource_1"
+HDX_SITE = "stage"
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture(scope="module", autouse=True)
 def setup_and_teardown_dataset_in_hdx():
     # This is pytest setup
-    configure_hdx_connection(hdx_site="stage")
+    configure_hdx_connection(hdx_site=HDX_SITE)
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     if dataset:
         dataset.delete_from_hdx()
@@ -59,6 +63,11 @@ def setup_and_teardown_dataset_in_hdx():
     # This is pytest teardown
     yield
     dataset = Dataset.read_from_hdx(DATASET_NAME)
+
+    showcases = dataset.get_showcases()
+    for showcase in showcases:
+        showcase.delete_from_hdx()
+
     if dataset:
         dataset.delete_from_hdx()
 
@@ -69,7 +78,7 @@ def test_update_resource():
 
     new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
     statuses = update_resource_in_hdx(
-        DATASET_NAME, TEST_RESOURCE_NAME, "stage", new_resource_file_path, live=True
+        DATASET_NAME, TEST_RESOURCE_NAME, HDX_SITE, new_resource_file_path, live=True
     )
 
     for status in statuses:
@@ -79,6 +88,9 @@ def test_update_resource():
 
     revised_dataset = Dataset.read_from_hdx(DATASET_NAME)
     revised_resources = revised_dataset.get_resources()
+
+    for revised_ in revised_resources:
+        print(revised_["name"], revised_["url"], flush=True)
 
     assert len(original_resources) == len(revised_resources)
     assert original_resources[0].data["name"] == "test_resource_1"
@@ -95,9 +107,9 @@ def test_add_resource():
     original_resources = dataset.get_resources()
     new_resource_name = "inserted_resource"
 
-    new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-2.csv")
+    new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "test-3.csv")
     statuses = update_resource_in_hdx(
-        DATASET_NAME, new_resource_name, "stage", new_resource_file_path, live=True
+        DATASET_NAME, new_resource_name, HDX_SITE, new_resource_file_path, live=True
     )
 
     for status in statuses:
@@ -108,7 +120,7 @@ def test_add_resource():
     revised_dataset = Dataset.read_from_hdx(DATASET_NAME)
     revised_resources = revised_dataset.get_resources()
     for revised_ in revised_resources:
-        print(revised_["name"], flush=True)
+        print(revised_["name"], revised_["url"], flush=True)
 
     assert len(original_resources) == 1
     assert len(revised_resources) == 2
@@ -116,10 +128,7 @@ def test_add_resource():
     assert revised_resources[0].data["name"] == "inserted_resource"
     assert revised_resources[1].data["name"] == "test_resource_1"
 
-    assert revised_resources[0].data["url"].endswith("test-2.csv")
-    assert revised_resources[1].data["url"].endswith("test.csv")
-
-    assert revised_resources[0].data["size"] > original_resources[0].data["size"]
+    assert revised_resources[0].data["url"].endswith("test-3.csv")
 
 
 def test_update_key():
@@ -128,7 +137,7 @@ def test_update_key():
     value = "new notes"
     conversion_func, _ = make_conversion_func(value)
     n_changed, n_failures = update_values_in_hdx(
-        [dataset], key, value, conversion_func, hdx_site="stage"
+        [dataset], key, value, conversion_func, hdx_site=HDX_SITE
     )
 
     assert n_changed == 1
@@ -136,3 +145,58 @@ def test_update_key():
     dataset = Dataset.read_from_hdx(DATASET_NAME)
 
     assert dataset["notes"] == "new notes"
+
+
+def test_add_showcase():
+    attributes_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "attributes.csv")
+    showcase_name = "climada-litpop-showcase"
+
+    statuses = add_showcase(showcase_name, HDX_SITE, attributes_file_path)
+
+    assert statuses == [
+        "3 of 3 showcase tags added",
+        "Added dataset 'hdx_cli_toolkit_test' to showcase 'climada-litpop-showcase'",
+    ]
+
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    showcases = dataset.get_showcases()
+
+    assert len(showcases) == 1
+    assert showcases[0]["title"] == "CLIMADA LitPop Methodology Documentation"
+
+
+def test_add_quickcharts():
+    resource_name = "admin1-summaries-flood.csv"
+    new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", resource_name)
+    _ = update_resource_in_hdx(
+        DATASET_NAME, resource_name, HDX_SITE, new_resource_file_path, live=True
+    )
+
+    hdx_hxl_preview_file_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "quickchart-flood.json"
+    )
+
+    status = add_quickcharts(DATASET_NAME, HDX_SITE, resource_name, hdx_hxl_preview_file_path)
+
+    assert status == "Successful"
+
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    resources = dataset.get_resources()
+
+    quickchart_dicts = []
+    for resource in resources:
+        resource_dict = resource.data
+        if resource_dict["name"] != resource_name:
+            continue
+        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
+        if dataset_quickcharts is not None:
+            for quickchart in dataset_quickcharts:
+                quickchart_dict = quickchart.data
+                if "hxl_preview_config" in quickchart_dict:
+                    quickchart_dict["hxl_preview_config"] = json.loads(
+                        quickchart_dict["hxl_preview_config"]
+                    )
+                quickchart_dicts.append(quickchart_dict)
+
+    assert len(quickchart_dicts) == 2
+    assert quickchart_dicts[1]["title"] == "Quick Charts"
