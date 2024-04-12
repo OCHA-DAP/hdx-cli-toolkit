@@ -8,7 +8,6 @@ from unittest.mock import patch
 from hdx_cli_toolkit.hdx_utilities import add_showcase, get_filtered_datasets
 
 
-# @patch("hdx.data.showcase.Showcase")
 @patch("hdx_cli_toolkit.hdx_utilities.Showcase")
 @patch("hdx.data.dataset.Dataset.read_from_hdx")
 def test_add_showcase(mock_hdx, mock_showcase):

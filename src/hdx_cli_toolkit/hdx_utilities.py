@@ -3,6 +3,7 @@
 
 
 import fnmatch
+import functools
 import json
 import os
 import time
@@ -10,6 +11,7 @@ import traceback
 
 from pathlib import Path
 
+import click
 import yaml
 
 from hdx.api.configuration import Configuration, ConfigurationError
@@ -24,6 +26,25 @@ from hdx.data.user import User
 from hdx_cli_toolkit.utilities import read_attributes
 
 
+def hdx_error_handler(f):
+    @functools.wraps(f)
+    def inner(*args, **kwargs):
+        try:
+            return f(*args, **kwargs)
+        except HDXError:
+            if "Authorization Error" in traceback.format_exc():
+                click.secho(
+                    "Could not perform operation on HDX because of an authorization error",
+                    fg="red",
+                    color=True,
+                )
+            else:
+                print(traceback.format_exc)
+
+    return inner
+
+
+@hdx_error_handler
 def get_filtered_datasets(
     organization: str = "",
     dataset_filter: str = "*",
@@ -82,6 +103,7 @@ def get_filtered_datasets(
     return filtered_datasets
 
 
+@hdx_error_handler
 def update_values_in_hdx(
     filtered_datasets: list[Dataset], key, value, conversion_func, hdx_site: str = "stage"
 ):
@@ -115,14 +137,7 @@ def update_values_in_hdx(
                 flush=True,
             )
         except (HDXError, KeyError):
-            if "Authorization Error" in traceback.format_exc():
-                print(
-                    f"Could not update {dataset['name']} on '{hdx_site}' "
-                    "because of an Authorization Error",
-                    flush=True,
-                )
-            else:
-                print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
             n_failures += 1
 
             print(
@@ -134,6 +149,7 @@ def update_values_in_hdx(
     return n_changed, n_failures
 
 
+@hdx_error_handler
 def get_organizations_from_hdx(organization: str, hdx_site: str = "stage"):
     configure_hdx_connection(hdx_site)
     filtered_organizations = []
@@ -146,6 +162,7 @@ def get_organizations_from_hdx(organization: str, hdx_site: str = "stage"):
     return filtered_organizations
 
 
+@hdx_error_handler
 def get_users_from_hdx(user: str, hdx_site: str = "stage"):
     configure_hdx_connection(hdx_site=hdx_site)
 
@@ -154,6 +171,7 @@ def get_users_from_hdx(user: str, hdx_site: str = "stage"):
     return user_list
 
 
+@hdx_error_handler
 def decorate_dataset_with_extras(
     dataset: Dataset, hdx_site: str = "stage", verbose: bool = False
 ) -> dict:
@@ -194,6 +212,7 @@ def decorate_dataset_with_extras(
     return output_dict
 
 
+@hdx_error_handler
 def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -> list[str]:
     configure_hdx_connection(hdx_site)
     statuses = []
@@ -220,6 +239,7 @@ def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -
     return statuses
 
 
+@hdx_error_handler
 def update_resource_in_hdx(
     dataset_name: str,
     resource_name: str,
@@ -312,6 +332,7 @@ def update_resource_in_hdx(
     return statuses
 
 
+@hdx_error_handler
 def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_path):
     configure_hdx_connection(hdx_site=hdx_site)
     status = "Successful"
@@ -348,6 +369,7 @@ def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_
     return status
 
 
+@hdx_error_handler
 def download_hdx_datasets(
     dataset_filter: str,
     resource_filter: str = "*",
@@ -381,6 +403,7 @@ def download_hdx_datasets(
     return download_paths
 
 
+@hdx_error_handler
 def configure_hdx_connection(hdx_site: str, verbose: bool = True):
     try:
         Configuration.create(

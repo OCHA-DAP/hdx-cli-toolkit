@@ -3,7 +3,15 @@
 
 from click.testing import CliRunner
 
-from hdx_cli_toolkit.cli import list_datasets, show_configuration, download
+from hdx_cli_toolkit.cli import (
+    show_configuration,
+    download,
+    get_organization_metadata,
+    get_user_metadata,
+    list_datasets,
+    print_datasets,
+    add_quickcharts,
+)
 
 # These are the commandline tests:
 
@@ -29,6 +37,52 @@ def test_help():
     cli_test_template(command, cli_arguments, expected_output, forbidden_output="")
 
 
+def test_configuration():
+    command = show_configuration
+    cli_arguments = []
+
+    expected_outputs = [
+        "Values of relevant environment variables (used in absence of supplied values):",
+        ' url: "https://stage.data-humdata-org.ahconu.org"',
+    ]
+
+    cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
+
+
+def test_download():
+    command = download
+    cli_arguments = ["--dataset=bangladesh-bgd-attacks-on-protection", "--hdx_site=stage"]
+    expected_outputs = [
+        "2020-2023 BGD Protection in Danger Incident Data.xlsx",
+    ]
+
+    cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
+
+
+def test_get_organization_metadata():
+    command = get_organization_metadata
+    cli_arguments = ["--organization=hdx"]
+
+    expected_outputs = [
+        "hdx-collaboration",
+        "bb161f77-39f4-433c-96ac-1df48b67454d",
+    ]
+
+    cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
+
+
+def test_get_user_metadata():
+    command = get_user_metadata
+    cli_arguments = ["--user=hopkinson", "--verbose"]
+
+    expected_outputs = [
+        "{",
+        '"id": "972627a5-4f23',
+    ]
+
+    cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
+
+
 def test_list_datasets():
     command = list_datasets
     cli_arguments = [
@@ -48,26 +102,14 @@ def test_list_datasets():
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
 
 
-def test_configuration():
-    command = show_configuration
-    cli_arguments = []
-
-    expected_outputs = [
-        "Values of relevant environment variables (used in absence of supplied values):",
-        ' url: "https://stage.data-humdata-org.ahconu.org"',
+def test_print():
+    command = print_datasets
+    cli_arguments = [
+        "--dataset_filter=wfp-food-prices-for-nigeria",
+        "--with_extras",
     ]
 
-    cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
-
-
-def test_download():
-    command = download
-    cli_arguments = ["--dataset=bangladesh-bgd-attacks-on-protection", "--hdx_site=stage"]
-    expected_outputs = [
-        "2020-2023 BGD Protection in Danger Incident Data.xlsx",
-        "2020-2024-BGD-protection-incident-data.xlsx",
-        "2020-2024-BGD Protection Incident Data.xlsx",
-    ]
+    expected_outputs = ['"resources"', '"quickcharts"', '"showcases"']
 
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
 

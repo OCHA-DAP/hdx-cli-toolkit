@@ -1,0 +1,344 @@
+country_name,region_name,latitude,longitude,aggregation,indicator,value
+#country,#adm1+name,#geo+lat,#geo+lon,,#indicator+name,#indicator+num
+Afghanistan,Kabul,34.5665,69.5477,sum,flood,540.0
+Afghanistan,Kapisa,34.8563,69.6701,sum,flood,73.0
+Afghanistan,Parwan,34.9132,68.9302,sum,flood,428.0
+Afghanistan,Maidan Wardak,34.3132,68.4925,sum,flood,477.0
+Afghanistan,Logar,34.0294,69.3593,sum,flood,352.0
+Afghanistan,Nangarhar,34.3387,70.575,sum,flood,3050.0
+Afghanistan,Laghman,34.5843,70.2952,sum,flood,896.0
+Afghanistan,Panjsher,35.4474,69.8021,sum,flood,163.0
+Afghanistan,Baghlan,35.5765,68.8048,sum,flood,120.0
+Afghanistan,Bamyan,34.7811,67.2836,sum,flood,606.0
+Afghanistan,Ghazni,32.5844,67.9207,sum,flood,5058.0
+Afghanistan,Paktika,32.7423,69.0863,sum,flood,4690.0
+Afghanistan,Paktya,33.7615,69.6473,sum,flood,1495.0
+Afghanistan,Khost,33.2808,69.7702,sum,flood,2739.0
+Afghanistan,Kunar,34.8653,71.0193,sum,flood,886.0
+Afghanistan,Nuristan,35.3789,70.8291,sum,flood,828.0
+Afghanistan,Badakhshan,37.0611,72.7067,sum,flood,3516.0
+Afghanistan,Takhar,37.3931,69.5515,sum,flood,1536.0
+Afghanistan,Kunduz,37.176,68.635,sum,flood,4302.0
+Afghanistan,Samangan,35.7297,67.8238,sum,flood,52.0
+Afghanistan,Balkh,37.2934,66.9533,sum,flood,6048.0
+Afghanistan,Sar E Pul,35.4559,66.3947,sum,flood,112.0
+Afghanistan,Ghor,33.7033,65.0825,sum,flood,85.0
+Afghanistan,Daykundi,33.7255,66.2829,sum,flood,122.0
+Afghanistan,Uruzgan,32.4488,65.4052,sum,flood,544.0
+Afghanistan,Zabul,31.9401,67.2206,sum,flood,109.0
+Afghanistan,Kandahar,31.8505,65.9916,sum,flood,761.0
+Afghanistan,Jawzjan,37.4242,66.0202,sum,flood,3140.0
+Afghanistan,Faryab,35.9436,64.8288,sum,flood,175.0
+Afghanistan,Hilmand,32.0372,64.8622,sum,flood,396.0
+Afghanistan,Badghis,34.9756,64.0154,sum,flood,13.0
+Afghanistan,Hirat,34.0795,60.889,sum,flood,993.0
+Afghanistan,Farah,31.6491,61.2811,sum,flood,8921.0
+Afghanistan,Nimroz,31.0129,61.868,sum,flood,17239.0
+Burundi,Bururi,-3.7493,29.7915,sum,flood,2.0
+Burundi,Makamba,-4.3458,29.6911,sum,flood,42.0
+Burundi,Rumonge,-4.0121,29.4344,sum,flood,1.0
+Burundi,Cankuzo,-3.0958,30.4946,sum,flood,29.0
+Burundi,Cibitoke,-2.8712,29.2896,sum,flood,2.0
+Burundi,Gitega,-3.3984,29.8926,sum,flood,4.0
+Burundi,Karuzi,-3.1831,30.1468,sum,flood,25.0
+Burundi,Bujumbura Mairie,-3.3945,29.3468,sum,flood,1.0
+Burundi,Kirundo,-2.4336,30.2596,sum,flood,311.0
+Burundi,Bujumbura Rural,-3.5764,29.3446,sum,flood,1.0
+Burundi,Muramvya,-3.3698,29.6657,sum,flood,1.0
+Burundi,Muyinga,-2.5666,30.4111,sum,flood,56.0
+Burundi,Mwaro,-3.5607,29.7421,sum,flood,2.0
+Burundi,Ngozi,-2.9136,30.0324,sum,flood,8.0
+Burundi,Rutana,-3.7404,30.2148,sum,flood,2.0
+Burundi,Ruyigi,-3.3576,30.2023,sum,flood,11.0
+Burundi,Kayanza,-2.9734,29.6702,sum,flood,2.0
+Central African Republic,Nana-Mambéré,6.2091,15.4894,sum,flood,451.0
+Central African Republic,Ouham Pendé,6.2747,16.1873,sum,flood,1485.0
+Central African Republic,Ombella M'Poko,5.0288,17.8887,sum,flood,635.0
+Central African Republic,Lobaye,3.7856,18.5957,sum,flood,60.0
+Central African Republic,Mambéré-Kadéï,5.3284,16.8656,sum,flood,8.0
+Central African Republic,Ouham,7.3599,17.8554,sum,flood,2911.0
+Central African Republic,Kémo,5.0772,19.5591,sum,flood,85.0
+Central African Republic,Nana-Gribizi,7.6614,19.394,sum,flood,91.0
+Central African Republic,Ouaka,5.0942,20.2124,sum,flood,256.0
+Central African Republic,Bamingui-Bangoran,9.3849,21.2167,sum,flood,3189.0
+Central African Republic,Haute-Kotto,8.397,22.2288,sum,flood,4.0
+Central African Republic,Vakaga,9.8307,21.8214,sum,flood,4757.0
+Central African Republic,Basse-Kotto,4.3913,21.0331,sum,flood,247.0
+Central African Republic,Mbomou,4.2924,22.3256,sum,flood,57.0
+Central African Republic,Bangui,4.3624,18.6389,sum,flood,3.0
+Chad,Batha,12.8951,17.5484,sum,flood,37993.0
+Chad,Chari-Baguirmi,10.9692,16.0569,sum,flood,47578.0
+Chad,Guéra,10.9147,19.0198,sum,flood,2067.0
+Chad,Hadjer-Lamis,12.4039,16.788,sum,flood,629.0
+Chad,Lac,13.4481,14.6639,sum,flood,8.0
+Chad,Logone Occidental,9.0094,16.3943,sum,flood,941.0
+Chad,Logone Oriental,8.6664,16.54,sum,flood,10367.0
+Chad,Mandoul,8.7233,17.7328,sum,flood,13041.0
+Chad,Mayo-Kebbi Est,10.4871,15.3772,sum,flood,59162.0
+Chad,Mayo-Kebbi Ouest,9.6551,14.2766,sum,flood,1353.0
+Chad,Moyen-Chari,9.6259,18.6758,sum,flood,28285.0
+Chad,Ouaddaï,13.3669,20.8101,sum,flood,15.0
+Chad,Salamat,10.8779,20.2085,sum,flood,34318.0
+Chad,Tandjilé,9.5662,16.1467,sum,flood,15063.0
+Chad,Wadi Fira,14.1457,22.069,sum,flood,12.0
+Chad,N'Djamena,12.0683,15.1015,sum,flood,807.0
+Chad,Barh-El-Gazel,13.1341,16.6072,sum,flood,6.0
+Chad,Sila,11.8176,21.5628,sum,flood,4903.0
+Chad,Tibesti,20.5978,17.7755,sum,flood,75.0
+Colombia,Antioquia,7.2044,-74.871,sum,flood,16320.0
+Colombia,Atlántico,10.5231,-74.8965,sum,flood,9004.0
+Colombia,"Bogotá, D.C.",4.4163,-74.1675,sum,flood,216.0
+Colombia,Bolívar,8.943,-74.4245,sum,flood,181355.0
+Colombia,Arauca,6.5642,-70.1691,sum,flood,8687.0
+Colombia,Caldas,5.5984,-74.7029,sum,flood,342.0
+Colombia,Caquetá,-0.1571,-73.8147,sum,flood,2032.0
+Colombia,Cauca,2.842,-76.804,sum,flood,976.0
+Colombia,Vichada,5.3498,-68.7456,sum,flood,10908.0
+Colombia,Córdoba,8.5505,-75.3878,sum,flood,27569.0
+Colombia,Cundinamarca,5.1316,-73.9995,sum,flood,2932.0
+Colombia,Chocó,7.2046,-76.9943,sum,flood,3080.0
+Colombia,Huila,2.6724,-75.4586,sum,flood,4235.0
+Colombia,Magdalena,9.9496,-74.5556,sum,flood,79945.0
+Colombia,Meta,3.9699,-72.0045,sum,flood,1694.0
+Colombia,Nariño,1.8395,-77.9661,sum,flood,1450.0
+Colombia,Quindio,4.2109,-75.6808,sum,flood,2.0
+Colombia,Risaralda,4.7923,-75.4839,sum,flood,30.0
+Colombia,Sucre,8.8515,-74.8668,sum,flood,80724.0
+Colombia,Tolima,4.1146,-75.0061,sum,flood,703.0
+Colombia,Valle del Cauca,4.1682,-76.2475,sum,flood,2460.0
+Colombia,Boyacá,5.8939,-73.686,sum,flood,3107.0
+Colombia,Casanare,5.4651,-70.8505,sum,flood,5742.0
+Colombia,Putumayo,0.0164,-74.6357,sum,flood,973.0
+Colombia,"Archipiélago de San Andrés, Providencia y Santa Catalina",12.5798,-81.6894,sum,flood,1.0
+Colombia,Amazonas,-2.1676,-71.2984,sum,flood,4369.0
+Colombia,Guainía,3.5421,-68.8062,sum,flood,825.0
+Colombia,Guaviare,2.7352,-71.7041,sum,flood,381.0
+Colombia,Vaupés,-0.1706,-70.315,sum,flood,105.0
+Colombia,Santander,7.5168,-73.8479,sum,flood,31721.0
+Colombia,Norte de Santander,7.8971,-72.8038,sum,flood,418.0
+Colombia,Cesar,8.9454,-73.7301,sum,flood,38468.0
+Colombia,La Guajira,11.7913,-72.4175,sum,flood,12580.0
+DR Congo,Kinshasa,-4.293,15.5109,sum,flood,605.0
+DR Congo,Kongo-Central,-5.4599,13.729,sum,flood,193.0
+DR Congo,Kwango,-6.2119,17.8633,sum,flood,9117.0
+DR Congo,Kwilu,-3.9743,18.8894,sum,flood,22300.0
+DR Congo,Maï-Ndombe,-2.6302,18.0656,sum,flood,42609.0
+DR Congo,Equateur,1.0956,18.146,sum,flood,707.0
+DR Congo,Sud-Ubangi,3.038,18.4568,sum,flood,922.0
+DR Congo,Nord-Ubangi,4.6411,20.5545,sum,flood,1156.0
+DR Congo,Mongala,2.0809,21.3135,sum,flood,78.0
+DR Congo,Tshuapa,-1.3501,19.8674,sum,flood,6.0
+DR Congo,Tshopo,0.8983,24.3499,sum,flood,116.0
+DR Congo,Bas-Uele,3.7735,24.0317,sum,flood,244.0
+DR Congo,Ituri,1.3204,30.4117,sum,flood,430.0
+DR Congo,Nord-Kivu,-1.2809,29.3023,sum,flood,2712.0
+DR Congo,Sud-Kivu,-3.2999,29.1239,sum,flood,21.0
+DR Congo,Maniema,-3.4218,25.7694,sum,flood,272.0
+DR Congo,Haut-Katanga,-10.766,28.0727,sum,flood,12759.0
+DR Congo,Lualaba,-9.614,23.2536,sum,flood,33986.0
+DR Congo,Haut-Lomami,-8.3738,25.6815,sum,flood,30686.0
+DR Congo,Tanganyika,-7.2248,27.9436,sum,flood,1191.0
+DR Congo,Lomami,-7.1162,23.8579,sum,flood,1915.0
+DR Congo,Kasaï-Oriental,-6.119,23.6852,sum,flood,151.0
+DR Congo,Sankuru,-4.3263,22.9396,sum,flood,2184.0
+DR Congo,Kasaï-Central,-6.9478,22.6668,sum,flood,2857.0
+DR Congo,Kasaï,-4.8899,20.8668,sum,flood,10161.0
+Ethiopia,Tigray,13.6019,37.6347,sum,flood,157.0
+Ethiopia,Amhara,11.898,37.7416,sum,flood,4847.0
+Ethiopia,Oromia,7.8944,38.5624,sum,flood,14547.0
+Ethiopia,Somali,5.8815,43.9905,sum,flood,11662.0
+Ethiopia,SNNP,4.9574,36.1636,sum,flood,5166.0
+Ethiopia,South West Ethiopia,6.6941,35.9644,sum,flood,238.0
+Ethiopia,Gambela,8.0996,33.6424,sum,flood,6251.0
+Ethiopia,Harari,9.274,42.0917,sum,flood,1.0
+Ethiopia,Addis Ababa,8.9364,38.8289,sum,flood,30.0
+Ethiopia,Dire Dawa,9.6931,42.1495,sum,flood,27.0
+Ethiopia,Sidama,6.9145,38.3127,sum,flood,33.0
+Ethiopia,Afar,12.3575,40.8736,sum,flood,50049.0
+Haiti,Centre,18.8793,-71.9278,sum,flood,508.0
+Haiti,North-West,19.9168,-72.8871,sum,flood,43.0
+Haiti,South-East,18.2066,-72.4637,sum,flood,10.0
+Haiti,South,18.1161,-73.6222,sum,flood,252.0
+Haiti,Nippes,18.4299,-73.1278,sum,flood,144.0
+Haiti,Grande'Anse,18.6123,-74.095,sum,flood,40.0
+Haiti,West,18.5882,-72.2347,sum,flood,925.0
+Haiti,North,19.7594,-72.2746,sum,flood,66.0
+Haiti,North-East,19.6989,-71.9455,sum,flood,60.0
+Haiti,Artibonite,19.3254,-72.6998,sum,flood,2570.0
+Mali,Sikasso,11.3018,-7.586,sum,flood,8782.0
+Mali,Mopti,14.6896,-4.4458,sum,flood,103453.0
+Mali,Gao,16.6223,-0.3633,sum,flood,6053.0
+Mali,Bamako,12.6273,-7.9741,sum,flood,125.0
+Mali,Menaka,16.6247,2.4246,sum,flood,9.0
+Mali,Kayes,13.429,-10.4943,sum,flood,9141.0
+Mali,Koulikoro,12.5916,-7.8038,sum,flood,6241.0
+Mali,Ségou,13.5711,-5.6518,sum,flood,21522.0
+Mali,Tombouctou,16.4155,-3.2014,sum,flood,7732.0
+Mozambique,Cabo Delgado,-11.8584,39.4775,sum,flood,2010.0
+Mozambique,Gaza,-24.3208,33.2994,sum,flood,45959.0
+Mozambique,Inhambane,-22.9003,34.5601,sum,flood,10486.0
+Mozambique,Manica,-19.1357,33.4308,sum,flood,2499.0
+Mozambique,Maputo,-25.3588,32.7256,sum,flood,20539.0
+Mozambique,Maputo City,-26.0064,32.559,sum,flood,118.0
+Mozambique,Nampula,-15.3874,39.7427,sum,flood,3063.0
+Mozambique,Niassa,-14.5941,35.8877,sum,flood,1349.0
+Mozambique,Sofala,-19.5165,34.706,sum,flood,33476.0
+Mozambique,Tete,-16.203,32.5728,sum,flood,28871.0
+Mozambique,Zambezia,-17.5463,36.7583,sum,flood,30828.0
+Myanmar,Kachin,24.682,96.9414,sum,flood,38542.0
+Myanmar,Kayah,19.4947,97.2194,sum,flood,3331.0
+Myanmar,Kayin,16.9,97.6302,sum,flood,23481.0
+Myanmar,Chin,22.9087,93.891,sum,flood,122.0
+Myanmar,Sagaing,23.335,95.5048,sum,flood,190698.0
+Myanmar,Tanintharyi,12.5676,98.4862,sum,flood,3777.0
+Myanmar,Magway,20.7376,94.9553,sum,flood,104415.0
+Myanmar,Mandalay,22.0926,95.8022,sum,flood,90312.0
+Myanmar,Mon,16.7067,97.4103,sum,flood,39442.0
+Myanmar,Rakhine,20.2273,93.1988,sum,flood,158912.0
+Myanmar,Yangon,16.8628,96.0923,sum,flood,77838.0
+Myanmar,Ayeyarwady,16.9347,95.2751,sum,flood,290978.0
+Myanmar,Nay Pyi Taw,19.9647,96.0872,sum,flood,1589.0
+Myanmar,Bago,17.9736,95.9589,sum,flood,138783.0
+Myanmar,Shan,20.8584,97.4729,sum,flood,33637.0
+Niger,Diffa,13.2493,12.4733,sum,flood,7.0
+Niger,Dosso,12.1019,3.1838,sum,flood,1736.0
+Niger,Tahoua,14.8391,5.3626,sum,flood,670.0
+Niger,Tillabery,13.5157,1.9348,sum,flood,557.0
+Niger,Zinder,14.6341,8.8891,sum,flood,51.0
+Niger,Niamey,13.4614,2.1264,sum,flood,85.0
+Niger,Agadez,17.1711,7.9155,sum,flood,26.0
+Nigeria,Adamawa,9.4497,12.1395,sum,flood,29962.0
+Nigeria,Taraba,8.6941,10.5381,sum,flood,66648.0
+Nigeria,Kwara,8.9372,5.4463,sum,flood,9116.0
+Nigeria,Osun,7.8915,4.5269,sum,flood,229.0
+Nigeria,Ogun,6.6853,3.8964,sum,flood,421.0
+Nigeria,Akwa Ibom,4.707,8.243,sum,flood,12.0
+Nigeria,Anambra,6.2622,6.7349,sum,flood,2818.0
+Nigeria,Bauchi,11.8813,10.2185,sum,flood,5087.0
+Nigeria,Bayelsa,5.0548,6.0956,sum,flood,404.0
+Nigeria,Benue,7.84,8.4506,sum,flood,12599.0
+Nigeria,Borno,11.9314,13.8259,sum,flood,18060.0
+Nigeria,Cross River,5.8496,8.2648,sum,flood,691.0
+Nigeria,Delta,5.7739,6.1309,sum,flood,4960.0
+Nigeria,Ebonyi,6.0438,8.2172,sum,flood,256.0
+Nigeria,Edo,6.9044,6.6251,sum,flood,954.0
+Nigeria,Ekiti,7.7673,5.417,sum,flood,50.0
+Nigeria,Federal Capital Territory,9.1347,7.4488,sum,flood,37.0
+Nigeria,Gombe,10.7668,11.4911,sum,flood,1104.0
+Nigeria,Imo,5.7077,6.7946,sum,flood,1.0
+Nigeria,Jigawa,12.3612,9.9292,sum,flood,12365.0
+Nigeria,Kaduna,10.054,7.2254,sum,flood,2976.0
+Nigeria,Kano,11.5723,8.5268,sum,flood,5305.0
+Nigeria,Katsina,12.8338,8.274,sum,flood,18.0
+Nigeria,Kebbi,11.291,4.2723,sum,flood,30446.0
+Nigeria,Kogi,7.942,6.6888,sum,flood,20299.0
+Nigeria,Lagos,6.5044,3.9312,sum,flood,2339.0
+Nigeria,Nasarawa,8.0185,7.9139,sum,flood,23070.0
+Nigeria,Niger,9.295,5.7537,sum,flood,38910.0
+Nigeria,Ondo,6.1792,4.7931,sum,flood,688.0
+Nigeria,Oyo,8.2037,3.7571,sum,flood,1234.0
+Nigeria,Plateau,8.8355,9.1302,sum,flood,348.0
+Nigeria,Rivers,5.4258,6.636,sum,flood,498.0
+Nigeria,Sokoto,13.459,5.4473,sum,flood,147.0
+Nigeria,Yobe,12.3413,10.9136,sum,flood,3083.0
+Nigeria,Zamfara,12.2405,5.2724,sum,flood,275.0
+Somalia,Middle Juba,0.9338,42.6333,sum,flood,4543.0
+Somalia,Lower Juba,0.1768,42.2755,sum,flood,1268.0
+Somalia,Gedo,3.1552,42.2247,sum,flood,732.0
+Somalia,Bari,10.6252,51.0825,sum,flood,158.0
+Somalia,Nugaal,7.8277,48.8438,sum,flood,7.0
+Somalia,Mudug,5.521,48.5612,sum,flood,374.0
+Somalia,Galgaduud,4.1682,47.0613,sum,flood,150.0
+Somalia,Hiraan,4.6666,45.1916,sum,flood,3368.0
+Somalia,Middle Shabelle,2.9063,45.5543,sum,flood,5676.0
+Somalia,Banadir,2.0133,45.308,sum,flood,29.0
+Somalia,Lower Shabelle,1.8045,44.4243,sum,flood,928.0
+Somalia,Bay,2.7712,43.6386,sum,flood,913.0
+Somalia,Bakool,3.9435,43.9196,sum,flood,359.0
+Sudan,Khartoum,15.4144,32.4702,sum,flood,6200.0
+Sudan,North Kordofan,12.8454,31.2751,sum,flood,801.0
+Sudan,North Darfur,13.9796,24.1148,sum,flood,553.0
+Sudan,Red Sea,18.2845,37.3708,sum,flood,724.0
+Sudan,Northern,19.3634,31.9304,sum,flood,9285.0
+Sudan,River Nile,17.795,33.8731,sum,flood,4740.0
+Sudan,South Darfur,10.1774,23.845,sum,flood,1242.0
+Sudan,West Darfur,12.8113,22.5641,sum,flood,146.0
+Sudan,East Darfur,9.6657,26.6269,sum,flood,67.0
+Sudan,Central Darfur,12.5399,23.4128,sum,flood,932.0
+Sudan,South Kordofan,10.6401,31.1356,sum,flood,234.0
+Sudan,Blue Nile,11.7373,34.0248,sum,flood,17.0
+Sudan,White Nile,14.1681,32.3329,sum,flood,31746.0
+Sudan,Kassala,16.486,36.0359,sum,flood,4386.0
+Sudan,Gedaref,13.5121,34.8947,sum,flood,5188.0
+Sudan,Sennar,13.2789,34.2604,sum,flood,2780.0
+Sudan,Aj Jazirah,14.2467,33.1691,sum,flood,1357.0
+Sudan,West Kordofan,10.8929,28.2714,sum,flood,468.0
+Syrian Arab Republic,Damascus,33.4679,36.3065,sum,flood,1.0
+Syrian Arab Republic,Aleppo,36.2079,37.7059,sum,flood,9817.0
+Syrian Arab Republic,Rural Damascus,33.0764,37.1221,sum,flood,2747.0
+Syrian Arab Republic,Homs,34.7047,36.8452,sum,flood,1943.0
+Syrian Arab Republic,Hama,35.1466,36.585,sum,flood,3713.0
+Syrian Arab Republic,Lattakia,35.6065,35.9601,sum,flood,393.0
+Syrian Arab Republic,Idleb,35.8318,36.8848,sum,flood,1331.0
+Syrian Arab Republic,Al-Hasakeh,36.4713,40.8205,sum,flood,1883.0
+Syrian Arab Republic,Deir-ez-Zor,35.166,40.7611,sum,flood,731.0
+Syrian Arab Republic,Tartous,34.7668,36.062,sum,flood,201.0
+Syrian Arab Republic,Ar-Raqqa,35.9441,38.5769,sum,flood,1353.0
+Syrian Arab Republic,Dar'a,32.9049,36.0953,sum,flood,25.0
+Syrian Arab Republic,As-Sweida,32.9691,37.0155,sum,flood,1290.0
+Ukraine,Autonomous Republic of Crimea,46.1831,33.646,sum,flood,114.0
+Ukraine,Vinnytska,49.0816,28.9673,sum,flood,51466.0
+Ukraine,Volynska,51.4173,24.974,sum,flood,19374.0
+Ukraine,Dnipropetrovska,48.2106,34.7172,sum,flood,177238.0
+Ukraine,Donetska,48.0079,37.3183,sum,flood,62529.0
+Ukraine,Zhytomyrska,50.4245,28.8548,sum,flood,6515.0
+Ukraine,Zakarpatska,48.3647,22.6023,sum,flood,6967.0
+Ukraine,Zaporizka,47.583,35.7751,sum,flood,47179.0
+Ukraine,Ivano-Frankivska,48.7652,25.1356,sum,flood,2153.0
+Ukraine,Kyivska,50.1833,30.5577,sum,flood,40511.0
+Ukraine,Kirovohradska,48.4078,31.6411,sum,flood,128956.0
+Ukraine,Luhanska,48.9516,39.0103,sum,flood,15103.0
+Ukraine,Lvivska,49.8863,23.9824,sum,flood,8645.0
+Ukraine,Mykolaivska,47.5559,31.8628,sum,flood,127178.0
+Ukraine,Odeska,46.741,30.0334,sum,flood,51934.0
+Ukraine,Poltavska,49.702,33.5754,sum,flood,91259.0
+Ukraine,Rivnenska,51.4108,26.4082,sum,flood,27636.0
+Ukraine,Sumska,51.1594,33.9633,sum,flood,49935.0
+Ukraine,Ternopilska,49.2876,25.7492,sum,flood,39207.0
+Ukraine,Kharkivska,49.5337,36.4025,sum,flood,46073.0
+Ukraine,Khersonska,46.7677,33.7096,sum,flood,33398.0
+Ukraine,Khmelnytska,49.3716,26.7304,sum,flood,38083.0
+Ukraine,Cherkaska,49.1761,31.1495,sum,flood,77717.0
+Ukraine,Chernivetska,48.4723,26.4871,sum,flood,3102.0
+Ukraine,Chernihivska,51.4621,32.1139,sum,flood,85573.0
+Ukraine,Kyiv,50.4,30.5954,sum,flood,1231.0
+Venezuela,Amazonas,3.8619,-67.2588,sum,flood,3937.0
+Venezuela,Barinas,8.2198,-68.9424,sum,flood,15332.0
+Venezuela,Bolívar,7.5243,-65.6104,sum,flood,60788.0
+Venezuela,Apure,7.2364,-68.071,sum,flood,194560.0
+Venezuela,Zulia,9.6946,-72.0438,sum,flood,61873.0
+Venezuela,Distrito Capital,10.476,-66.9482,sum,flood,30.0
+Venezuela,Anzoátegui,8.7148,-64.3044,sum,flood,42593.0
+Venezuela,Miranda,10.2657,-66.068,sum,flood,946.0
+Venezuela,Guárico,8.4554,-66.5496,sum,flood,88272.0
+Venezuela,La Guaira,10.6039,-66.8023,sum,flood,46.0
+Venezuela,Aragua,9.8309,-67.0834,sum,flood,4086.0
+Venezuela,Carabobo,10.1767,-67.8665,sum,flood,2726.0
+Venezuela,Táchira,8.0273,-71.7349,sum,flood,1717.0
+Venezuela,Falcón,11.2734,-69.4497,sum,flood,22363.0
+Venezuela,Lara,10.2486,-69.8745,sum,flood,3498.0
+Venezuela,Mérida,8.036,-71.3336,sum,flood,1371.0
+Venezuela,Trujillo,9.5295,-70.7013,sum,flood,698.0
+Venezuela,Cojedes,9.0003,-68.2666,sum,flood,11738.0
+Venezuela,Delta Amacuro,9.1332,-61.6353,sum,flood,17819.0
+Venezuela,Monagas,9.1977,-62.9424,sum,flood,17974.0
+Venezuela,Portuguesa,9.0196,-69.5351,sum,flood,9310.0
+Venezuela,Sucre,10.4339,-63.1687,sum,flood,6150.0
+Venezuela,Yaracuy,10.3621,-68.5912,sum,flood,711.0
+Yemen,Ma'rib,15.3782,45.2292,sum,flood,35.0
+Yemen,Abyan,13.4025,45.9666,sum,flood,14.0
+Yemen,Shabwah,13.7912,47.7511,sum,flood,5.0
+Yemen,Ta'iz,12.8605,43.3853,sum,flood,2.0
+Yemen,Al Hodeidah,13.8643,42.7403,sum,flood,83.0
+Yemen,Sana'a,15.5869,44.1077,sum,flood,6.0
+Yemen,Aden,12.836,44.9526,sum,flood,11.0
