@@ -3,6 +3,7 @@ echo "Executing read only hdx-toolkit commands"
 hdx-toolkit --help
 hdx-toolkit list --help
 hdx-toolkit configuration
+hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=list-test-1.csv
 rm list-test-1.csv

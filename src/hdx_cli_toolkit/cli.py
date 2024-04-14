@@ -32,6 +32,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     get_filtered_datasets,
     decorate_dataset_with_extras,
     download_hdx_datasets,
+    get_approved_tag_list,
 )
 
 
@@ -294,8 +295,19 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 
 
 @hdx_toolkit.command(name="configuration")
-def show_configuration():
+@click.option(
+    "--approved_tag_list",
+    is_flag=True,
+    default=False,
+    help="if present then print the list of approved tags",
+)
+def show_configuration(approved_tag_list: bool = False):
     """Print configuration information to terminal"""
+    if approved_tag_list:
+        approved_tags = get_approved_tag_list()
+        for approved_tag in approved_tags:
+            print(approved_tag, flush=True)
+        return
     print_banner("configuration")
     # Check files
     user_hdx_config_yaml = os.path.join(os.path.expanduser("~"), ".hdx_configuration.yaml")

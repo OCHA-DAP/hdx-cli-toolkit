@@ -8,10 +8,12 @@ import json
 import os
 import time
 import traceback
+import urllib3
 
 from pathlib import Path
 
 import click
+import urllib3.util
 import yaml
 
 from hdx.api.configuration import Configuration, ConfigurationError
@@ -22,6 +24,7 @@ from hdx.data.dataset import Dataset
 from hdx.data.showcase import Showcase
 from hdx.data.resource import Resource
 from hdx.data.user import User
+from hdx.utilities.path import script_dir_plus_file
 
 from hdx_cli_toolkit.utilities import read_attributes
 
@@ -416,3 +419,27 @@ def configure_hdx_connection(hdx_site: str, verbose: bool = True):
             print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
     except ConfigurationError:
         pass
+
+
+def get_approved_tag_list() -> list[str]:
+    approved_tag_list = []
+    default_hdx_config_yaml = script_dir_plus_file(
+        "hdx_base_configuration.yaml", ConfigurationError
+    )
+
+    with open(default_hdx_config_yaml, "r", encoding="utf-8") as file_handle:
+        hdx_config_dict = yaml.safe_load(file_handle)
+
+    tags_list_url = hdx_config_dict["tags_list_url"]
+
+    response = urllib3.request(
+        "GET", tags_list_url, timeout=60, retries=urllib3.util.Retry(90, backoff_factor=1.0)
+    )
+    if response.status == 200:
+        response_str = response.data.decode("utf-8")
+        approved_tag_list = response_str.split("\n")
+    else:
+        print("Could not retrieve approved tag list", flush=True)
+        print(f"The tag list url {tags_list_url} returned status {response.status}", flush=True)
+
+    return approved_tag_list
