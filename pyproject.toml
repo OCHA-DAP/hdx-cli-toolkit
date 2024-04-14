@@ -1,6 +1,6 @@
 [project]
 name = "hdx_cli_toolkit"
-version = "2024.4.2"
+version = "2024.4.3"
 description = "HDX CLI tool kit for commandline interaction with HDX"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
