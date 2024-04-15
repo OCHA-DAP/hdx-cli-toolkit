@@ -18,6 +18,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     update_values_in_hdx,
     add_showcase,
     add_quickcharts,
+    get_approved_tag_list,
 )
 
 from hdx_cli_toolkit.utilities import make_conversion_func
@@ -200,3 +201,8 @@ def test_add_quickcharts():
 
     assert len(quickchart_dicts) == 2
     assert quickchart_dicts[1]["title"] == "Quick Charts"
+
+
+def test_get_approved_tag_list():
+    approved_tags = get_approved_tag_list()
+    assert len(approved_tags) == 140

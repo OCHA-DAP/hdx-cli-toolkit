@@ -27,6 +27,13 @@ Understanding the `Configuration` used by `hdx-python-api` can be challenging fo
 hdx-toolkit configuration
 ```
 
+The `configuration` command can also be used to list the approved dataset tags using:
+
+`hdx-toolkit configuration --approved_tag_list`
+
+This produces an output containing only the tags with no boilerplate, it can be piped into a file
+or `grep` to find particular tags.
+
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`. This commandline selects a single dataset, `mali-healthsites`:
 
 ```shell
@@ -179,6 +186,7 @@ Potential new features can be found in the [GitHub issue tracker](https://github
 hdx-toolkit --help
 hdx-toolkit list --help
 hdx-toolkit configuration
+hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
