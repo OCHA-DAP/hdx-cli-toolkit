@@ -35,9 +35,10 @@ def hdx_error_handler(f):
         try:
             return f(*args, **kwargs)
         except HDXError:
-            if "Authorization Error" in traceback.format_exc():
+            message = parse_hdxerror_traceback(traceback.format_exc())
+            if message == "unknown":
                 click.secho(
-                    "Could not perform operation on HDX because of an authorization error",
+                    f"Could not perform operation on HDX because of an `{message}`",
                     fg="red",
                     color=True,
                 )
@@ -45,6 +46,21 @@ def hdx_error_handler(f):
                 print(traceback.format_exc)
 
     return inner
+
+
+def parse_hdxerror_traceback(traceback_message: str):
+    message = "unknown"
+    if "Authorization Error" in traceback.format_exc():
+        message = "Authorization Error"
+    elif (
+        "{'extras': [{}, {'key': ['There is a schema field with the same name']}]"
+        in traceback.format_exc()
+    ):
+        message = "Extras Key Error"
+    elif "KeyError: 'resources'" in traceback.format_exc():
+        message = "No Resources Error"
+
+    return message
 
 
 @hdx_error_handler
@@ -112,20 +128,43 @@ def update_values_in_hdx(
 ):
     n_changed = 0
     n_failures = 0
+    row_template = {
+        "dataset_name": None,
+        "key": key,
+        "old_value": None,
+        "new_value": None,
+        "message": None,
+    }
+    output_rows = []
     for dataset in filtered_datasets:
         t0 = time.time()
-        old_value = str(dataset[key])
-        dataset[key] = conversion_func(value)
+        try:
+            old_value = str(dataset[key])
+        except KeyError:
+            old_value = ""
+        new_value = conversion_func(value)
+        dataset[key] = new_value
+
+        row = row_template.copy()
+        row["dataset_name"] = dataset["name"]
+        row["old_value"] = old_value
+        row["new_value"] = new_value
+
         if old_value != str(dataset[key]):
             n_changed += 1
         else:
+            message = "No update required"
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{'No update required':<25.25}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
+                f"{message:<25.25}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
             continue
         try:
+            if "extras" in dataset.data:
+                dataset.data.pop("extras")
             dataset.update_in_hdx(
                 update_resources=False,
                 hxl_update=False,
@@ -134,22 +173,27 @@ def update_values_in_hdx(
                 skip_validation=True,
                 ignore_check=True,
             )
+            message = f"{time.time() - t0:.2f}"
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{time.time()-t0:0.2f}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
+                f"{message}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
         except (HDXError, KeyError):
-            print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            traceback_message = parse_hdxerror_traceback(traceback.format_exc())
+            message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1
 
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
-                f"{time.time()-t0:0.2f}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20} {message}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
 
-    return n_changed, n_failures
+    return n_changed, n_failures, output_rows
 
 
 @hdx_error_handler

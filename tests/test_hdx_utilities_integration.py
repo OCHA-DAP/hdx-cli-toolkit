@@ -137,12 +137,13 @@ def test_update_key():
     key = "notes"
     value = "new notes"
     conversion_func, _ = make_conversion_func(value)
-    n_changed, n_failures = update_values_in_hdx(
+    n_changed, n_failures, output_rows = update_values_in_hdx(
         [dataset], key, value, conversion_func, hdx_site=HDX_SITE
     )
 
     assert n_changed == 1
     assert n_failures == 0
+    assert len(output_rows) == 1
     dataset = Dataset.read_from_hdx(DATASET_NAME)
 
     assert dataset["notes"] == "new notes"

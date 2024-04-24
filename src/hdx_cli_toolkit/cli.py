@@ -191,7 +191,8 @@ def update(
         filtered_datasets, key, value, conversion_func, hdx_site=hdx_site
     )
 
-    write_dictionary(output_path, output_rows, append=False)
+    if output_path is not None:
+        write_dictionary(output_path, output_rows, append=False)
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
