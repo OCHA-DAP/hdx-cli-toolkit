@@ -142,6 +142,12 @@ def list_datasets(
 
 @hdx_toolkit.command(name="update")
 @multi_decorator(OPTIONS)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export data from update to CSV",
+)
 def update(
     organization: str = "",
     key: str = "private",
@@ -149,6 +155,7 @@ def update(
     dataset_filter: str = "*",
     query: str = None,
     hdx_site: str = "stage",
+    output_path: str = None,
 ):
     """Update datasets in HDX"""
     print_banner("Update")
@@ -164,7 +171,12 @@ def update(
         return
 
     print(f"Updating key '{key}' with value '{value}'")
-    conversion_func, type_name = make_conversion_func(filtered_datasets[0][key])
+    for filtered_dataset in filtered_datasets:
+        try:
+            conversion_func, type_name = make_conversion_func(filtered_dataset[key])
+        except KeyError:
+            continue
+
     if conversion_func is None:
         print(f"Type name '{type_name}' is not recognised, aborting", flush=True)
         return
@@ -175,9 +187,11 @@ def update(
         f"{'Time to update/seconds':<25.25}",
         flush=True,
     )
-    n_changed, n_failures = update_values_in_hdx(
+    n_changed, n_failures, output_rows = update_values_in_hdx(
         filtered_datasets, key, value, conversion_func, hdx_site=hdx_site
     )
+
+    write_dictionary(output_path, output_rows, append=False)
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
