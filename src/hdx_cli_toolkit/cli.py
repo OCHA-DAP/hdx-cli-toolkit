@@ -19,6 +19,7 @@ from hdx_cli_toolkit.utilities import (
     censor_secret,
     make_conversion_func,
     print_banner,
+    make_path_unique,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -131,11 +132,12 @@ def list_datasets(
         output_row = output_template.copy()
         output_row["dataset_name"] = dataset["name"]
         for key_ in keys:
-            output_row[key_] = dataset.get(key_, "")
+            output_row[key_] = dataset.get(key_, "Key absent")
         output.append(output_row)
 
     print_table_from_list_of_dicts(output)
     if output_path is not None:
+        output_path = make_path_unique(output_path)
         status = write_dictionary(output_path, output, append=False)
         print(status, flush=True)
 

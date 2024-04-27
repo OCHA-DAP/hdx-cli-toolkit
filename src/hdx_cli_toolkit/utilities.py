@@ -282,3 +282,15 @@ def print_banner(action: str):
     click.secho(f"* {title:<{width}} *", bold=True)
     click.secho(f"* {timestamp:<{width}} *", bold=True)
     click.secho((width + 4) * "*", bold=True)
+
+
+def make_path_unique(input_path: str) -> str:
+    filename, extension = os.path.splitext(input_path)
+    counter = 1
+
+    unique_path = input_path
+    while os.path.exists(unique_path):
+        unique_path = f"{filename}-{str(counter)}{extension}"
+        counter += 1
+
+    return unique_path

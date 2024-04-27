@@ -12,6 +12,7 @@ from hdx_cli_toolkit.utilities import (
     print_table_from_list_of_dicts,
     str_to_bool,
     make_conversion_func,
+    make_path_unique,
 )
 
 
@@ -122,3 +123,11 @@ def test_make_conversion_func():
     for test_value in test_values:
         _, func_name = make_conversion_func(test_value[0])
         assert func_name == test_value[1]
+
+
+def test_make_path_unique():
+    input_path = __file__
+    unique_path = make_path_unique(input_path)
+    input_filename = os.path.basename(input_path)
+
+    assert os.path.basename(unique_path) == input_filename.replace(".py", "-1.py")
