@@ -19,6 +19,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     add_showcase,
     add_quickcharts,
     get_approved_tag_list,
+    update_values_in_hdx_from_file,
 )
 
 from hdx_cli_toolkit.utilities import make_conversion_func
@@ -207,3 +208,10 @@ def test_add_quickcharts():
 def test_get_approved_tag_list():
     approved_tags = get_approved_tag_list()
     assert len(approved_tags) == 140
+
+
+def test_update_values_in_hdx_from_file():
+    update_file_path = os.path.join(os.path.dirname(__file__), "fixtures", "update-from-file.csv")
+    update_values_in_hdx_from_file(HDX_SITE, update_file_path)
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    assert dataset["caveats"] == "Second value from_file"

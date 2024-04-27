@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-
+import csv
 import fnmatch
 import functools
 import json
@@ -26,7 +26,7 @@ from hdx.data.resource import Resource
 from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
 
-from hdx_cli_toolkit.utilities import read_attributes
+from hdx_cli_toolkit.utilities import read_attributes, make_conversion_func
 
 
 def hdx_error_handler(f):
@@ -120,6 +120,60 @@ def get_filtered_datasets(
         )
 
     return filtered_datasets
+
+
+@hdx_error_handler
+def update_values_in_hdx_from_file(hdx_site: str, from_file: str):
+    configure_hdx_connection(hdx_site=hdx_site)
+    # Open the file
+    if not os.path.exists(from_file):
+        print(f"The file provided for input ({from_file}) does not exist. Exiting.", flush=True)
+        return
+    with open(from_file, "r", encoding="utf-8") as update_file_handle:
+        rows = list(csv.DictReader(update_file_handle))
+        # Check the file has rows, and the required columns.
+        if len(rows) == 0:
+            print(
+                f"The file provided for input ({from_file}) contains no rows. Exiting.", flush=True
+            )
+            return
+
+        # For each row
+        n_changed = 0
+        n_failures = 0
+        output_rows = []
+        print(f"From_file {from_file} contains {len(rows)} entries", flush=True)
+        print(
+            f"{'dataset_name':<70.70}{'old value':<20.20}{'new value':<20.20}"
+            f"{'Time to update/seconds':<25.25}",
+            flush=True,
+        )
+        for row in rows:
+            dataset = Dataset.read_from_hdx(row["dataset_name"])
+            # Read in the dataset
+            if not dataset:
+                print(f"{row['dataset_name']} does not exist on {hdx_site}. Exiting", flush=True)
+                return
+
+            conversion_func, type_name = make_conversion_func(row["new_value"])
+
+            if conversion_func is None:
+                print(f"Type name '{type_name}' is not recognised, aborting", flush=True)
+                return
+
+            dn_changed, dn_failures, doutput_rows = update_values_in_hdx(
+                [dataset], row["key"], row["new_value"], conversion_func, hdx_site=hdx_site
+            )
+            n_changed += dn_changed
+            n_failures += dn_failures
+            output_rows.extend(doutput_rows)
+
+    # Make an output_path from the from_path?
+    # if output_path is not None:
+    #     write_dictionary(output_path, output_rows, append=False)
+
+    print(f"Changed {n_changed} values", flush=True)
+    print(f"{n_failures} failures as evidenced by HDXError", flush=True)
 
 
 @hdx_error_handler
