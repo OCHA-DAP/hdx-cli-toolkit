@@ -12,6 +12,7 @@ import urllib3
 
 from pathlib import Path
 
+import ckanapi
 import click
 import urllib3.util
 import yaml
@@ -31,6 +32,7 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     write_dictionary,
     make_path_unique,
+    print_dictionary_comparison,
 )
 
 
@@ -39,30 +41,28 @@ def hdx_error_handler(f):
     def inner(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except HDXError:
-            message = parse_hdxerror_traceback(traceback.format_exc())
-            if message == "unknown":
+        except (HDXError, ckanapi.errors.ValidationError):
+            traceback_message = traceback.format_exc()
+            message = parse_hdxerror_traceback(traceback_message)
+            if message != "unknown":
                 click.secho(
                     f"Could not perform operation on HDX because of an `{message}`",
                     fg="red",
                     color=True,
                 )
             else:
-                print(traceback.format_exc)
+                print(traceback.format_exc(), flush=True)
 
     return inner
 
 
 def parse_hdxerror_traceback(traceback_message: str):
     message = "unknown"
-    if "Authorization Error" in traceback.format_exc():
+    if "Authorization Error" in traceback_message:
         message = "Authorization Error"
-    elif (
-        "{'extras': [{}, {'key': ['There is a schema field with the same name']}]"
-        in traceback.format_exc()
-    ):
+    elif "extras" in traceback_message:
         message = "Extras Key Error"
-    elif "KeyError: 'resources'" in traceback.format_exc():
+    elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
 
     return message
@@ -556,3 +556,32 @@ def get_approved_tag_list() -> list[str]:
         print(f"The tag list url {tags_list_url} returned status {response.status}", flush=True)
 
     return approved_tag_list
+
+
+@hdx_error_handler
+def remove_extras_key_from_dataset(dataset_name: Dataset, hdx_site: str = "stage"):
+    configure_hdx_connection(hdx_site=hdx_site)
+    original_dataset = Dataset.read_from_hdx(dataset_name)
+
+    original_dataset_preserved = original_dataset.copy()
+    if "extras" in original_dataset.data:
+        original_dataset.data.pop("extras")
+        original_dataset.create_in_hdx(hxl_update=False, keys_to_delete=["extras"])
+    else:
+        print(f"Extras key not found in {dataset_name} on {hdx_site}", flush=True)
+        return
+
+    processed_dataset = Dataset.read_from_hdx(dataset_name)
+
+    if "extras" in processed_dataset.data:
+        print(f"Extras removal for {dataset_name} on {hdx_site} failed!!", flush=True)
+    else:
+        print(f"Extras removal for {dataset_name} on {hdx_site} was successful!!", flush=True)
+
+    print_dictionary_comparison(
+        original_dataset_preserved,
+        processed_dataset,
+        "original dataset",
+        "dataset with extras removed",
+        differences=False,
+    )

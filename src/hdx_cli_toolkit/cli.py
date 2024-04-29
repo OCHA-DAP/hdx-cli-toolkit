@@ -35,6 +35,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     decorate_dataset_with_extras,
     download_hdx_datasets,
     get_approved_tag_list,
+    remove_extras_key_from_dataset,
 )
 
 
@@ -581,3 +582,22 @@ def download(
     print("The following files were downloaded:", flush=True)
     for download_path in download_paths:
         print(download_path, flush=True)
+
+
+@hdx_toolkit.command(name="remove_extras_key")
+@click.option(
+    "--dataset_name",
+    is_flag=False,
+    default="*",
+    help="name of the dataset to update",
+)
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+def remove_extras_key(dataset_name: str = None, hdx_site: str = "stage"):
+    """Remove extras key from a dataset"""
+    print_banner("remove_extras_key")
+    remove_extras_key_from_dataset(dataset_name, hdx_site)
