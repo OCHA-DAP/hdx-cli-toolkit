@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-
+import csv
 import fnmatch
 import functools
 import json
@@ -26,7 +26,12 @@ from hdx.data.resource import Resource
 from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
 
-from hdx_cli_toolkit.utilities import read_attributes
+from hdx_cli_toolkit.utilities import (
+    read_attributes,
+    make_conversion_func,
+    write_dictionary,
+    make_path_unique,
+)
 
 
 def hdx_error_handler(f):
@@ -35,9 +40,10 @@ def hdx_error_handler(f):
         try:
             return f(*args, **kwargs)
         except HDXError:
-            if "Authorization Error" in traceback.format_exc():
+            message = parse_hdxerror_traceback(traceback.format_exc())
+            if message == "unknown":
                 click.secho(
-                    "Could not perform operation on HDX because of an authorization error",
+                    f"Could not perform operation on HDX because of an `{message}`",
                     fg="red",
                     color=True,
                 )
@@ -45,6 +51,21 @@ def hdx_error_handler(f):
                 print(traceback.format_exc)
 
     return inner
+
+
+def parse_hdxerror_traceback(traceback_message: str):
+    message = "unknown"
+    if "Authorization Error" in traceback.format_exc():
+        message = "Authorization Error"
+    elif (
+        "{'extras': [{}, {'key': ['There is a schema field with the same name']}]"
+        in traceback.format_exc()
+    ):
+        message = "Extras Key Error"
+    elif "KeyError: 'resources'" in traceback.format_exc():
+        message = "No Resources Error"
+
+    return message
 
 
 @hdx_error_handler
@@ -107,25 +128,112 @@ def get_filtered_datasets(
 
 
 @hdx_error_handler
+def update_values_in_hdx_from_file(
+    hdx_site: str, from_file: str, undo: bool = False, output_path: str = None
+):
+    configure_hdx_connection(hdx_site=hdx_site)
+    # Open the file
+    if not os.path.exists(from_file):
+        print(f"The file provided for input ({from_file}) does not exist. Exiting.", flush=True)
+        return
+    with open(from_file, "r", encoding="utf-8") as update_file_handle:
+        rows = list(csv.DictReader(update_file_handle))
+        # Check the file has rows, and the required columns.
+        if len(rows) == 0:
+            print(
+                f"The file provided for input ({from_file}) contains no rows. Exiting.", flush=True
+            )
+            return
+
+        # For each row
+        n_changed = 0
+        n_failures = 0
+        output_rows = []
+        print(f"From_file {from_file} contains {len(rows)} entries", flush=True)
+        print(
+            f"{'dataset_name':<70.70}{'old value':<20.20}{'new value':<20.20}"
+            f"{'Time to update/seconds':<25.25}",
+            flush=True,
+        )
+        new_value_key = "new_value"
+        if undo:
+            new_value_key = "old_value"
+        for row in rows:
+            dataset = Dataset.read_from_hdx(row["dataset_name"])
+            # Read in the dataset
+            if not dataset:
+                print(f"{row['dataset_name']} does not exist on {hdx_site}. Exiting", flush=True)
+                return
+
+            conversion_func, type_name = make_conversion_func(row[new_value_key])
+
+            if conversion_func is None:
+                print(f"Type name '{type_name}' is not recognised, aborting", flush=True)
+                return
+
+            dn_changed, dn_failures, doutput_rows = update_values_in_hdx(
+                [dataset], row["key"], row[new_value_key], conversion_func, hdx_site=hdx_site
+            )
+            n_changed += dn_changed
+            n_failures += dn_failures
+            output_rows.extend(doutput_rows)
+
+    # Make an output_path from the from_path?
+    if output_path is not None:
+        output_path = make_path_unique(output_path)
+    else:
+        filename, extension = os.path.splitext(from_file)
+        output_path = f"{filename}-redo{extension}"
+    status = write_dictionary(output_path, output_rows, append=False)
+    print(status, flush=True)
+
+    print(f"Changed {n_changed} values", flush=True)
+    print(f"{n_failures} failures as evidenced by HDXError", flush=True)
+
+
+@hdx_error_handler
 def update_values_in_hdx(
     filtered_datasets: list[Dataset], key, value, conversion_func, hdx_site: str = "stage"
 ):
     n_changed = 0
     n_failures = 0
+    row_template = {
+        "dataset_name": None,
+        "key": key,
+        "old_value": None,
+        "new_value": None,
+        "message": None,
+    }
+    output_rows = []
     for dataset in filtered_datasets:
         t0 = time.time()
-        old_value = str(dataset[key])
-        dataset[key] = conversion_func(value)
+        try:
+            old_value = str(dataset[key])
+        except KeyError:
+            old_value = ""
+        new_value = conversion_func(value)
+        dataset[key] = new_value
+
+        row = row_template.copy()
+        row["dataset_name"] = dataset["name"]
+        row["old_value"] = old_value
+        row["new_value"] = new_value
+
         if old_value != str(dataset[key]):
             n_changed += 1
         else:
+            message = "No update required"
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{'No update required':<25.25}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
+                f"{message:<25.25}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
             continue
         try:
+            if "extras" in dataset.data:
+                dataset.data.pop("extras")
             dataset.update_in_hdx(
                 update_resources=False,
                 hxl_update=False,
@@ -134,22 +242,27 @@ def update_values_in_hdx(
                 skip_validation=True,
                 ignore_check=True,
             )
+            message = f"{time.time() - t0:.2f}"
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20}"
-                f"{time.time()-t0:0.2f}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
+                f"{message}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
         except (HDXError, KeyError):
-            print(f"Could not update {dataset['name']} on '{hdx_site}'", flush=True)
+            traceback_message = parse_hdxerror_traceback(traceback.format_exc())
+            message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1
 
             print(
-                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20}"
-                f"{time.time()-t0:0.2f}",
+                f"{dataset['name']:<70.70}{old_value:<20.20}{old_value:<20.20} {message}",
                 flush=True,
             )
+            row["message"] = message
+            output_rows.append(row)
 
-    return n_changed, n_failures
+    return n_changed, n_failures, output_rows
 
 
 @hdx_error_handler
