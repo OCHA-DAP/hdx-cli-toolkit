@@ -26,7 +26,12 @@ from hdx.data.resource import Resource
 from hdx.data.user import User
 from hdx.utilities.path import script_dir_plus_file
 
-from hdx_cli_toolkit.utilities import read_attributes, make_conversion_func
+from hdx_cli_toolkit.utilities import (
+    read_attributes,
+    make_conversion_func,
+    write_dictionary,
+    make_path_unique,
+)
 
 
 def hdx_error_handler(f):
@@ -123,7 +128,9 @@ def get_filtered_datasets(
 
 
 @hdx_error_handler
-def update_values_in_hdx_from_file(hdx_site: str, from_file: str):
+def update_values_in_hdx_from_file(
+    hdx_site: str, from_file: str, undo: bool = False, output_path: str = None
+):
     configure_hdx_connection(hdx_site=hdx_site)
     # Open the file
     if not os.path.exists(from_file):
@@ -148,6 +155,9 @@ def update_values_in_hdx_from_file(hdx_site: str, from_file: str):
             f"{'Time to update/seconds':<25.25}",
             flush=True,
         )
+        new_value_key = "new_value"
+        if undo:
+            new_value_key = "old_value"
         for row in rows:
             dataset = Dataset.read_from_hdx(row["dataset_name"])
             # Read in the dataset
@@ -155,22 +165,27 @@ def update_values_in_hdx_from_file(hdx_site: str, from_file: str):
                 print(f"{row['dataset_name']} does not exist on {hdx_site}. Exiting", flush=True)
                 return
 
-            conversion_func, type_name = make_conversion_func(row["new_value"])
+            conversion_func, type_name = make_conversion_func(row[new_value_key])
 
             if conversion_func is None:
                 print(f"Type name '{type_name}' is not recognised, aborting", flush=True)
                 return
 
             dn_changed, dn_failures, doutput_rows = update_values_in_hdx(
-                [dataset], row["key"], row["new_value"], conversion_func, hdx_site=hdx_site
+                [dataset], row["key"], row[new_value_key], conversion_func, hdx_site=hdx_site
             )
             n_changed += dn_changed
             n_failures += dn_failures
             output_rows.extend(doutput_rows)
 
     # Make an output_path from the from_path?
-    # if output_path is not None:
-    #     write_dictionary(output_path, output_rows, append=False)
+    if output_path is not None:
+        output_path = make_path_unique(output_path)
+    else:
+        filename, extension = os.path.splitext(from_file)
+        output_path = f"{filename}-redo{extension}"
+    status = write_dictionary(output_path, output_rows, append=False)
+    print(status, flush=True)
 
     print(f"Changed {n_changed} values", flush=True)
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)

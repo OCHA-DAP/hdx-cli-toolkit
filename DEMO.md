@@ -58,8 +58,21 @@ which selects 29 datasets matching the filter `*la*`, or
 ```shell
 hdx-toolkit list --organization=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
-which selects all the datasets of an organization.
+which selects all the datasets of an organization. The `update` command can provide an output file listing the changes made which can subsequently be used in an `undo` operation:
+```shell
+hdx-toolkit update --organization=healthsites --dataset_filter=somalia-healthsites --hdx_site=stage --key=caveats --value="test entry" --output_path=2024-04-29-undo-test.csv
+```
+The generated output file, `2024-04-29-undo-test.csv` looks like this:
+```csv
+dataset_name,key,old_value,new_value,message
+somalia-healthsites,caveats,Read the Healthsites concept note http://bit.ly/2ocL2KY,test entry,9.27
+```
 
+The `undo` operation is then executed with:
+```shell
+hdx-toolkit update --organization=healthsites --dataset_filter=somalia-healthsites --hdx_site=stage --key=caveats --value="test entry" --from_path=2024-04-29-undo-test.csv --undo
+```
+The `from_path` argument indicates the update is to be done from a file, `undo` indicates that the value to be updated is in the `old_value` column. The `from_path` operation can be done without the `undo` flag in which case the file indicated needs to contain, at least, a `dataset_name` column, a `key` column and a `new_value` column.
 
 The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword.
 
