@@ -40,29 +40,27 @@ def hdx_error_handler(f):
         try:
             return f(*args, **kwargs)
         except HDXError:
-            message = parse_hdxerror_traceback(traceback.format_exc())
-            if message == "unknown":
+            traceback_message = traceback.format_exc()
+            message = parse_hdxerror_traceback(traceback_message)
+            if message != "unknown":
                 click.secho(
                     f"Could not perform operation on HDX because of an `{message}`",
                     fg="red",
                     color=True,
                 )
             else:
-                print(traceback.format_exc)
+                print(traceback_message, flush=True)
 
     return inner
 
 
 def parse_hdxerror_traceback(traceback_message: str):
     message = "unknown"
-    if "Authorization Error" in traceback.format_exc():
+    if "Authorization Error" in traceback_message:
         message = "Authorization Error"
-    elif (
-        "{'extras': [{}, {'key': ['There is a schema field with the same name']}]"
-        in traceback.format_exc()
-    ):
+    elif "extras" in traceback_message:
         message = "Extras Key Error"
-    elif "KeyError: 'resources'" in traceback.format_exc():
+    elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
 
     return message
