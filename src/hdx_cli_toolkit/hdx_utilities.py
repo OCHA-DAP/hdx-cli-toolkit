@@ -12,6 +12,7 @@ import urllib3
 
 from pathlib import Path
 
+import ckanapi
 import click
 import urllib3.util
 import yaml
@@ -39,7 +40,7 @@ def hdx_error_handler(f):
     def inner(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except HDXError:
+        except (HDXError, ckanapi.errors.ValidationError):
             traceback_message = traceback.format_exc()
             message = parse_hdxerror_traceback(traceback_message)
             if message != "unknown":
