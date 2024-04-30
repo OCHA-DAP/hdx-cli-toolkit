@@ -192,6 +192,8 @@ def update(
             return
 
         print(f"Updating key '{key}' with value '{value}'")
+        conversion_func = None
+        type_name = ""
         for filtered_dataset in filtered_datasets:
             try:
                 conversion_func, type_name = make_conversion_func(filtered_dataset[key])

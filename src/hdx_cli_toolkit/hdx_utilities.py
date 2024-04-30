@@ -63,6 +63,8 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "Extras Key Error"
     elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
+    elif "{'dataset_date': ['Invalid old HDX date" in traceback_message:
+        message = "Invalid Dataset Date Error"
 
     return message
 
@@ -190,7 +192,7 @@ def update_values_in_hdx_from_file(
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
 
 
-@hdx_error_handler
+# This function does its own error handling for hdx, so no @hdx_error_handler
 def update_values_in_hdx(
     filtered_datasets: list[Dataset], key, value, conversion_func, hdx_site: str = "stage"
 ):
@@ -218,9 +220,7 @@ def update_values_in_hdx(
         row["old_value"] = old_value
         row["new_value"] = new_value
 
-        if old_value != str(dataset[key]):
-            n_changed += 1
-        else:
+        if old_value == str(dataset[key]):
             message = "No update required"
             print(
                 f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
@@ -249,7 +249,8 @@ def update_values_in_hdx(
             )
             row["message"] = message
             output_rows.append(row)
-        except (HDXError, KeyError):
+            n_changed += 1
+        except (HDXError, KeyError, ckanapi.errors.ValidationError):
             traceback_message = parse_hdxerror_traceback(traceback.format_exc())
             message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1

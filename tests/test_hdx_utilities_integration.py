@@ -215,3 +215,27 @@ def test_update_values_in_hdx_from_file():
     update_values_in_hdx_from_file(HDX_SITE, update_file_path)
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     assert dataset["caveats"] == "Second value from_file"
+
+    redo_file_path = os.path.join(
+        os.path.dirname(__file__), "fixtures", "update-from-file-redo.csv"
+    )
+    assert os.path.exists(redo_file_path)
+    if os.path.exists(redo_file_path):
+        os.remove(redo_file_path)
+
+
+def test_error_handling(capfd):
+    dataset = Dataset.read_from_hdx(DATASET_NAME)
+    key = "extras"
+    value = "Extras key is illegal"
+    conversion_func, _ = make_conversion_func(value)
+    n_changed, n_failures, output_rows = update_values_in_hdx(
+        [dataset], key, value, conversion_func, hdx_site=HDX_SITE
+    )
+
+    assert n_changed == 0
+    assert n_failures == 1
+    assert len(output_rows) == 1
+    output, _ = capfd.readouterr()
+
+    assert "Could not update hdx_cli_toolkit_test on 'stage' - Extras Key Error" in output
