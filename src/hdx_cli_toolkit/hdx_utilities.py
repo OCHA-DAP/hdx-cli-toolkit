@@ -560,35 +560,6 @@ def get_approved_tag_list() -> list[str]:
 
 
 @hdx_error_handler
-def remove_extras_key_from_dataset(dataset_name: Dataset, hdx_site: str = "stage"):
-    configure_hdx_connection(hdx_site=hdx_site)
-    original_dataset = Dataset.read_from_hdx(dataset_name)
-
-    original_dataset_preserved = original_dataset.copy()
-    if "extras" in original_dataset.data:
-        original_dataset.data.pop("extras")
-        original_dataset.create_in_hdx(hxl_update=False, keys_to_delete=["extras"])
-    else:
-        print(f"Extras key not found in {dataset_name} on {hdx_site}", flush=True)
-        return
-
-    processed_dataset = Dataset.read_from_hdx(dataset_name)
-
-    if "extras" in processed_dataset.data:
-        print(f"Extras removal for {dataset_name} on {hdx_site} failed!!", flush=True)
-    else:
-        print(f"Extras removal for {dataset_name} on {hdx_site} was successful!!", flush=True)
-
-    print_dictionary_comparison(
-        original_dataset_preserved,
-        processed_dataset,
-        "original dataset",
-        "dataset with extras removed",
-        differences=False,
-    )
-
-
-@hdx_error_handler
 def check_api_key(organization: str = "hdx", hdx_sites: str = None) -> list[str]:
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
