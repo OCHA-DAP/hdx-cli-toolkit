@@ -531,8 +531,9 @@ def configure_hdx_connection(hdx_site: str, verbose: bool = True):
         )
         if verbose:
             print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
-    except ConfigurationError:
-        print("Reusing existing connection")
+    except ConfigurationError as error:
+        print(dir(error), flush=True)
+        print(traceback.format_exc(), flush=True)
 
 
 def get_approved_tag_list() -> list[str]:
