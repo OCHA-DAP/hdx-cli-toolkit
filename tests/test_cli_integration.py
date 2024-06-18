@@ -41,9 +41,12 @@ def test_configuration():
     command = show_configuration
     cli_arguments = []
 
+    # As I recall the CLI test runner works in isolation so no file system or environment variable
+    # available for API keys to be stored
     expected_outputs = [
         "Values of relevant environment variables (used in absence of supplied values):",
         ' url: "https://stage.data-humdata-org.ahconu.org"',
+        "API key not valid on 'stage' to create datasets for 'HDX'",
     ]
 
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")

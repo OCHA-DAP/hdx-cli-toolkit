@@ -521,6 +521,7 @@ def download_hdx_datasets(
 
 @hdx_error_handler
 def configure_hdx_connection(hdx_site: str, verbose: bool = True):
+    Configuration._configuration = None
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -531,7 +532,7 @@ def configure_hdx_connection(hdx_site: str, verbose: bool = True):
         if verbose:
             print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
     except ConfigurationError:
-        pass
+        print(traceback.format_exc(), flush=True)
 
 
 def get_approved_tag_list() -> list[str]:
@@ -556,3 +557,23 @@ def get_approved_tag_list() -> list[str]:
         print(f"The tag list url {tags_list_url} returned status {response.status}", flush=True)
 
     return approved_tag_list
+
+
+@hdx_error_handler
+def check_api_key(organization: str = "hdx", hdx_sites: str = None) -> list[str]:
+    if hdx_sites is None:
+        hdx_sites = ["stage", "prod"]
+    statuses = []
+    for hdx_site in hdx_sites:
+        configure_hdx_connection(hdx_site, verbose=True)
+        result = User.check_current_user_organization_access(organization, "create_dataset")
+        if result:
+            statuses.append(
+                f"API key valid on '{hdx_site}' to create datasets for '{organization}'"
+            )
+        else:
+            statuses.append(
+                f"API key not valid on '{hdx_site}' to create datasets for '{organization}'"
+            )
+
+    return statuses

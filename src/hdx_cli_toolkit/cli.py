@@ -35,6 +35,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     decorate_dataset_with_extras,
     download_hdx_datasets,
     get_approved_tag_list,
+    check_api_key,
 )
 
 
@@ -341,7 +342,13 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
     default=False,
     help="if present then print the list of approved tags",
 )
-def show_configuration(approved_tag_list: bool = False):
+@click.option(
+    "--organization",
+    is_flag=False,
+    default="HDX",
+    help="an organization name to check API keys against",
+)
+def show_configuration(approved_tag_list: bool = False, organization: str = "HDX"):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
@@ -398,6 +405,14 @@ def show_configuration(approved_tag_list: bool = False):
     with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
         config_file_contents = config_file.read()
         print(config_file_contents, flush=True)
+
+    # Check API keys
+    statuses = check_api_key(organization=organization, hdx_sites=None)
+    for status in statuses:
+        color = "green"
+        if "API key not valid" in status:
+            color = "red"
+        click.secho(f"{status}", fg=color, color=True)
 
 
 @hdx_toolkit.command(name="quickcharts")

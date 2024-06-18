@@ -198,7 +198,7 @@ Potential new features can be found in the [GitHub issue tracker](https://github
 ```
 hdx-toolkit --help
 hdx-toolkit list --help
-hdx-toolkit configuration
+hdx-toolkit configuration --organization=insecurity-insight
 hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True --output_path=2024-04-24-update-details.csv
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
