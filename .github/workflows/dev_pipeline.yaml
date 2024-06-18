@@ -30,6 +30,7 @@ jobs:
       - name: Running unit tests
         env:
             HDX_KEY_STAGE: ${{ secrets.HDX_KEY_STAGE }}
+            HDX_KEY: dummy
             HDX_SITE: ${{ vars.HDX_SITE }}
             USER_AGENT: ${{ vars.USER_AGENT }}
             PREPREFIX: ${{ vars.PREPREFIX }}

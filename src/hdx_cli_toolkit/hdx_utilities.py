@@ -531,8 +531,7 @@ def configure_hdx_connection(hdx_site: str, verbose: bool = True):
         )
         if verbose:
             print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
-    except ConfigurationError as error:
-        print(dir(error), flush=True)
+    except ConfigurationError:
         print(traceback.format_exc(), flush=True)
 
 
