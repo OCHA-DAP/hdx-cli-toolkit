@@ -118,7 +118,7 @@ def test_print():
 
 
 def cli_test_template(command, cli_arguments, expected_outputs, forbidden_output=""):
-    runner = CliRunner()
+    runner = CliRunner(env={"HDX_KEY": "test"})
     with runner.isolated_filesystem():
         result = runner.invoke(command, cli_arguments)
 
