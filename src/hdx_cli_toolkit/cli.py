@@ -35,6 +35,8 @@ from hdx_cli_toolkit.hdx_utilities import (
     decorate_dataset_with_extras,
     download_hdx_datasets,
     get_approved_tag_list,
+    remove_extras_key_from_dataset,
+    check_api_key,
 )
 
 
@@ -396,6 +398,13 @@ def show_configuration(approved_tag_list: bool = False):
     with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
         config_file_contents = config_file.read()
         print(config_file_contents, flush=True)
+
+    statuses = check_api_key()
+    for status in statuses:
+        color = "green"
+        if "API key not valid" in status:
+            color = "red"
+        click.secho(f"{status}", fg=color, color=True)
 
 
 @hdx_toolkit.command(name="quickcharts")

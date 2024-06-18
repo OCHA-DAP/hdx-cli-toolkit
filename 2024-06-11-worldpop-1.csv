@@ -1,0 +1,12 @@
+dataset_name,key,old_value,new_value,message
+worldpop-pregnancies-for-somalia,data_update_frequency,365,-2,12.92
+worldpop-births-for-somalia,data_update_frequency,365,-2,1.21
+worldpop-pregnancies-for-mali,data_update_frequency,365,-2,1.12
+worldpop-births-for-mali,data_update_frequency,365,-2,1.09
+census-cartography-based-gridded-population-estimates-for-mali-2020-version-1-0,data_update_frequency,-2,-2,No update required
+worldpop-age-and-sex-structures-for-mali,data_update_frequency,365,-2,5.08
+worldpop-population-density-for-mali,data_update_frequency,365,-2,1.56
+worldpop-population-counts-for-somalia,data_update_frequency,365,-2,1.78
+worldpop-population-counts-for-mali,data_update_frequency,365,-2,1.76
+worldpop-population-density-for-somalia,data_update_frequency,365,-2,1.46
+worldpop-age-and-sex-structures-for-somalia,data_update_frequency,365,-2,4.89
