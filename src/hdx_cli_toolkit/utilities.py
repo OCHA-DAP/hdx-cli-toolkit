@@ -5,6 +5,7 @@ import csv
 import dataclasses
 import datetime
 import json
+import math
 import os
 
 from collections.abc import Callable
@@ -294,3 +295,43 @@ def make_path_unique(input_path: str) -> str:
         counter += 1
 
     return unique_path
+
+
+def print_dictionary_comparison(
+    dict1: dict,
+    dict2: dict,
+    name1: str = "first_dict",
+    name2: str = "second_dict",
+    differences: bool = False,
+) -> None:
+    unified_keys = set(list(dict1.keys()))
+    unified_keys.update(list(dict2.keys()))
+    total_width = 100
+    key_width = max(len(x) for x in unified_keys) + 1
+
+    dict_one_width = math.floor((total_width - 4 - key_width) / 2)
+    dict_two_width = dict_one_width
+    total_width = key_width + dict_one_width + dict_two_width + 4
+
+    print("\n", flush=True)
+    print("-" * total_width, flush=True)
+    print(
+        f"|{'key':<{key_width}}|{name1:<{dict_one_width}}|{name2:<{dict_two_width}}|",
+        flush=True,
+    )
+    print("-" * total_width, flush=True)
+
+    for key in unified_keys:
+        value1 = dict1.get(key, "Not present")
+        value2 = dict2.get(key, "Not present")
+
+        if differences and value1 == value2:
+            continue
+        else:
+            print(
+                f"|{key:<{key_width}}"
+                f"|{str(value1):<{dict_one_width}.{dict_one_width}}"
+                f"|{str(value2):<{dict_two_width}.{dict_two_width}}|",
+                flush=True,
+            )
+    print("-" * total_width, flush=True)
