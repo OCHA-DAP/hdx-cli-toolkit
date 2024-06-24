@@ -65,6 +65,7 @@ Commands:
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
   quickcharts                Upload QuickChart JSON description to HDX
+  remove_extras_key          Remove extras key from a dataset
   showcase                   Upload showcase to HDX
   update                     Update datasets in HDX
   update_resource            Update a resource in HDX
