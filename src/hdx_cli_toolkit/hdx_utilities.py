@@ -51,7 +51,7 @@ def hdx_error_handler(f):
                     color=True,
                 )
             else:
-                print(traceback.format_exc(), flush=True)
+                print(traceback_message, flush=True)
 
     return inner
 
@@ -64,6 +64,8 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "Extras Key Error"
     elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
+    elif "{'dataset_date': ['Invalid old HDX date" in traceback_message:
+        message = "Invalid Dataset Date Error"
 
     return message
 
@@ -191,7 +193,7 @@ def update_values_in_hdx_from_file(
     print(f"{n_failures} failures as evidenced by HDXError", flush=True)
 
 
-@hdx_error_handler
+# This function does its own error handling for hdx, so no @hdx_error_handler
 def update_values_in_hdx(
     filtered_datasets: list[Dataset], key, value, conversion_func, hdx_site: str = "stage"
 ):
@@ -219,9 +221,7 @@ def update_values_in_hdx(
         row["old_value"] = old_value
         row["new_value"] = new_value
 
-        if old_value != str(dataset[key]):
-            n_changed += 1
-        else:
+        if old_value == str(dataset[key]):
             message = "No update required"
             print(
                 f"{dataset['name']:<70.70}{old_value:<20.20}{str(dataset[key]):<20.20} "
@@ -250,7 +250,8 @@ def update_values_in_hdx(
             )
             row["message"] = message
             output_rows.append(row)
-        except (HDXError, KeyError):
+            n_changed += 1
+        except (HDXError, KeyError, ckanapi.errors.ValidationError):
             traceback_message = parse_hdxerror_traceback(traceback.format_exc())
             message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1
@@ -521,6 +522,7 @@ def download_hdx_datasets(
 
 @hdx_error_handler
 def configure_hdx_connection(hdx_site: str, verbose: bool = True):
+    Configuration._configuration = None
     try:
         Configuration.create(
             user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
@@ -531,7 +533,7 @@ def configure_hdx_connection(hdx_site: str, verbose: bool = True):
         if verbose:
             print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
     except ConfigurationError:
-        pass
+        print(traceback.format_exc(), flush=True)
 
 
 def get_approved_tag_list() -> list[str]:
@@ -590,3 +592,21 @@ def remove_extras_key_from_dataset(
         )
 
     return output_row
+
+def check_api_key(organization: str = "hdx", hdx_sites: str = None) -> list[str]:
+    if hdx_sites is None:
+        hdx_sites = ["stage", "prod"]
+    statuses = []
+    for hdx_site in hdx_sites:
+        configure_hdx_connection(hdx_site, verbose=True)
+        result = User.check_current_user_organization_access(organization, "create_dataset")
+        if result:
+            statuses.append(
+                f"API key valid on '{hdx_site}' to create datasets for '{organization}'"
+            )
+        else:
+            statuses.append(
+                f"API key not valid on '{hdx_site}' to create datasets for '{organization}'"
+            )
+
+    return statuses

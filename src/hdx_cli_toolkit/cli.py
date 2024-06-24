@@ -34,8 +34,9 @@ from hdx_cli_toolkit.hdx_utilities import (
     get_filtered_datasets,
     decorate_dataset_with_extras,
     download_hdx_datasets,
-    get_approved_tag_list,
+    get_appro
     remove_extras_key_from_dataset,
+    check_api_key,
 )
 
 
@@ -193,6 +194,8 @@ def update(
             return
 
         print(f"Updating key '{key}' with value '{value}'")
+        conversion_func = None
+        type_name = ""
         for filtered_dataset in filtered_datasets:
             try:
                 conversion_func, type_name = make_conversion_func(filtered_dataset[key])
@@ -340,7 +343,13 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
     default=False,
     help="if present then print the list of approved tags",
 )
-def show_configuration(approved_tag_list: bool = False):
+@click.option(
+    "--organization",
+    is_flag=False,
+    default="HDX",
+    help="an organization name to check API keys against",
+)
+def show_configuration(approved_tag_list: bool = False, organization: str = "HDX"):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
@@ -397,6 +406,14 @@ def show_configuration(approved_tag_list: bool = False):
     with open(default_hdx_config_yaml, encoding="utf-8") as config_file:
         config_file_contents = config_file.read()
         print(config_file_contents, flush=True)
+
+    # Check API keys
+    statuses = check_api_key(organization=organization, hdx_sites=None)
+    for status in statuses:
+        color = "green"
+        if "API key not valid" in status:
+            color = "red"
+        click.secho(f"{status}", fg=color, color=True)
 
 
 @hdx_toolkit.command(name="quickcharts")
