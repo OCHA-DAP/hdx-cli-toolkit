@@ -34,7 +34,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     get_filtered_datasets,
     decorate_dataset_with_extras,
     download_hdx_datasets,
-    get_appro
+    get_approved_tag_list,
     remove_extras_key_from_dataset,
     check_api_key,
 )
