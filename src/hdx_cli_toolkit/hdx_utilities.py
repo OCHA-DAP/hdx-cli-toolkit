@@ -593,6 +593,7 @@ def remove_extras_key_from_dataset(
 
     return output_row
 
+
 def check_api_key(organization: str = "hdx", hdx_sites: str = None) -> list[str]:
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
