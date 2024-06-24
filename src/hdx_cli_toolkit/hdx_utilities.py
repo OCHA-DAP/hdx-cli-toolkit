@@ -559,29 +559,34 @@ def get_approved_tag_list() -> list[str]:
 
 
 @hdx_error_handler
-def remove_extras_key_from_dataset(dataset_name: Dataset, hdx_site: str = "stage"):
+def remove_extras_key_from_dataset(
+    original_dataset: Dataset, hdx_site: str = "stage", verbose: bool = False
+) -> dict:
     configure_hdx_connection(hdx_site=hdx_site)
-    original_dataset = Dataset.read_from_hdx(dataset_name)
-
+    dataset_name = original_dataset["name"]
+    output_row = {"dataset_name": dataset_name, "had_extras": False, "removed_successfully": True}
     original_dataset_preserved = original_dataset.copy()
     if "extras" in original_dataset.data:
+        output_row["had_extras"] = True
         original_dataset.data.pop("extras")
         original_dataset.create_in_hdx(hxl_update=False, keys_to_delete=["extras"])
     else:
-        print(f"Extras key not found in {dataset_name} on {hdx_site}", flush=True)
-        return
+        # print(f"Extras key not found in {dataset_name} on {hdx_site}", flush=True)
+        return output_row
 
     processed_dataset = Dataset.read_from_hdx(dataset_name)
 
     if "extras" in processed_dataset.data:
-        print(f"Extras removal for {dataset_name} on {hdx_site} failed!!", flush=True)
+        output_row["removed_successully"] = False
     else:
-        print(f"Extras removal for {dataset_name} on {hdx_site} was successful!!", flush=True)
+        output_row["removed_successully"] = True
+    if verbose:
+        print_dictionary_comparison(
+            original_dataset_preserved,
+            processed_dataset,
+            "original dataset",
+            "dataset with extras removed",
+            differences=False,
+        )
 
-    print_dictionary_comparison(
-        original_dataset_preserved,
-        processed_dataset,
-        "original dataset",
-        "dataset with extras removed",
-        differences=False,
-    )
+    return output_row

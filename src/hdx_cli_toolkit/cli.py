@@ -586,10 +586,25 @@ def download(
 
 @hdx_toolkit.command(name="remove_extras_key")
 @click.option(
-    "--dataset_name",
+    "--organization",
+    is_flag=False,
+    default="",
+    help="an organization name",
+)
+@click.option(
+    "--dataset_filter",
     is_flag=False,
     default="*",
-    help="name of the dataset to update",
+    help="a dataset name or pattern on which to filter list",
+)
+@click.option(
+    "--query",
+    is_flag=False,
+    default=None,
+    help=(
+        "a dataset query string to pass to CKAN, "
+        "organization and dataset_filter are ignored if it is provided"
+    ),
 )
 @click.option(
     "--hdx_site",
@@ -597,7 +612,59 @@ def download(
     default="stage",
     help="an hdx_site value {stage|prod}",
 )
-def remove_extras_key(dataset_name: str = None, hdx_site: str = "stage"):
+@click.option(
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="if true show all user metadata",
+)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export data from list to CSV",
+)
+def remove_extras_key(
+    organization: str = "",
+    dataset_filter: str = "*",
+    query: str = None,
+    hdx_site: str = "stage",
+    output_path: str = None,
+    verbose: bool = False,
+):
     """Remove extras key from a dataset"""
     print_banner("remove_extras_key")
-    remove_extras_key_from_dataset(dataset_name, hdx_site)
+    filtered_datasets = get_filtered_datasets(
+        organization=organization,
+        dataset_filter=dataset_filter,
+        hdx_site=hdx_site,
+        query=query,
+        verbose=False,
+    )
+    print(
+        (
+            f"Removing 'extras' key from datasets on '{hdx_site}' for datasets matching "
+            f"the filter organization='{organization}' and dataset_filter='{dataset_filter}'.\n"
+            f"Found {len(filtered_datasets)} to process."
+        ),
+        flush=True,
+    )
+    print(
+        f"{'dataset_name':<70.70}{'had_extras':<20.20}{'removed_--outsuccessfully':<20.20}",
+        flush=True,
+    )
+    output_rows = []
+    for dataset in filtered_datasets:
+        status_row = remove_extras_key_from_dataset(dataset, hdx_site, verbose=verbose)
+        print(
+            f"{status_row['dataset_name']:<70}"
+            f"{str(status_row['had_extras']):<20}"
+            f"{str(status_row['removed_successfully']):<20}",
+            flush=True,
+        )
+        output_rows.append(status_row)
+    if output_path is not None:
+        print("Writing results to file", flush=True)
+        output_path = make_path_unique(output_path)
+        status = write_dictionary(output_path, output_rows, append=False)
+        print(status, flush=True)
