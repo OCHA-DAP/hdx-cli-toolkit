@@ -106,6 +106,15 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
     default=None,
     help="A file path to export data from list to CSV",
 )
+@click.option(
+    "--with_extras",
+    is_flag=True,
+    default=False,
+    help=(
+        "If set resources, resource_views (QuickCharts) "
+        "and Showcases are added to the dataset output"
+    ),
+)
 def list_datasets(
     organization: str = "",
     key: str = "private",
@@ -114,6 +123,7 @@ def list_datasets(
     query: str = None,
     hdx_site: str = "stage",
     output_path: str = None,
+    with_extras: bool = True,
 ):
     """List datasets in HDX"""
     print_banner("list")
@@ -132,15 +142,19 @@ def list_datasets(
 
     output = []
     for dataset in filtered_datasets:
+        # We always get extras for list, in case we need to access keys from there
+        dataset_dict = dataset.data
+        if with_extras:
+            dataset_dict = decorate_dataset_with_extras(dataset)
         output_row = output_template.copy()
-        output_row["dataset_name"] = dataset["name"]
+        output_row["dataset_name"] = dataset_dict["name"]
         for key_ in keys:
             if "." not in key_:
-                output_row[key_] = dataset.get(key_, "Key absent")
+                output_row[key_] = dataset_dict.get(key_, "Key absent")
                 output.append(output_row)
             else:
                 key1, key2 = key_.split(".")
-                intermediate_value = dataset.get(key1, "Key1 absent")
+                intermediate_value = dataset_dict.get(key1, "Key1 absent")
                 if isinstance(intermediate_value, dict):
                     output_row[key_] = intermediate_value.get(key2, "Key2 absent")
                     output.append(output_row)
