@@ -135,7 +135,16 @@ def list_datasets(
         output_row = output_template.copy()
         output_row["dataset_name"] = dataset["name"]
         for key_ in keys:
-            output_row[key_] = dataset.get(key_, "Key absent")
+            if "." not in key_:
+                output_row[key_] = dataset.get(key_, "Key absent")
+            else:
+                key1, key2 = key_.split(".")
+                intermediate_value = dataset.get(key1, "Key1 absent")
+                if isinstance(intermediate_value, dict):
+                    output_row[key_] = intermediate_value.get(key2, "Key2 absent")
+                else:
+                    output_row[key_] = intermediate_value
+
         output.append(output_row)
 
     print_table_from_list_of_dicts(output)
