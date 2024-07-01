@@ -189,6 +189,14 @@ hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --resource_f
 ```
 by default files are downloaded to a subdirectory `output` with no download if a file already exists.
 
+There is an issue with some datasets where a key, `extras` is found which is not valid, it prevents
+the dataset being updated. The `extras` key be removed from a set of datasets with a commandline
+like:
+
+```
+hdx-toolkit remove_extras_key --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --output_path=temp.csv
+```
+
 ## Future Work
 
 Potential new features can be found in the [GitHub issue tracker](https://github.com/OCHA-DAP/hdx-cli-toolkit/issues)
@@ -198,7 +206,7 @@ Potential new features can be found in the [GitHub issue tracker](https://github
 ```
 hdx-toolkit --help
 hdx-toolkit list --help
-hdx-toolkit configuration --organization=insecurity-insight
+hdx-toolkit configuration
 hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True --output_path=2024-04-24-update-details.csv
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
