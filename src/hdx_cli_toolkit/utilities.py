@@ -335,3 +335,26 @@ def print_dictionary_comparison(
                 flush=True,
             )
     print("-" * total_width, flush=True)
+
+
+def query_dict(key_, output, dataset_dict, output_row):
+    if "." not in key_:
+        output_row[key_] = dataset_dict.get(key_, "Key absent")
+        output.append(output_row)
+    else:
+        key1, key2 = key_.split(".")
+        intermediate_value = dataset_dict.get(key1, "Key1 absent")
+        if isinstance(intermediate_value, dict):
+            output_row[key_] = intermediate_value.get(key2, "Key2 absent")
+            output.append(output_row)
+        elif isinstance(intermediate_value, list):
+            for item in intermediate_value:
+                tmp_row = output_row.copy()
+                tmp_row[key_] = item.get(key2, "Key2 absent")
+                output.append(tmp_row)
+
+        else:
+            output_row[key_] = intermediate_value
+            output.append(output_row)
+
+    return output
