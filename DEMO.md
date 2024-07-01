@@ -34,6 +34,8 @@ The `configuration` command can also be used to list the approved dataset tags u
 This produces an output containing only the tags with no boilerplate, it can be piped into a file
 or `grep` to find particular tags.
 
+The `configuration` command will check the `stage` and `prod` API keys it holds are valid. 
+
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`. This commandline selects a single dataset, `mali-healthsites`:
 
 ```shell
@@ -79,6 +81,13 @@ The `list` command can output multiple comma separated keys to a table, and also
 ```shell
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
+
+`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. If the `--with_extras` flag is applied then keys within `resources`, `resource_views` and `showcases` can also be seen. The `--with_extras` flag forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
+
+```shell
+hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
+```
+
 
 If the `query` keyword is supplied then `organization` and `dataset_filter` keywords are ignored and the `query` is passed to CKAN:
 
@@ -209,6 +218,8 @@ hdx-toolkit list --help
 hdx-toolkit configuration
 hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True --output_path=2024-04-24-update-details.csv
+hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=organization.name --value=True
+ hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
 hdx-toolkit get_organization_metadata --organization=zurich
