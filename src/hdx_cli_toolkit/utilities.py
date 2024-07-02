@@ -344,18 +344,18 @@ def query_dict(
     output_row: dict[str, Any],
 ) -> list[dict[str, Any]]:
     if "." not in key_:
-        output_row[key_] = dataset_dict.get(key_, "Key absent")
+        output_row[key_] = dataset_dict.get(key_, f"'{key_}' key absent")
         output.append(output_row)
     else:
         key1, key2 = key_.split(".")
-        intermediate_value = dataset_dict.get(key1, "Key1 absent")
+        intermediate_value = dataset_dict.get(key1, f"'{key1}' key absent")
         if isinstance(intermediate_value, dict):
-            output_row[key_] = intermediate_value.get(key2, "Key2 absent")
+            output_row[key_] = intermediate_value.get(key2, f"'{key2}' key absent")
             output.append(output_row)
         elif isinstance(intermediate_value, list):
             for item in intermediate_value:
                 tmp_row = output_row.copy()
-                tmp_row[key_] = item.get(key2, "Key2 absent")
+                tmp_row[key_] = item.get(key2, f"'{key2}' key absent")
                 output.append(tmp_row)
 
         else:
