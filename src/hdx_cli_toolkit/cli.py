@@ -108,15 +108,6 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
     default=None,
     help="A file path to export data from list to CSV",
 )
-@click.option(
-    "--with_extras",
-    is_flag=True,
-    default=False,
-    help=(
-        "If set resources, resource_views (QuickCharts) "
-        "and Showcases are added to the dataset output"
-    ),
-)
 def list_datasets(
     organization: str = "",
     key: str = "private",
@@ -125,7 +116,6 @@ def list_datasets(
     query: Optional[str] = None,
     hdx_site: str = "stage",
     output_path: Optional[str] = None,
-    with_extras: bool = True,
 ):
     """List datasets in HDX"""
     print_banner("list")
@@ -136,6 +126,11 @@ def list_datasets(
         query=query,
         hdx_site=hdx_site,
     )
+    # Automate setting of with_extras
+    with_extras = False
+    for extra_key in ["resources", "quickcharts", "showcases"]:
+        if extra_key in key:
+            with_extras = True
 
     keys = key.split(",")
     output_template = {"dataset_name": ""}
