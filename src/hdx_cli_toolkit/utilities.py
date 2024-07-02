@@ -73,9 +73,9 @@ def _make_write_dictionary_status(append: bool, filepath: str, newfile: bool) ->
 
 
 def print_table_from_list_of_dicts(
-    column_data_rows: list[dict],
-    excluded_fields: None | list = None,
-    included_fields: None | list = None,
+    column_data_rows: list[dict[str, str]],
+    excluded_fields: None | list[str] = None,
+    included_fields: None | list[str] = None,
     truncate_width: int = 130,
     max_total_width: int = 150,
 ) -> None:
@@ -210,7 +210,7 @@ def make_conversion_func(value: Any) -> tuple[Callable | None, str]:
     return conversion_func, value_type.__name__
 
 
-def read_attributes(dataset_name: str, attributes_filepath: str) -> dict:
+def read_attributes(dataset_name: str, attributes_filepath: str) -> dict[str, str]:
     """A function for reading attributes from a standard attributes.csv file with columns:
     dataset_name,timestamp,attribute,value,secondary_value or a JSON format file containing
     either a list or a single dictionary.
@@ -298,8 +298,8 @@ def make_path_unique(input_path: str) -> str:
 
 
 def print_dictionary_comparison(
-    dict1: dict,
-    dict2: dict,
+    dict1: dict[str, str],
+    dict2: dict[str, str],
     name1: str = "first_dict",
     name2: str = "second_dict",
     differences: bool = False,
@@ -337,7 +337,12 @@ def print_dictionary_comparison(
     print("-" * total_width, flush=True)
 
 
-def query_dict(key_, output, dataset_dict, output_row):
+def query_dict(
+    key_: str,
+    output: list[dict[str, Any]],
+    dataset_dict: dict[str, Any],
+    output_row: dict[str, Any],
+) -> list[dict[str, Any]]:
     if "." not in key_:
         output_row[key_] = dataset_dict.get(key_, "Key absent")
         output.append(output_row)

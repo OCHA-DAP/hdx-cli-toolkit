@@ -6,6 +6,7 @@ import os
 import time
 
 from collections.abc import Callable
+from typing import Optional
 
 import click
 from click.decorators import FC
@@ -121,9 +122,9 @@ def list_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
     with_extras: bool = True,
 ):
     """List datasets in HDX"""
@@ -184,10 +185,10 @@ def update(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
-    from_path: str = None,
+    output_path: Optional[str] = None,
+    from_path: Optional[str] = None,
     undo: bool = False,
 ):
     """Update datasets in HDX"""
@@ -255,7 +256,7 @@ def print_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
     with_extras: bool = False,
 ):
@@ -598,7 +599,7 @@ def download(
     dataset: str = "",
     resource_filter: str = "*",
     hdx_site: str = "stage",
-    download_directory: str = None,
+    download_directory: Optional[str] = None,
 ):
     """Download dataset resources from HDX"""
     print_banner("download")
@@ -658,9 +659,9 @@ def download(
 def remove_extras_key(
     organization: str = "",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
     verbose: bool = False,
 ):
     """Remove extras key from a dataset"""
