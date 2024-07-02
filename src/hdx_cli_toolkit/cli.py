@@ -6,6 +6,7 @@ import os
 import time
 
 from collections.abc import Callable
+from typing import Optional
 
 import click
 from click.decorators import FC
@@ -20,6 +21,7 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     print_banner,
     make_path_unique,
+    query_dict,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -106,14 +108,24 @@ def multi_decorator(options: list[Callable[[FC], FC]]) -> Callable[[FC], FC]:
     default=None,
     help="A file path to export data from list to CSV",
 )
+@click.option(
+    "--with_extras",
+    is_flag=True,
+    default=False,
+    help=(
+        "If set resources, resource_views (QuickCharts) "
+        "and Showcases are added to the dataset output"
+    ),
+)
 def list_datasets(
     organization: str = "",
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
+    with_extras: bool = True,
 ):
     """List datasets in HDX"""
     print_banner("list")
@@ -132,11 +144,14 @@ def list_datasets(
 
     output = []
     for dataset in filtered_datasets:
+        # We always get extras for list, in case we need to access keys from there
+        dataset_dict = dataset.data
+        if with_extras:
+            dataset_dict = decorate_dataset_with_extras(dataset)
         output_row = output_template.copy()
-        output_row["dataset_name"] = dataset["name"]
+        output_row["dataset_name"] = dataset_dict["name"]
         for key_ in keys:
-            output_row[key_] = dataset.get(key_, "Key absent")
-        output.append(output_row)
+            output = query_dict(key_, output, dataset_dict, output_row)
 
     print_table_from_list_of_dicts(output)
     if output_path is not None:
@@ -170,10 +185,10 @@ def update(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
-    from_path: str = None,
+    output_path: Optional[str] = None,
+    from_path: Optional[str] = None,
     undo: bool = False,
 ):
     """Update datasets in HDX"""
@@ -241,7 +256,7 @@ def print_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
     with_extras: bool = False,
 ):
@@ -584,7 +599,7 @@ def download(
     dataset: str = "",
     resource_filter: str = "*",
     hdx_site: str = "stage",
-    download_directory: str = None,
+    download_directory: Optional[str] = None,
 ):
     """Download dataset resources from HDX"""
     print_banner("download")
@@ -644,9 +659,9 @@ def download(
 def remove_extras_key(
     organization: str = "",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
     verbose: bool = False,
 ):
     """Remove extras key from a dataset"""

@@ -2,15 +2,39 @@
 
 ## Motivations
 
-1. Request for DPT to do a bulk quarantine action
-2. Requirement to grab various pieces of HDX data as text for developing pipelines (organization, maintainer ids, datasets as JSON, lists of datasets for organizations...)
-3. One stop shop for "how do I do this?" - GitHub Actions, Pytest fixtures, mocks, Click CLI.
+The original motivations for developing this tool were as follows:
+1. A request from DPT to do a bulk quarantine action which was laborious to do manually;
+2. A requirement to grab various pieces of HDX data as text for developing pipelines (organization, maintainer ids, datasets as JSON, lists of datasets for organizations...);
+3. A one stop shop for "how do I do this?" both for HDX and more generally, including GitHub Actions, Pytest fixtures, mocks, Click CLI.
+
+In use it has been found to service many DPT requirements unaltered or with minor modifications.
+
+## Installation (from READ.md)
+`hdx-cli-toolkit` is a Python application published to the PyPI package repository, therefore it can be installed easily with:
+
+```pip install hdx_cli_toolkit```
+
+Users may prefer to make a global, isolated installation using [pipx](https://pypi.org/project/pipx/) which will make the `hdx-toolkit` commands available across their projects:
+
+```pipx install hdx_cli_toolkit```
+
+`hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
+
+```
+hdx_key_stage: "[hdx_key from the staging HDX site]"
+hdx_key: "[hdx_key from the prod HDX site]"
+```
+
+A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file with the * replaced with the users initials.
+```
+hdx-cli-toolkit:
+    preprefix: [YOUR_ORGANIZATION]
+    user_agent: hdx_cli_toolkit_ih
+```
 
 ## Walkthrough
 
-Installed using Python `pip` command, requires some config files and environment variables as for `hdx-python-api`.
-
-We can get the help for the library with
+Once installed we can get help for the commands available in the `hdx-toolkit` using:
 
 ```
 hdx-toolkit --help
@@ -33,6 +57,8 @@ The `configuration` command can also be used to list the approved dataset tags u
 
 This produces an output containing only the tags with no boilerplate, it can be piped into a file
 or `grep` to find particular tags.
+
+The `configuration` command will check the `stage` and `prod` API keys it holds are valid. 
 
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`. This commandline selects a single dataset, `mali-healthsites`:
 
@@ -74,11 +100,19 @@ hdx-toolkit update --organization=healthsites --dataset_filter=somalia-healthsit
 ```
 The `from_path` argument indicates the update is to be done from a file, `undo` indicates that the value to be updated is in the `old_value` column. The `from_path` operation can be done without the `undo` flag in which case the file indicated needs to contain, at least, a `dataset_name` column, a `key` column and a `new_value` column.
 
-The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword.
+The `list` command can output multiple comma separated keys to a table, and also to a CSV file specified using the `--output_path` keyword. 
 
 ```shell
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
+
+`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. If the `--with_extras` flag is applied then keys within `resources`, `resource_views` and `showcases` can also be seen. The `--with_extras` flag forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
+
+```shell
+hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
+```
+
+Functionality to access multiple keys and nested keys is not available to the `update` command.
 
 If the `query` keyword is supplied then `organization` and `dataset_filter` keywords are ignored and the `query` is passed to CKAN:
 
@@ -209,6 +243,8 @@ hdx-toolkit list --help
 hdx-toolkit configuration
 hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True --output_path=2024-04-24-update-details.csv
+hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=organization.name --value=True
+ hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
 hdx-toolkit get_organization_metadata --organization=zurich

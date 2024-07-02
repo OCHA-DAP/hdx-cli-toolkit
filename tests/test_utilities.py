@@ -13,6 +13,7 @@ from hdx_cli_toolkit.utilities import (
     str_to_bool,
     make_conversion_func,
     make_path_unique,
+    query_dict,
 )
 
 
@@ -131,3 +132,38 @@ def test_make_path_unique():
     input_filename = os.path.basename(input_path)
 
     assert os.path.basename(unique_path) == input_filename.replace(".py", "-1.py")
+
+
+def test_query_dict_organization_name(json_fixture):
+    key_ = "organization.name"
+    output = []
+    dataset_dict = json_fixture("healthsites.json")[0]
+    output_row = {"dataset_name": "test", key_: ""}
+    output = query_dict(key_, output, dataset_dict, output_row)
+
+    assert output == [{"dataset_name": "test", "organization.name": "healthsites"}]
+
+
+def test_query_dict_tags_name(json_fixture):
+    key_ = "tags.name"
+    output = []
+    dataset_dict = json_fixture("healthsites.json")[0]
+    output_row = {"dataset_name": "test", key_: ""}
+    output = query_dict(key_, output, dataset_dict, output_row)
+
+    assert output[0] == {"dataset_name": "test", "tags.name": "health facilities"}
+
+
+def test_query_dict_resources_name(json_fixture):
+    key_ = "resources.name"
+    output = []
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output_row = {"dataset_name": "test", key_: ""}
+    output = query_dict(key_, output, dataset_dict, output_row)
+
+    print(output, flush=True)
+    assert output[0] == {
+        "dataset_name": "test",
+        "resources.name": "gibraltar-healthsites-csv-with-hxl-tags",
+    }
+    assert len(output) == 5
