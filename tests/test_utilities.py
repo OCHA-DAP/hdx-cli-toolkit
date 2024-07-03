@@ -14,6 +14,7 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     make_path_unique,
     query_dict,
+    traverse,
 )
 
 
@@ -167,7 +168,6 @@ def test_query_dict_resources_name(json_fixture):
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
     output = query_dict(keys, dataset_dict, output_row)
 
-    print(output, flush=True)
     assert output[0] == {
         "dataset_name": "test",
         "resources.name": "gibraltar-healthsites-csv-with-hxl-tags",
@@ -183,7 +183,6 @@ def test_query_dict_multiple_simple(json_fixture):
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
     output = query_dict(keys, dataset_dict, output_row)
 
-    print(output, flush=True)
     assert output[0] == {
         "dataset_name": "test",
         "archived": False,
@@ -200,9 +199,59 @@ def test_query_dict_three_keys_deep(json_fixture):
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
     output = query_dict(keys, dataset_dict, output_row)
 
-    print(output, flush=True)
     assert output[0] == {
         "dataset_name": "test",
         "resources.fs_check_info.state": "Maximum key depth is 2",
     }
     assert len(output) == 1
+
+
+def test_query_dict_list_list(json_fixture):
+    keys = ["resources.fs_check_info"]  # list.list.key
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output = query_dict(keys, dataset_dict, output_row)
+
+    assert output[1] == {
+        "dataset_name": "test",
+        "resources.fs_check_info": "'fs_check_info' key absent",
+    }
+    assert len(output) == 5
+
+
+def test_traverse_simple(json_fixture):
+    keys = "archived".split(".")
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    value = traverse(keys, dataset_dict)
+    assert value == False
+
+
+def test_traverse_organization_name(json_fixture):
+    keys = "organization.name".split(".")
+    dataset_dict = json_fixture("healthsites.json")[0]
+    value = traverse(keys, dataset_dict)
+    assert value == "healthsites"
+
+
+def test_traverse_three_deep():
+    keys = "organization.name.default".split(".")
+    test_dictionary = {"organization": {"name": {"default": "healthsites", "language": "english"}}}
+    value = traverse(keys, test_dictionary)
+    assert value == "healthsites"
+
+
+def test_traverse_resources_name(json_fixture):
+    keys = "resources.name".split(".")
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    value = traverse(keys, dataset_dict)
+
+    print(value, flush=True)
+    assert value == [
+        "gibraltar-healthsites-csv-with-hxl-tags",
+        "gibraltar-healthsites-shp",
+        "gibraltar-healthsites-geojson",
+        "gibraltar-healthsites-hxl-geojson",
+        "gibraltar-healthsites-csv",
+    ]

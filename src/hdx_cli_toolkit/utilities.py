@@ -344,7 +344,7 @@ def query_dict(
 ) -> list[dict[str, Any]]:
     """This function takes a list of key definitions which can be simple (i.e. archived) or nested
     (resource.name). Nested keys can access simple dictionaries or the same key in each element
-    of a list
+    of a list. Key depth is limited to 2, and list.list nested keys are not handled.
 
     Arguments:
         keys {list[str]} -- a list of key definitions
@@ -389,3 +389,15 @@ def query_dict(
         output.append(output_row)
 
     return output
+
+
+def traverse(keys, dictionary):
+    value = dictionary.get(keys[0], f"{keys[0]} absent")
+
+    if value == f"{keys[0]} absent":
+        return value
+
+    if len(keys[1:]) == 0:
+        return value
+
+    return traverse(keys[1:], value)
