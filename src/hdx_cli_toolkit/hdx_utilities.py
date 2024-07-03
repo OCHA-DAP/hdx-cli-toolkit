@@ -11,6 +11,7 @@ import traceback
 import urllib3
 
 from pathlib import Path
+from typing import Optional
 
 import ckanapi
 import click
@@ -74,7 +75,7 @@ def parse_hdxerror_traceback(traceback_message: str):
 def get_filtered_datasets(
     organization: str = "",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
     verbose: bool = True,
 ) -> list[Dataset]:
@@ -131,7 +132,7 @@ def get_filtered_datasets(
 
 @hdx_error_handler
 def update_values_in_hdx_from_file(
-    hdx_site: str, from_file: str, undo: bool = False, output_path: str = None
+    hdx_site: str, from_file: str, undo: bool = False, output_path: Optional[str] = None
 ):
     configure_hdx_connection(hdx_site=hdx_site)
     # Open the file
@@ -491,7 +492,7 @@ def download_hdx_datasets(
     dataset_filter: str,
     resource_filter: str = "*",
     hdx_site: str = "stage",
-    download_directory: str = None,
+    download_directory: Optional[str] = None,
 ):
     configure_hdx_connection(hdx_site=hdx_site)
     if download_directory is None:
@@ -594,13 +595,13 @@ def remove_extras_key_from_dataset(
     return output_row
 
 
-def check_api_key(organization: str = "hdx", hdx_sites: str = None) -> list[str]:
+def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) -> list[str]:
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
     statuses = []
     for hdx_site in hdx_sites:
         configure_hdx_connection(hdx_site, verbose=True)
-        result = User.check_current_user_organization_access(organization, "create_dataset")
+        result = User.check_current_user_organization_access(organization, permission="create_datasets")
         if result:
             statuses.append(
                 f"API key valid on '{hdx_site}' to create datasets for '{organization}'"
