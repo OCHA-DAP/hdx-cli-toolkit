@@ -225,33 +225,49 @@ def test_traverse_simple(json_fixture):
     keys = "archived".split(".")
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
     value = traverse(keys, dataset_dict)
-    assert value == False
+    assert value[0] == False
 
 
 def test_traverse_organization_name(json_fixture):
     keys = "organization.name".split(".")
     dataset_dict = json_fixture("healthsites.json")[0]
     value = traverse(keys, dataset_dict)
-    assert value == "healthsites"
+    assert value[0] == "healthsites"
 
 
 def test_traverse_three_deep():
     keys = "organization.name.default".split(".")
     test_dictionary = {"organization": {"name": {"default": "healthsites", "language": "english"}}}
     value = traverse(keys, test_dictionary)
-    assert value == "healthsites"
+    assert value[0] == "healthsites"
 
 
 def test_traverse_resources_name(json_fixture):
     keys = "resources.name".split(".")
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
-    value = traverse(keys, dataset_dict)
+    values = traverse(keys, dataset_dict)
 
-    print(value, flush=True)
-    assert value == [
+    for value in values:
+        print(value, flush=True)
+
+    assert values == [
         "gibraltar-healthsites-csv-with-hxl-tags",
         "gibraltar-healthsites-shp",
         "gibraltar-healthsites-geojson",
         "gibraltar-healthsites-hxl-geojson",
         "gibraltar-healthsites-csv",
+    ]
+
+
+def test_traverse_list_list_value(json_fixture):
+    keys = "resources.fs_check_info.state".split(".")
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    values = traverse(keys, dataset_dict)
+    print(values, flush=True)
+    assert values == [
+        "processing",
+        "fs_check_info absent",
+        "fs_check_info absent",
+        "fs_check_info absent",
+        "processing",
     ]

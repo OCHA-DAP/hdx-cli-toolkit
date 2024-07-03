@@ -391,13 +391,27 @@ def query_dict(
     return output
 
 
-def traverse(keys, dictionary):
-    value = dictionary.get(keys[0], f"{keys[0]} absent")
+def traverse(keys, dictionary, value_list=None):
+    if value_list is None:
+        value_list = []
+
+    if len(keys) == 0:
+        return value_list
+
+    if isinstance(dictionary, list):
+        for item in dictionary:
+            value = traverse(keys, item)
+            value_list.append(value[0])
+        return value_list
+    else:
+        value = dictionary.get(keys[0], f"{keys[0]} absent")
 
     if value == f"{keys[0]} absent":
-        return value
+        value_list.append(value)
+        return value_list
 
     if len(keys[1:]) == 0:
-        return value
+        value_list.append(value)
+        return value_list
 
-    return traverse(keys[1:], value)
+    return traverse(keys[1:], value, value_list)
