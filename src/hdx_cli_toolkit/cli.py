@@ -6,6 +6,7 @@ import os
 import time
 
 from collections.abc import Callable
+from typing import Optional
 
 import click
 from click.decorators import FC
@@ -20,6 +21,7 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     print_banner,
     make_path_unique,
+    query_dict,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -111,9 +113,9 @@ def list_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
 ):
     """List datasets in HDX"""
     print_banner("list")
@@ -124,6 +126,11 @@ def list_datasets(
         query=query,
         hdx_site=hdx_site,
     )
+    # Automate setting of with_extras
+    with_extras = False
+    for extra_key in ["resources", "quickcharts", "showcases", "fs_check_info"]:
+        if extra_key in key:
+            with_extras = True
 
     keys = key.split(",")
     output_template = {"dataset_name": ""}
@@ -132,12 +139,25 @@ def list_datasets(
 
     output = []
     for dataset in filtered_datasets:
+        # We always get extras for list, in case we need to access keys from there
+        dataset_dict = dataset.data
+        if with_extras:
+            dataset_dict = decorate_dataset_with_extras(dataset)
         output_row = output_template.copy()
-        output_row["dataset_name"] = dataset["name"]
-        for key_ in keys:
-            output_row[key_] = dataset.get(key_, "Key absent")
-        output.append(output_row)
+        output_row["dataset_name"] = dataset_dict["name"]
+        new_rows = query_dict(keys, dataset_dict, output_row)
+        if new_rows:
+            output.extend(new_rows)
 
+    # Check output columns for lists or dicts
+    if len(output) != 0:
+        for k, v in output[0].items():
+            if isinstance(v, list) or isinstance(v, dict):
+                click.secho(
+                    f"Field '{k}' is list or dict type, use --output_path to see full output",
+                    fg="red",
+                    color=True,
+                )
     print_table_from_list_of_dicts(output)
     if output_path is not None:
         output_path = make_path_unique(output_path)
@@ -170,10 +190,10 @@ def update(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
-    from_path: str = None,
+    output_path: Optional[str] = None,
+    from_path: Optional[str] = None,
     undo: bool = False,
 ):
     """Update datasets in HDX"""
@@ -241,7 +261,7 @@ def print_datasets(
     key: str = "private",
     value: str = "value",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
     with_extras: bool = False,
 ):
@@ -346,10 +366,10 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 @click.option(
     "--organization",
     is_flag=False,
-    default="HDX",
+    default="hdx",
     help="an organization name to check API keys against",
 )
-def show_configuration(approved_tag_list: bool = False, organization: str = "HDX"):
+def show_configuration(approved_tag_list: bool = False, organization: str = "hdx"):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
@@ -584,7 +604,7 @@ def download(
     dataset: str = "",
     resource_filter: str = "*",
     hdx_site: str = "stage",
-    download_directory: str = None,
+    download_directory: Optional[str] = None,
 ):
     """Download dataset resources from HDX"""
     print_banner("download")
@@ -644,9 +664,9 @@ def download(
 def remove_extras_key(
     organization: str = "",
     dataset_filter: str = "*",
-    query: str = None,
+    query: Optional[str] = None,
     hdx_site: str = "stage",
-    output_path: str = None,
+    output_path: Optional[str] = None,
     verbose: bool = False,
 ):
     """Remove extras key from a dataset"""

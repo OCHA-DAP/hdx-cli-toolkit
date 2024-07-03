@@ -73,9 +73,9 @@ def _make_write_dictionary_status(append: bool, filepath: str, newfile: bool) ->
 
 
 def print_table_from_list_of_dicts(
-    column_data_rows: list[dict],
-    excluded_fields: None | list = None,
-    included_fields: None | list = None,
+    column_data_rows: list[dict[str, str]],
+    excluded_fields: None | list[str] = None,
+    included_fields: None | list[str] = None,
     truncate_width: int = 130,
     max_total_width: int = 150,
 ) -> None:
@@ -210,7 +210,7 @@ def make_conversion_func(value: Any) -> tuple[Callable | None, str]:
     return conversion_func, value_type.__name__
 
 
-def read_attributes(dataset_name: str, attributes_filepath: str) -> dict:
+def read_attributes(dataset_name: str, attributes_filepath: str) -> dict[str, str]:
     """A function for reading attributes from a standard attributes.csv file with columns:
     dataset_name,timestamp,attribute,value,secondary_value or a JSON format file containing
     either a list or a single dictionary.
@@ -298,8 +298,8 @@ def make_path_unique(input_path: str) -> str:
 
 
 def print_dictionary_comparison(
-    dict1: dict,
-    dict2: dict,
+    dict1: dict[str, str],
+    dict2: dict[str, str],
     name1: str = "first_dict",
     name2: str = "second_dict",
     differences: bool = False,
@@ -335,3 +335,83 @@ def print_dictionary_comparison(
                 flush=True,
             )
     print("-" * total_width, flush=True)
+
+
+def query_dict(
+    keys: list[str],
+    dataset_dict: dict[str, Any],
+    output_row: dict[str, Any],
+) -> list[dict[str, Any]]:
+    """This function takes a list of key definitions which can be simple (i.e. archived) or nested
+    (resource.name). Nested keys can access simple dictionaries or the same key in each element
+    of a list. Key depth is limited to 2, and list.list nested keys are not handled.
+
+    Arguments:
+        keys {list[str]} -- a list of key definitions
+        dataset_dict {dict[str, Any]} -- the dictionary from which data is to be extracted
+        output_row {dict[str, Any]} -- a dictionary containing any prefix information
+
+    Returns:
+        list[dict[str, Any]] -- a list of dictionaries which contain the prefix and extracted values
+    """
+    output = []
+    # Handle non-list keys - generates 1 output row
+    for key_ in keys:
+        list_keys = []
+        if "." not in key_:
+            # Handles simple keys
+            output_row[key_] = dataset_dict.get(key_, f"'{key_}' key absent")
+        else:
+            # Handles nested keys
+            try:
+                key1, key2 = key_.split(".")
+            except ValueError:
+                print(
+                    f"'{key_}' is nested to depth {len(key_.split('.'))}, maximum depth is 2",
+                    flush=True,
+                )
+                output_row[key_] = "Maximum key depth is 2"
+                continue
+            intermediate_value = dataset_dict.get(key1, f"'{key1}' key absent")
+            if isinstance(intermediate_value, dict):
+                output_row[key_] = intermediate_value.get(key2, f"'{key2}' key absent")
+            elif isinstance(intermediate_value, list):
+                list_keys.append((key1, key2, intermediate_value))
+
+    if len(list_keys) != 0:
+        # Handle list keys
+        for item in list_keys:
+            for element in item[2]:
+                tmp_row = output_row.copy()
+                tmp_row[key_] = element.get(item[1], f"'{item[1]}' key absent")
+                output.append(tmp_row)
+    else:
+        output.append(output_row)
+
+    return output
+
+
+def traverse(keys, dictionary, value_list=None):
+    if value_list is None:
+        value_list = []
+
+    if len(keys) == 0:
+        return value_list
+
+    if isinstance(dictionary, list):
+        for item in dictionary:
+            value = traverse(keys, item)
+            value_list.append(value[0])
+        return value_list
+    else:
+        value = dictionary.get(keys[0], f"{keys[0]} absent")
+
+    if value == f"{keys[0]} absent":
+        value_list.append(value)
+        return value_list
+
+    if len(keys[1:]) == 0:
+        value_list.append(value)
+        return value_list
+
+    return traverse(keys[1:], value, value_list)
