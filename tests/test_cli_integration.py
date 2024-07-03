@@ -46,7 +46,7 @@ def test_configuration():
     expected_outputs = [
         "Values of relevant environment variables (used in absence of supplied values):",
         ' url: "https://stage.data-humdata-org.ahconu.org"',
-        "API key not valid on 'stage' to create datasets for 'HDX'",
+        "API key valid on 'stage' to create datasets for 'hdx'",
     ]
 
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
