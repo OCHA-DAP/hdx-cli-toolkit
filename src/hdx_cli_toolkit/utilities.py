@@ -338,28 +338,54 @@ def print_dictionary_comparison(
 
 
 def query_dict(
-    key_: str,
-    output: list[dict[str, Any]],
+    keys: list[str],
     dataset_dict: dict[str, Any],
     output_row: dict[str, Any],
 ) -> list[dict[str, Any]]:
-    if "." not in key_:
-        output_row[key_] = dataset_dict.get(key_, f"'{key_}' key absent")
-        output.append(output_row)
-    else:
-        key1, key2 = key_.split(".")
-        intermediate_value = dataset_dict.get(key1, f"'{key1}' key absent")
-        if isinstance(intermediate_value, dict):
-            output_row[key_] = intermediate_value.get(key2, f"'{key2}' key absent")
-            output.append(output_row)
-        elif isinstance(intermediate_value, list):
-            for item in intermediate_value:
-                tmp_row = output_row.copy()
-                tmp_row[key_] = item.get(key2, f"'{key2}' key absent")
-                output.append(tmp_row)
+    """This function takes a list of key definitions which can be simple (i.e. archived) or nested
+    (resource.name). Nested keys can access simple dictionaries or the same key in each element
+    of a list
 
+    Arguments:
+        keys {list[str]} -- a list of key definitions
+        dataset_dict {dict[str, Any]} -- the dictionary from which data is to be extracted
+        output_row {dict[str, Any]} -- a dictionary containing any prefix information
+
+    Returns:
+        list[dict[str, Any]] -- a list of dictionaries which contain the prefix and extracted values
+    """
+    output = []
+    # Handle non-list keys - generates 1 output row
+    for key_ in keys:
+        list_keys = []
+        if "." not in key_:
+            # Handles simple keys
+            output_row[key_] = dataset_dict.get(key_, f"'{key_}' key absent")
         else:
-            output_row[key_] = intermediate_value
-            output.append(output_row)
+            # Handles nested keys
+            try:
+                key1, key2 = key_.split(".")
+            except ValueError:
+                print(
+                    f"'{key_}' is nested to depth {len(key_.split('.'))}, maximum depth is 2",
+                    flush=True,
+                )
+                output_row[key_] = "Maximum key depth is 2"
+                continue
+            intermediate_value = dataset_dict.get(key1, f"'{key1}' key absent")
+            if isinstance(intermediate_value, dict):
+                output_row[key_] = intermediate_value.get(key2, f"'{key2}' key absent")
+            elif isinstance(intermediate_value, list):
+                list_keys.append((key1, key2, intermediate_value))
+
+    if len(list_keys) != 0:
+        # Handle list keys
+        for item in list_keys:
+            for element in item[2]:
+                tmp_row = output_row.copy()
+                tmp_row[key_] = element.get(item[1], f"'{item[1]}' key absent")
+                output.append(tmp_row)
+    else:
+        output.append(output_row)
 
     return output

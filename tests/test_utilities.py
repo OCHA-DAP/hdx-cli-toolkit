@@ -135,31 +135,37 @@ def test_make_path_unique():
 
 
 def test_query_dict_organization_name(json_fixture):
-    key_ = "organization.name"
-    output = []
+    keys = ["organization.name"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
     dataset_dict = json_fixture("healthsites.json")[0]
-    output_row = {"dataset_name": "test", key_: ""}
-    output = query_dict(key_, output, dataset_dict, output_row)
+
+    output = query_dict(keys, dataset_dict, output_row)
+    print(output, flush=True)
 
     assert output == [{"dataset_name": "test", "organization.name": "healthsites"}]
 
 
 def test_query_dict_tags_name(json_fixture):
-    key_ = "tags.name"
-    output = []
+    keys = ["tags.name"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
     dataset_dict = json_fixture("healthsites.json")[0]
-    output_row = {"dataset_name": "test", key_: ""}
-    output = query_dict(key_, output, dataset_dict, output_row)
+    output = query_dict(keys, dataset_dict, output_row)
 
+    assert len(output) == 1
     assert output[0] == {"dataset_name": "test", "tags.name": "health facilities"}
 
 
 def test_query_dict_resources_name(json_fixture):
-    key_ = "resources.name"
-    output = []
+    keys = ["resources.name"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
-    output_row = {"dataset_name": "test", key_: ""}
-    output = query_dict(key_, output, dataset_dict, output_row)
+    output = query_dict(keys, dataset_dict, output_row)
 
     print(output, flush=True)
     assert output[0] == {
@@ -167,3 +173,36 @@ def test_query_dict_resources_name(json_fixture):
         "resources.name": "gibraltar-healthsites-csv-with-hxl-tags",
     }
     assert len(output) == 5
+
+
+def test_query_dict_multiple_simple(json_fixture):
+    keys = ["archived", "batch"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output = query_dict(keys, dataset_dict, output_row)
+
+    print(output, flush=True)
+    assert output[0] == {
+        "dataset_name": "test",
+        "archived": False,
+        "batch": "3ad4dc59-661d-4d8d-979f-4b9e01542612",
+    }
+    assert len(output) == 1
+
+
+def test_query_dict_three_keys_deep(json_fixture):
+    keys = ["resources.fs_check_info.state"]  # list.list.key
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output = query_dict(keys, dataset_dict, output_row)
+
+    print(output, flush=True)
+    assert output[0] == {
+        "dataset_name": "test",
+        "resources.fs_check_info.state": "Maximum key depth is 2",
+    }
+    assert len(output) == 1

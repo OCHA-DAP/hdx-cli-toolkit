@@ -601,9 +601,7 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
     statuses = []
     for hdx_site in hdx_sites:
         configure_hdx_connection(hdx_site, verbose=True)
-        result = User.check_current_user_organization_access(
-            organization, permission="create_dataset"
-        )
+        result = User.check_current_user_organization_access(organization, permission="create_datasets")
         if result:
             statuses.append(
                 f"API key valid on '{hdx_site}' to create datasets for '{organization}'"

@@ -128,7 +128,7 @@ def list_datasets(
     )
     # Automate setting of with_extras
     with_extras = False
-    for extra_key in ["resources", "quickcharts", "showcases"]:
+    for extra_key in ["resources", "quickcharts", "showcases", "fs_check_info"]:
         if extra_key in key:
             with_extras = True
 
@@ -145,9 +145,19 @@ def list_datasets(
             dataset_dict = decorate_dataset_with_extras(dataset)
         output_row = output_template.copy()
         output_row["dataset_name"] = dataset_dict["name"]
-        for key_ in keys:
-            output = query_dict(key_, output, dataset_dict, output_row)
+        new_rows = query_dict(keys, dataset_dict, output_row)
+        if new_rows:
+            output.extend(new_rows)
 
+    # Check output columns for lists or dicts
+    if len(output) != 0:
+        for k, v in output[0].items():
+            if isinstance(v, list) or isinstance(v, dict):
+                click.secho(
+                    f"Field '{k}' is list or dict type, use --output_path to see full output",
+                    fg="red",
+                    color=True,
+                )
     print_table_from_list_of_dicts(output)
     if output_path is not None:
         output_path = make_path_unique(output_path)
@@ -356,10 +366,10 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 @click.option(
     "--organization",
     is_flag=False,
-    default="HDX",
+    default="hdx",
     help="an organization name to check API keys against",
 )
-def show_configuration(approved_tag_list: bool = False, organization: str = "HDX"):
+def show_configuration(approved_tag_list: bool = False, organization: str = "hdx"):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
