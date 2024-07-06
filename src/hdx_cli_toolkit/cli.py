@@ -43,6 +43,7 @@ from hdx_cli_toolkit.hdx_utilities import (
 
 
 @click.group()
+@click.version_option()
 def hdx_toolkit() -> None:
     """Tools for Commandline interactions with HDX"""
 
