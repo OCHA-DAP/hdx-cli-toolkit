@@ -30,6 +30,10 @@ Users may prefer to make a global, isolated installation using [pipx](https://py
 
 ```pipx install hdx_cli_toolkit```
 
+`hdx-toolkit` can then be updated with:
+
+```pipx install --force hdx_cli_toolkit```
+
 `hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
 ```
@@ -55,6 +59,7 @@ Usage: hdx-toolkit [OPTIONS] COMMAND [ARGS]...
   Tools for Commandline interactions with HDX
 
 Options:
+  --version  Show the version and exit.
   --help  Show this message and exit.
 
 Commands:
