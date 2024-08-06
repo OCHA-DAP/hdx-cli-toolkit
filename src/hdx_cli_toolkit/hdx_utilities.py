@@ -42,7 +42,12 @@ def hdx_error_handler(f):
     def inner(*args, **kwargs):
         try:
             return f(*args, **kwargs)
-        except (HDXError, ckanapi.errors.ValidationError):
+        except (
+            HDXError,
+            ckanapi.errors.ValidationError,
+            FileNotFoundError,
+            ConfigurationError,
+        ):
             traceback_message = traceback.format_exc()
             message = parse_hdxerror_traceback(traceback_message)
             if message != "unknown":
@@ -67,6 +72,12 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "No Resources Error"
     elif "{'dataset_date': ['Invalid old HDX date" in traceback_message:
         message = "Invalid Dataset Date Error"
+    elif ".useragents.yaml" in traceback_message and "FileNotFoundError" in traceback_message:
+        message = "No .useragents.yaml file provided Error"
+    elif "There is no HDX configuration!" in traceback_message:
+        message = "There is no HDX configuration Error"
+    elif "No HDX API key supplied as a parameter or in configuration" in traceback_message:
+        message = "No HDX API key supplied Error"
 
     return message
 
@@ -524,17 +535,14 @@ def download_hdx_datasets(
 @hdx_error_handler
 def configure_hdx_connection(hdx_site: str, verbose: bool = True):
     Configuration._configuration = None
-    try:
-        Configuration.create(
-            user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
-            user_agent_lookup="hdx-cli-toolkit",
-            hdx_site=hdx_site,
-            hdx_read_only=False,
-        )
-        if verbose:
-            print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
-    except ConfigurationError:
-        print(traceback.format_exc(), flush=True)
+    Configuration.create(
+        user_agent_config_yaml=os.path.join(os.path.expanduser("~"), ".useragents.yaml"),
+        user_agent_lookup="hdx-cli-toolkit",
+        hdx_site=hdx_site,
+        hdx_read_only=False,
+    )
+    if verbose:
+        print(f"Connected to HDX site {Configuration.read().get_hdx_site_url()}", flush=True)
 
 
 def get_approved_tag_list() -> list[str]:
@@ -595,6 +603,7 @@ def remove_extras_key_from_dataset(
     return output_row
 
 
+@hdx_error_handler
 def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) -> list[str]:
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
