@@ -399,6 +399,19 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
                     secret_part = censor_secret(secret_part)
                     row = key_part + ': "' + secret_part
                 print(row, flush=True)
+    else:
+        click.secho(
+            f"No user configuration file at {user_hdx_config_yaml}. ",
+            bold=True,
+            color=True,
+            fg="red",
+        )
+        print(
+            "Unless API keys are supplied by environment variables a configuration file "
+            f"should be saved to {user_hdx_config_yaml} containing at least: \n\n"
+            'hdx_key: "[API Key obtained from '
+            'https://data.humdata.org/user/[your username]]/api-tokens]"\n'
+        )
 
     user_agent_config_yaml = os.path.join(os.path.expanduser("~"), ".useragents.yaml")
     if os.path.exists(user_agent_config_yaml):
@@ -406,7 +419,19 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
         with open(user_agent_config_yaml, encoding="utf-8") as config_file:
             user_agents_file_contents = config_file.read()
             print(user_agents_file_contents, flush=True)
-
+    else:
+        click.secho(
+            f"No user agents file found at {user_agent_config_yaml}",
+            color=True,
+            fg="red",
+        )
+        print(
+            f"The user agents file should be saved to {user_agent_config_yaml} "
+            "and contain at least the following:\n\n"
+            "hdx-cli-toolkit:\n"
+            "  preprefix: [your_organization]\n"
+            "  user_agent: hdx_cli_toolkit_[your_intitials]\n"
+        )
     # Check Environment variables
     environment_variables = ["HDX_KEY", "HDX_KEY_STAGE", "HDX_SITE", "HDX_URL"]
     click.secho(
@@ -430,11 +455,12 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
 
     # Check API keys
     statuses = check_api_key(organization=organization, hdx_sites=None)
-    for status in statuses:
-        color = "green"
-        if "API key not valid" in status:
-            color = "red"
-        click.secho(f"{status}", fg=color, color=True)
+    if statuses is not None:
+        for status in statuses:
+            color = "green"
+            if "API key not valid" in status:
+                color = "red"
+            click.secho(f"{status}", fg=color, color=True)
 
 
 @hdx_toolkit.command(name="quickcharts")
