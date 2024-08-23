@@ -142,6 +142,8 @@ def list_datasets(
     for dataset in filtered_datasets:
         # We always get extras for list, in case we need to access keys from there
         dataset_dict = dataset.data
+        if dataset_dict is None:
+            continue
         if with_extras:
             dataset_dict = decorate_dataset_with_extras(dataset)
         output_row = output_template.copy()

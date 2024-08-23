@@ -119,6 +119,7 @@ If the `query` keyword is supplied then `organization` and `dataset_filter` keyw
 ```shell
 hdx-toolkit list --query=archived:true --key=owner_org
 ```
+There is a guide to the CKAN query language [here](https://github.com/OCHA-DAP/hdx-ckan/blob/dev/ckanext-hdx_theme/docs/search/package_search.rst).
 
 Another pain point for me is getting an organization id, the `get_organization_metadata` command fixes this. We can just get the id with an organization name, note wildcards are implicit in the organization specification since this is how the CKAN API works:
 
@@ -247,6 +248,7 @@ hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --
  hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
+ hdx-toolkit list --query="cod_level:(cod-standard and cod-enhanced) +dataseries_name:COD\ -\ Subnational\ Population\ Statistics" --key=title,organization.name,dataset_date --output_path=2024-08-15-COD-export.csv
 hdx-toolkit get_organization_metadata --organization=zurich
 hdx-toolkit get_organization_metadata --organization=eth-zurich-weather-and-climate-risks --verbose
 hdx-toolkit get_user_metadata --user=hopkinson
