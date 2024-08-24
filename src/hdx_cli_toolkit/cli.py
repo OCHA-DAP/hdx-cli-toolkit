@@ -5,7 +5,9 @@ import json
 import os
 import time
 
+from collections import Counter
 from collections.abc import Callable
+
 from typing import Optional
 
 import click
@@ -746,6 +748,13 @@ def remove_extras_key(
     help="an hdx_site value {stage|prod}",
 )
 @click.option(
+    "--action",
+    is_flag=False,
+    default="survey",
+    help="an action to take {survey}",
+)
+@click.option("--key", is_flag=False, default="private", help="a key or list of keys")
+@click.option(
     "--verbose",
     is_flag=True,
     default=False,
@@ -767,6 +776,8 @@ def scan(
     hdx_site: str = "stage",
     output_path: Optional[str] = None,
     input_path: Optional[str] = None,
+    action: str = "survey",
+    key: str = "name",
     verbose: bool = False,
 ):
     """Scan all of HDX and perform an action"""
@@ -795,31 +806,44 @@ def scan(
             return
 
     # print(json.dumps(response, indent=4), flush=True)
-    t0 = time.time()
-    n_csrf_tokens = 0
-    n_in_quarantine = 0
-    n_broken_link = 0
-    for i, dataset in enumerate(response["result"]["results"]):
-        if i % 100 == 0:
-            print(f"{i}. {dataset['name']}", flush=True)
-        for resource in dataset["resources"]:
-            if "_csrf_token" in resource.keys():
-                comment = "has _csrf_token"
-                print(dataset["name"], flush=True)
-                print(f"\t{resource['name']} {comment}", flush=True)
-                n_csrf_tokens += 1
-            else:
-                comment = ""
-            if "in_quarantine" in resource.keys():
-                n_in_quarantine += 1
-            if "broken_link" in resource.keys():
-                n_broken_link += 1
+    if action == "survey":
+        t0 = time.time()
+        key_occurence_counter = scan_survey(response, key, verbose=verbose)
 
+        for key_, value in key_occurence_counter.items():
+            print(f"Found {value} occurences of {key_}")
         # print(json.dumps(dataset, indent=4), flush=True)
-    print(f"Found {n_csrf_tokens} _csrf_tokens", flush=True)
-    print(f"Found {n_in_quarantine} in_quarantine", flush=True)
-    print(f"Found {n_broken_link} broken_link", flush=True)
-    print(f"Scanning results took {(time.time() - t0):0.2f} seconds")
+        # print(f"Found {n_csrf_tokens} _csrf_tokens", flush=True)
+        # print(f"Found {n_in_quarantine} in_quarantine", flush=True)
+        # print(f"Found {n_broken_link} broken_link", flush=True)
+        print(f"Scanning results took {(time.time() - t0):0.2f} seconds")
+
+
+def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
+    key_occurence_counter = Counter()
+    list_of_keys = key.split(",")
+
+    for i, dataset in enumerate(response["result"]["results"]):
+        # if i % 100 == 0:
+        #     print(f"{i}. {dataset['name']}", flush=True)
+        for key_ in list_of_keys:
+            if key_.startswith("resources."):
+                resource_key = key_.split(".")[1]
+                for resource in dataset["resources"]:
+                    if resource_key in resource.keys():
+                        key_occurence_counter[key_] += 1
+                        if verbose:
+                            comment = f"has {key_}"
+                            print(dataset["name"], flush=True)
+                            print(f"\t{resource['name']} {comment}", flush=True)
+            else:
+                if key_ in dataset.keys():
+                    key_occurence_counter[key_] += 1
+                    if verbose:
+                        comment = f"has {key_}"
+                        print(f"{dataset['name']} {comment}", flush=True)
+
+    return key_occurence_counter
     # print(
     #     (
     #         f"Removing 'extras' key from datasets on '{hdx_site}' for datasets matching "
