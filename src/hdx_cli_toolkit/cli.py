@@ -39,6 +39,8 @@ from hdx_cli_toolkit.hdx_utilities import (
     get_approved_tag_list,
     remove_extras_key_from_dataset,
     check_api_key,
+    fetch_data_from_ckan_api,
+    get_hdx_url_and_key,
 )
 
 
@@ -734,3 +736,114 @@ def remove_extras_key(
         output_path = make_path_unique(output_path)
         status = write_dictionary(output_path, output_rows, append=False)
         print(status, flush=True)
+
+
+@hdx_toolkit.command(name="scan")
+@click.option(
+    "--hdx_site",
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value {stage|prod}",
+)
+@click.option(
+    "--verbose",
+    is_flag=True,
+    default=False,
+    help="if true show all user metadata",
+)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export package_search records for datasets",
+)
+@click.option(
+    "--input_path",
+    is_flag=False,
+    default=None,
+    help="A file path to import package_search records for datasets",
+)
+def scan(
+    hdx_site: str = "stage",
+    output_path: Optional[str] = None,
+    input_path: Optional[str] = None,
+    verbose: bool = False,
+):
+    """Scan all of HDX and perform an action"""
+    print_banner("scan HDX")
+    t0 = time.time()
+    if input_path is None:
+        hdx_site_url, hdx_api_key = get_hdx_url_and_key(hdx_site=hdx_site)
+        package_search_url = f"{hdx_site_url}/api/action/package_search"
+        query = {"fq": "*:*", "start": 0, "rows": 1000}
+        response = fetch_data_from_ckan_api(
+            package_search_url, query, hdx_api_key=hdx_api_key, fetch_all=True
+        )
+        print(f"Querying CKAN took {(time.time() - t0)/60:0.2f} minutes")
+        if output_path is not None:
+            output_path = make_path_unique(output_path)
+            print(f"Writing results to file: {output_path}", flush=True)
+            with open(output_path, "w", encoding="utf-8") as json_file_handle:
+                json.dump(response, json_file_handle)
+    else:
+        if os.path.exists(input_path):
+            with open(input_path, encoding="utf-8") as json_file_handle:
+                response = json.load(json_file_handle)
+            print(f"Loading CKAN snapshot from file took {(time.time() - t0):0.2f} seconds")
+        else:
+            print(f"Input file at {input_path} does not exist, terminating")
+            return
+
+    # print(json.dumps(response, indent=4), flush=True)
+    t0 = time.time()
+    n_csrf_tokens = 0
+    n_in_quarantine = 0
+    n_broken_link = 0
+    for i, dataset in enumerate(response["result"]["results"]):
+        if i % 100 == 0:
+            print(f"{i}. {dataset['name']}", flush=True)
+        for resource in dataset["resources"]:
+            if "_csrf_token" in resource.keys():
+                comment = "has _csrf_token"
+                print(dataset["name"], flush=True)
+                print(f"\t{resource['name']} {comment}", flush=True)
+                n_csrf_tokens += 1
+            else:
+                comment = ""
+            if "in_quarantine" in resource.keys():
+                n_in_quarantine += 1
+            if "broken_link" in resource.keys():
+                n_broken_link += 1
+
+        # print(json.dumps(dataset, indent=4), flush=True)
+    print(f"Found {n_csrf_tokens} _csrf_tokens", flush=True)
+    print(f"Found {n_in_quarantine} in_quarantine", flush=True)
+    print(f"Found {n_broken_link} broken_link", flush=True)
+    print(f"Scanning results took {(time.time() - t0):0.2f} seconds")
+    # print(
+    #     (
+    #         f"Removing 'extras' key from datasets on '{hdx_site}' for datasets matching "
+    #         f"the filter organization='{organization}' and dataset_filter='{dataset_filter}'.\n"
+    #         f"Found {len(filtered_datasets)} to process."
+    #     ),
+    #     flush=True,
+    # )
+    # print(
+    #     f"{'dataset_name':<70.70}{'had_extras':<20.20}{'removed_--outsuccessfully':<20.20}",
+    #     flush=True,
+    # )
+    # output_rows = []
+    # for dataset in filtered_datasets:
+    #     status_row = remove_extras_key_from_dataset(dataset, hdx_site, verbose=verbose)
+    #     print(
+    #         f"{status_row['dataset_name']:<70}"
+    #         f"{str(status_row['had_extras']):<20}"
+    #         f"{str(status_row['removed_successfully']):<20}",
+    #         flush=True,
+    #     )
+    #     output_rows.append(status_row)
+    # if output_path is not None:
+    #     print("Writing results to file", flush=True)
+    #     output_path = make_path_unique(output_path)
+    #     status = write_dictionary(output_path, output_rows, append=False)
+    #     print(status, flush=True)
