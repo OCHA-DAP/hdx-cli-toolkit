@@ -1,15 +1,23 @@
-# Demo Script
+# User Guide
 
-## Motivations
+## Overview
 
-The original motivations for developing this tool were as follows:
-1. A request from DPT to do a bulk quarantine action which was laborious to do manually;
-2. A requirement to grab various pieces of HDX data as text for developing pipelines (organization, maintainer ids, datasets as JSON, lists of datasets for organizations...);
-3. A one stop shop for "how do I do this?" both for HDX and more generally, including GitHub Actions, Pytest fixtures, mocks, Click CLI.
+This toolkit provides a commandline interface to the [Humanitarian Data Exchange](https://data.humdata.org/) (HDX) to allow for bulk modification operations and other administrative activities such as getting `id` values for users and organization. It is useful for those managing HDX and developers building data pipelines for HDX. The currently supported commands are as follows:
 
-In use it has been found to service many DPT requirements unaltered or with minor modifications.
+```
+  configuration              Print configuration information to terminal
+  download                   Download dataset resources from HDX
+  get_organization_metadata  Get an organization id and other metadata
+  get_user_metadata          Get user id and other metadata
+  list                       List datasets in HDX
+  print                      Print datasets in HDX to the terminal
+  quickcharts                Upload QuickChart JSON description to HDX
+  showcase                   Upload showcase to HDX
+  update                     Update datasets in HDX
+  update_resource            Update a resource in HDX
+```
 
-## Installation (from READ.md)
+## Installation (from README.md)
 `hdx-cli-toolkit` is a Python application published to the PyPI package repository, therefore it can be installed easily with:
 
 ```pip install hdx_cli_toolkit```
@@ -32,7 +40,7 @@ hdx-cli-toolkit:
     user_agent: hdx_cli_toolkit_ih
 ```
 
-## Walkthrough
+## Getting Help
 
 Once installed we can get help for the commands available in the `hdx-toolkit` using:
 
@@ -44,6 +52,8 @@ Or for a specific command:
 ```
 hdx-toolkit list --help
 ```
+
+## HDX Configuration
 
 Understanding the `Configuration` used by `hdx-python-api` can be challenging for new users, so the `configuration` command will echo the relevant local values (censoring any secrets):
 
@@ -59,6 +69,8 @@ This produces an output containing only the tags with no boilerplate, it can be 
 or `grep` to find particular tags.
 
 The `configuration` command will check the `stage` and `prod` API keys it holds are valid. 
+
+## List and Update
 
 The `list` and `update` commands are designed to be used together, using `list` to check what a potentially destructive `update` will do, and then simply repeating the same commandline with `list` replaced with `update`. This commandline selects a single dataset, `mali-healthsites`:
 
@@ -121,6 +133,8 @@ hdx-toolkit list --query=archived:true --key=owner_org
 ```
 There is a guide to the CKAN query language [here](https://github.com/OCHA-DAP/hdx-ckan/blob/dev/ckanext-hdx_theme/docs/search/package_search.rst).
 
+## Organization and User metadata
+
 Another pain point for me is getting an organization id, the `get_organization_metadata` command fixes this. We can just get the id with an organization name, note wildcards are implicit in the organization specification since this is how the CKAN API works:
 
 ```shell
@@ -163,6 +177,8 @@ hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 
 This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
 
+## Quick Charts
+
 A Quick Chart can be uploaded from a JSON file using a commandline like where the `dataset_filter` specifies a single dataset and the `resource_name` specifies the resource to which the Quick Chart is attached:
 
 ```
@@ -170,6 +186,8 @@ A Quick Chart can be uploaded from a JSON file using a commandline like where th
 ```
 
 The `hdx_hxl_preview_file_path` points to a JSON format file with the key `hxl_preview_config` which contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Quick Chart recipe documentation can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file). There is an example file in the `hdx-cli-toolkit` [repo](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/tests/fixtures/quickchart-flood.json).
+
+## Showcases
 
 A showcase can be uploaded from attributes found in either a CSV format file like this:
 ```
@@ -217,12 +235,15 @@ hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name=
 
 Without the `--live` flag no update on HDX is made.
 
+## Downloading Data
 The resources of a dataset can be downloaded with a commandline like:
 
 ```shell
 hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --resource_filter=* --hdx_site=stage
 ```
 by default files are downloaded to a subdirectory `output` with no download if a file already exists.
+
+## Miscellaneous
 
 There is an issue with some datasets where a key, `extras` is found which is not valid, it prevents
 the dataset being updated. The `extras` key be removed from a set of datasets with a commandline

@@ -50,39 +50,9 @@ hdx-cli-toolkit:
 
 ## Usage
 
-The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`:
+The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`, and details of the arguments for a command can be found using `hdx-toolkit [COMMAND] --help`
 
-```
-$ hdx-toolkit --help
-Usage: hdx-toolkit [OPTIONS] COMMAND [ARGS]...
-
-  Tools for Commandline interactions with HDX
-
-Options:
-  --version  Show the version and exit.
-  --help  Show this message and exit.
-
-Commands:
-  configuration              Print configuration information to terminal
-  download                   Download dataset resources from HDX
-  get_organization_metadata  Get an organization id and other metadata
-  get_user_metadata          Get user id and other metadata
-  list                       List datasets in HDX
-  print                      Print datasets in HDX to the terminal
-  quickcharts                Upload QuickChart JSON description to HDX
-  remove_extras_key          Remove extras key from a dataset
-  showcase                   Upload showcase to HDX
-  update                     Update datasets in HDX
-  update_resource            Update a resource in HDX
-```
-
-And details of the arguments for a command can be found using:
-
-```shell
-hdx-toolkit [COMMAND] --help
-```
-
-A detailed walk through of commands can be found in the [DEMO.md](DEMO.md) file
+A detailed guide can be found in the [USERGUIDE.md](USERGUIDE.md) file
 
 ## Contributions
 
