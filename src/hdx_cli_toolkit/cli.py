@@ -41,8 +41,13 @@ from hdx_cli_toolkit.hdx_utilities import (
     get_approved_tag_list,
     remove_extras_key_from_dataset,
     check_api_key,
-    fetch_data_from_ckan_api,
     get_hdx_url_and_key,
+)
+
+from hdx_cli_toolkit.ckan_utilities import (
+    fetch_data_from_ckan_package_search,
+    scan_survey,
+    scan_delete_key,
 )
 
 
@@ -743,15 +748,17 @@ def remove_extras_key(
 @hdx_toolkit.command(name="scan")
 @click.option(
     "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
     is_flag=False,
     default="stage",
     help="an hdx_site value {stage|prod}",
 )
 @click.option(
     "--action",
+    type=click.Choice(["survey", "delete_key"]),
     is_flag=False,
     default="survey",
-    help="an action to take {survey}",
+    help="an action to take",
 )
 @click.option("--key", is_flag=False, default="private", help="a key or list of keys")
 @click.option(
@@ -784,10 +791,10 @@ def scan(
     print_banner("scan HDX")
     t0 = time.time()
     if input_path is None:
-        hdx_site_url, hdx_api_key = get_hdx_url_and_key(hdx_site=hdx_site)
+        hdx_site_url, hdx_api_key, _ = get_hdx_url_and_key(hdx_site=hdx_site)
         package_search_url = f"{hdx_site_url}/api/action/package_search"
         query = {"fq": "*:*", "start": 0, "rows": 1000}
-        response = fetch_data_from_ckan_api(
+        response = fetch_data_from_ckan_package_search(
             package_search_url, query, hdx_api_key=hdx_api_key, fetch_all=True
         )
         print(f"Querying CKAN took {(time.time() - t0)/60:0.2f} minutes")
@@ -806,68 +813,22 @@ def scan(
             return
 
     # print(json.dumps(response, indent=4), flush=True)
+    t0 = time.time()
     if action == "survey":
-        t0 = time.time()
         key_occurence_counter = scan_survey(response, key, verbose=verbose)
+    elif action == "delete_key":
+        key_occurence_counter = Counter()
+        if key not in ["extras", "resources._csrf_token"]:
+            click.secho(
+                "Scan->delete_key will only act on 'extras' and 'resources._csrf_token' "
+                "terminating with no further action",
+                fg="red",
+                color=True,
+            )
+            return
+        else:
+            key_occurence_counter = scan_delete_key(response, key, verbose=verbose)
 
-        for key_, value in key_occurence_counter.items():
-            print(f"Found {value} occurences of {key_}")
-        # print(json.dumps(dataset, indent=4), flush=True)
-        # print(f"Found {n_csrf_tokens} _csrf_tokens", flush=True)
-        # print(f"Found {n_in_quarantine} in_quarantine", flush=True)
-        # print(f"Found {n_broken_link} broken_link", flush=True)
-        print(f"Scanning results took {(time.time() - t0):0.2f} seconds")
-
-
-def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
-    key_occurence_counter = Counter()
-    list_of_keys = key.split(",")
-
-    for i, dataset in enumerate(response["result"]["results"]):
-        # if i % 100 == 0:
-        #     print(f"{i}. {dataset['name']}", flush=True)
-        for key_ in list_of_keys:
-            if key_.startswith("resources."):
-                resource_key = key_.split(".")[1]
-                for resource in dataset["resources"]:
-                    if resource_key in resource.keys():
-                        key_occurence_counter[key_] += 1
-                        if verbose:
-                            comment = f"has {key_}"
-                            print(dataset["name"], flush=True)
-                            print(f"\t{resource['name']} {comment}", flush=True)
-            else:
-                if key_ in dataset.keys():
-                    key_occurence_counter[key_] += 1
-                    if verbose:
-                        comment = f"has {key_}"
-                        print(f"{dataset['name']} {comment}", flush=True)
-
-    return key_occurence_counter
-    # print(
-    #     (
-    #         f"Removing 'extras' key from datasets on '{hdx_site}' for datasets matching "
-    #         f"the filter organization='{organization}' and dataset_filter='{dataset_filter}'.\n"
-    #         f"Found {len(filtered_datasets)} to process."
-    #     ),
-    #     flush=True,
-    # )
-    # print(
-    #     f"{'dataset_name':<70.70}{'had_extras':<20.20}{'removed_--outsuccessfully':<20.20}",
-    #     flush=True,
-    # )
-    # output_rows = []
-    # for dataset in filtered_datasets:
-    #     status_row = remove_extras_key_from_dataset(dataset, hdx_site, verbose=verbose)
-    #     print(
-    #         f"{status_row['dataset_name']:<70}"
-    #         f"{str(status_row['had_extras']):<20}"
-    #         f"{str(status_row['removed_successfully']):<20}",
-    #         flush=True,
-    #     )
-    #     output_rows.append(status_row)
-    # if output_path is not None:
-    #     print("Writing results to file", flush=True)
-    #     output_path = make_path_unique(output_path)
-    #     status = write_dictionary(output_path, output_rows, append=False)
-    #     print(status, flush=True)
+    for key_, value in key_occurence_counter.items():
+        print(f"Found {value} occurences of {key_}")
+    print(f"Action '{action}' results took {(time.time() - t0):0.2f} seconds")

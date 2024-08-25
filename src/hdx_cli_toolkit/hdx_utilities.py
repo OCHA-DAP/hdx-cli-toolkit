@@ -626,55 +626,9 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
 
 
 @hdx_error_handler
-def get_hdx_url_and_key(hdx_site: str) -> tuple[str | None, str | None]:
+def get_hdx_url_and_key(hdx_site: str) -> tuple[str | None, str | None, str | None]:
     configure_hdx_connection(hdx_site, verbose=True)
     hdx_url = Configuration.read().get_hdx_site_url()
     hdx_api_key = Configuration.read().get_api_key()
-    return hdx_url, hdx_api_key
-
-
-def fetch_data_from_ckan_api(
-    query_url: str, query: dict, hdx_api_key: str, fetch_all: bool = False
-) -> dict:
-    headers = {
-        "Authorization": hdx_api_key,
-        "Content-Type": "application/json",
-    }
-
-    start = 0
-    if "start" not in query.keys():
-        query["start"] = start
-    if "rows" not in query.keys():
-        query["rows"] = 10
-    payload = json.dumps(query)
-    i = 1
-    print(f"{i}. Querying {query_url} with {payload}", flush=True)
-    response = urllib3.request("POST", query_url, headers=headers, json=query, timeout=20)
-    full_response_json = json.loads(response.data)
-    n_expected_result = full_response_json["result"]["count"]
-
-    result_length = len(full_response_json["result"]["results"])
-
-    if fetch_all:
-        if result_length != n_expected_result:
-            while result_length != 0:
-                i += 1
-                start += query["rows"]
-                query["start"] = start
-                payload = json.dumps(query)
-                print(f"{i}. Querying {query_url} with {payload}", flush=True)
-                new_response = urllib3.request(
-                    "POST", query_url, headers=headers, json=query, timeout=20
-                )
-                new_response_json = json.loads(new_response.data)
-                result_length = len(new_response_json["result"]["results"])
-                full_response_json["result"]["results"].extend(
-                    new_response_json["result"]["results"]
-                )
-        else:
-            print(
-                f"CKAN API returned all results ({result_length}) on first page of 100", flush=True
-            )
-        assert n_expected_result == len(full_response_json["result"]["results"])
-
-    return full_response_json
+    user_agent = Configuration.read().get_user_agent()
+    return hdx_url, hdx_api_key, user_agent

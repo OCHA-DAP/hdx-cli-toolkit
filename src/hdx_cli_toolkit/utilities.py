@@ -8,6 +8,7 @@ import json
 import math
 import os
 
+from collections import Counter
 from collections.abc import Callable
 from typing import Any
 
@@ -415,3 +416,30 @@ def traverse(keys, dictionary, value_list=None):
         return value_list
 
     return traverse(keys[1:], value, value_list)
+
+
+def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
+    key_occurence_counter = Counter()
+    list_of_keys = key.split(",")
+
+    for i, dataset in enumerate(response["result"]["results"]):
+        # if i % 100 == 0:
+        #     print(f"{i}. {dataset['name']}", flush=True)
+        for key_ in list_of_keys:
+            if key_.startswith("resources."):
+                resource_key = key_.split(".")[1]
+                for resource in dataset["resources"]:
+                    if resource_key in resource.keys():
+                        key_occurence_counter[key_] += 1
+                        if verbose:
+                            comment = f"has {key_}"
+                            print(dataset["name"], flush=True)
+                            print(f"\t{resource['name']} {comment}", flush=True)
+            else:
+                if key_ in dataset.keys():
+                    key_occurence_counter[key_] += 1
+                    if verbose:
+                        comment = f"has {key_}"
+                        print(f"{dataset['name']} {comment}", flush=True)
+
+    return key_occurence_counter
