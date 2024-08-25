@@ -829,6 +829,8 @@ def scan(
         else:
             key_occurence_counter = scan_delete_key(response, key, verbose=verbose)
 
+    if len(key_occurence_counter) == 0:
+        print(f"Found no occurrences of {key} in {hdx_site}", flush=True)
     for key_, value in key_occurence_counter.items():
-        print(f"Found {value} occurences of {key_}")
+        print(f"Found {value} occurrences of {key_}")
     print(f"Action '{action}' results took {(time.time() - t0):0.2f} seconds")
