@@ -191,6 +191,54 @@ def test_query_dict_multiple_simple(json_fixture):
     assert len(output) == 1
 
 
+def test_query_dict_multiple_nested(json_fixture):
+    keys = ["resources.name", "resources.format"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output = query_dict(keys, dataset_dict, output_row)
+    for row in output:
+        print(row, flush=True)
+
+    assert output[0] == {
+        "dataset_name": "test",
+        "resources.name": "gibraltar-healthsites-csv-with-hxl-tags",
+        "resources.format": "CSV",
+    }
+
+    assert len(output) == 10
+
+
+def test_query_dict_multiple_nested_different_key1(json_fixture):
+    keys = ["resources.name", "resources.format", "tags.display_name", "organization.name"]
+    output_row = {"dataset_name": "test"}
+    for key_ in keys:
+        output_row[key_] = ""
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    output = query_dict(keys, dataset_dict, output_row)
+    for row in output:
+        print(row, flush=True)
+
+    assert len(output) == 12
+
+    assert {
+        "dataset_name": "test",
+        "resources.name": "",
+        "resources.format": "",
+        "tags.display_name": "health facilities",
+        "organization.name": "healthsites",
+    } in output
+
+    assert {
+        "dataset_name": "test",
+        "resources.name": "gibraltar-healthsites-csv-with-hxl-tags",
+        "resources.format": "CSV",
+        "tags.display_name": "",
+        "organization.name": "healthsites",
+    } in output
+
+
 def test_query_dict_three_keys_deep(json_fixture):
     keys = ["resources.fs_check_info.state"]  # list.list.key
     output_row = {"dataset_name": "test"}

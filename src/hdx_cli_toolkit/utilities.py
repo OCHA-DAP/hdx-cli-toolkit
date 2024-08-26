@@ -356,8 +356,8 @@ def query_dict(
     """
     output = []
     # Handle non-list keys - generates 1 output row
+    list_keys = []
     for key_ in keys:
-        list_keys = []
         if "." not in key_:
             # Handles simple keys
             output_row[key_] = dataset_dict.get(key_, f"'{key_}' key absent")
@@ -380,11 +380,19 @@ def query_dict(
 
     if len(list_keys) != 0:
         # Handle list keys
-        for item in list_keys:
-            for element in item[2]:
-                tmp_row = output_row.copy()
-                tmp_row[key_] = element.get(item[1], f"'{item[1]}' key absent")
-                output.append(tmp_row)
+        # For each distinct key1, loop over all the key2
+        key1s = {x[0] for x in list_keys}
+        for key1 in key1s:
+            # get key2s
+            key2s = {x[1] for x in list_keys if x[0] == key1}
+            for item in list_keys:
+                if item[0] != key1:
+                    continue
+                for element in item[2]:
+                    tmp_row = output_row.copy()
+                    for key2 in key2s:
+                        tmp_row[f"{key1}.{key2}"] = element.get(key2, f"'{key2}' key absent")
+                    output.append(tmp_row)
     else:
         output.append(output_row)
 
