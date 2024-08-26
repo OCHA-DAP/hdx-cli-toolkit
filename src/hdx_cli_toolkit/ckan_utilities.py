@@ -9,6 +9,7 @@ from collections import Counter
 import ckanapi
 
 from hdx_cli_toolkit.hdx_utilities import get_hdx_url_and_key, configure_hdx_connection
+from hdx_cli_toolkit.utilities import query_dict
 
 
 def fetch_data_from_ckan_package_search(
@@ -122,3 +123,15 @@ def scan_delete_key(
                     print(f"{dataset['name']} {comment}", flush=True)
 
     return key_occurence_counter
+
+
+def scan_distribution(response: dict, key: str, verbose: bool = False) -> Counter:
+    value_occurence_counter = Counter()
+
+    for i, dataset in enumerate(response["result"]["results"]):
+        output_row = {key: ""}
+        output_rows = query_dict([key], dataset, output_row)
+        for row in output_rows:
+            value_occurence_counter[row[key]] += 1
+
+    return value_occurence_counter

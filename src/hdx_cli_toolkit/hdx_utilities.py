@@ -44,7 +44,7 @@ def hdx_error_handler(f):
             return f(*args, **kwargs)
         except (
             HDXError,
-            ckanapi.errors.ValidationError,
+            ckanapi.errors.ValidationError,  # type:ignore
             FileNotFoundError,
             ConfigurationError,
         ):
@@ -263,7 +263,7 @@ def update_values_in_hdx(
             row["message"] = message
             output_rows.append(row)
             n_changed += 1
-        except (HDXError, KeyError, ckanapi.errors.ValidationError):
+        except (HDXError, KeyError, ckanapi.errors.ValidationError):  # type: ignore
             traceback_message = parse_hdxerror_traceback(traceback.format_exc())
             message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1
@@ -608,7 +608,7 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
     statuses = []
-    for hdx_site in hdx_sites:
+    for hdx_site in hdx_sites:  # type:ignore
         configure_hdx_connection(hdx_site, verbose=True)
         result = User.check_current_user_organization_access(
             organization, permission="create_datasets"
@@ -626,9 +626,9 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
 
 
 @hdx_error_handler
-def get_hdx_url_and_key(hdx_site: str) -> tuple[str | None, str | None, str | None]:
+def get_hdx_url_and_key(hdx_site: str) -> tuple[str, str, str]:
     configure_hdx_connection(hdx_site, verbose=True)
     hdx_url = Configuration.read().get_hdx_site_url()
     hdx_api_key = Configuration.read().get_api_key()
     user_agent = Configuration.read().get_user_agent()
-    return hdx_url, hdx_api_key, user_agent
+    return hdx_url, hdx_api_key, user_agent  # type:ignore

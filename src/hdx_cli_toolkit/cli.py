@@ -48,6 +48,7 @@ from hdx_cli_toolkit.ckan_utilities import (
     fetch_data_from_ckan_package_search,
     scan_survey,
     scan_delete_key,
+    scan_distribution,
 )
 
 
@@ -751,16 +752,24 @@ def remove_extras_key(
     type=click.Choice(["stage", "prod"]),
     is_flag=False,
     default="stage",
-    help="an hdx_site value {stage|prod}",
+    help="an hdx_site value",
 )
 @click.option(
     "--action",
-    type=click.Choice(["survey", "delete_key"]),
+    type=click.Choice(["survey", "delete_key", "distribution"]),
     is_flag=False,
     default="survey",
     help="an action to take",
 )
 @click.option("--key", is_flag=False, default="private", help="a key or list of keys")
+@click.option("--start", is_flag=False, default=0, help="a start offset for the query")
+@click.option(
+    "--rows",
+    is_flag=False,
+    default=None,
+    help="the number of rows to return, "
+    "the limit for the CKAN API is 1000. If None all rows will be returned",
+)
 @click.option(
     "--verbose",
     is_flag=True,
@@ -784,18 +793,30 @@ def scan(
     output_path: Optional[str] = None,
     input_path: Optional[str] = None,
     action: str = "survey",
+    start: int = 0,
+    rows: Optional[int] = 0,
     key: str = "name",
     verbose: bool = False,
 ):
     """Scan all of HDX and perform an action"""
-    print_banner("scan HDX")
+    print_banner("Scan HDX")
     t0 = time.time()
+    fetch_all = False
+    if rows is None:
+        print(
+            "No rows value provided so fetching all data in 1000 row chunks. "
+            "This takes ~10 minutes and generates a 20MB file.",
+            flush=True,
+        )
+        start = 0
+        rows = 1000
+        fetch_all = True
     if input_path is None:
         hdx_site_url, hdx_api_key, _ = get_hdx_url_and_key(hdx_site=hdx_site)
         package_search_url = f"{hdx_site_url}/api/action/package_search"
-        query = {"fq": "*:*", "start": 0, "rows": 1000}
+        query = {"fq": "*:*", "start": start, "rows": rows}
         response = fetch_data_from_ckan_package_search(
-            package_search_url, query, hdx_api_key=hdx_api_key, fetch_all=True
+            package_search_url, query, hdx_api_key=hdx_api_key, fetch_all=fetch_all
         )
         print(f"Querying CKAN took {(time.time() - t0)/60:0.2f} minutes")
         if output_path is not None:
@@ -828,9 +849,14 @@ def scan(
             return
         else:
             key_occurence_counter = scan_delete_key(response, key, verbose=verbose)
+    elif action == "distribution":
+        key_occurence_counter = scan_distribution(response, key, verbose=verbose)
 
     if len(key_occurence_counter) == 0:
         print(f"Found no occurrences of {key} in {hdx_site}", flush=True)
-    for key_, value in key_occurence_counter.items():
-        print(f"Found {value} occurrences of {key_}")
+    else:
+        key_width = max(len(k) for k, _ in key_occurence_counter.most_common()) + 1
+        print("key, n_occurrences", flush=True)
+        for key_, value in key_occurence_counter.most_common():
+            print(f"{key_:<{key_width}}, {value}", flush=True)
     print(f"Action '{action}' results took {(time.time() - t0):0.2f} seconds")
