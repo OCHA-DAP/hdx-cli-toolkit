@@ -12,9 +12,12 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
   quickcharts                Upload QuickChart JSON description to HDX
+  remove_extras_key          Remove extras key from a dataset
+  scan                       Scan all of HDX and perform an action
   showcase                   Upload showcase to HDX
   update                     Update datasets in HDX
   update_resource            Update a resource in HDX
+
 ```
 
 It is a thin wrapper to the [hdx-python-api](https://github.com/OCHA-DAP/hdx-python-api) library written by Mike Rans.

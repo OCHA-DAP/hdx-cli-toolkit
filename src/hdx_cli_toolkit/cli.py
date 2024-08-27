@@ -762,7 +762,9 @@ def remove_extras_key(
     help="an action to take",
 )
 @click.option("--key", is_flag=False, default="private", help="a key or list of keys")
-@click.option("--start", is_flag=False, default=0, help="a start offset for the query")
+@click.option(
+    "--start", is_flag=False, default=0, help="a starting offset for the rows returned by a query"
+)
 @click.option(
     "--rows",
     is_flag=False,
@@ -774,7 +776,7 @@ def remove_extras_key(
     "--verbose",
     is_flag=True,
     default=False,
-    help="if true show all user metadata",
+    help="if true show diagnostic information in run",
 )
 @click.option(
     "--output_path",
@@ -798,7 +800,15 @@ def scan(
     key: str = "name",
     verbose: bool = False,
 ):
-    """Scan all of HDX and perform an action"""
+    """Scan all of HDX and perform an action, currently supported actions are:
+
+    1. survey - count the number of occurrences of a key or list of keys across datasets in HDX
+
+    2. distribution - calculate the histogram of values for a key across datasets in HDX
+
+    3. delete_key - delete occurrences of a key across all datasets in HDX, this is currently
+    configured so that it only accepts "extras" and "resource._csrf_token" as valid keys to delete
+    """
     print_banner("Scan HDX")
     t0 = time.time()
     fetch_all = False

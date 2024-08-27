@@ -273,7 +273,7 @@ def test_traverse_simple(json_fixture):
     keys = "archived".split(".")
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
     value = traverse(keys, dataset_dict)
-    assert value[0] == False
+    assert not value[0]
 
 
 def test_traverse_organization_name(json_fixture):

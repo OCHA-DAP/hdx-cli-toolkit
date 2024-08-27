@@ -12,6 +12,8 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
   quickcharts                Upload QuickChart JSON description to HDX
+  remove_extras_key          Remove extras key from a dataset
+  scan                       Scan all of HDX and perform an action
   showcase                   Upload showcase to HDX
   update                     Update datasets in HDX
   update_resource            Update a resource in HDX
@@ -243,15 +245,33 @@ hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --resource_f
 ```
 by default files are downloaded to a subdirectory `output` with no download if a file already exists.
 
+## Scan
+The `scan` command takes the dataset and resource information returned by the CKAN `package_search` endpoint for all the datasets in HDX and then applies an action to them. The downloaded information can be cached and reloaded from a specified JSON file. This is useful because the full catalogue is approximately 865MB and takes 10 minutes to download.
+
+The supported actions are:
+1. `survey` - count the number of occurrences of a key or list of keys across
+  datasets in HDX
+2. `distribution` - calculate the histogram of values for a key across
+  datasets in HDX
+3. `delete_key` - delete occurrences of a key across all datasets in HDX, this
+  is currently configured so that it only accepts "extras" and
+  "resource._csrf_token" as valid keys to delete
+
+Examples of invocations of the scan command are as follows:
+```
+hdx-toolkit scan --hdx_site="stage" --action=survey --key=resources._csrf_token output_path=output/2024-08-25-hdx-snapshot.json --verbose
+hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_frequency
+hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
+```
 ## Miscellaneous
 
 There is an issue with some datasets where a key, `extras` is found which is not valid, it prevents
-the dataset being updated. The `extras` key be removed from a set of datasets with a commandline
-like:
+the dataset being updated. The `extras` key be removed from a set of datasets with the `remove_extras_key` command:
 
 ```
 hdx-toolkit remove_extras_key --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --output_path=temp.csv
 ```
+
 
 ## Future Work
 
@@ -281,4 +301,7 @@ hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --
 hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name="test_resource_1" --hdx_site=stage --resource_file_path=test-2.csv --live
 hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --hdx_site=stage
 hdx-toolkit remove_extras_key --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --output_path=temp.csv
+hdx-toolkit scan --hdx_site="stage" --action=survey --key=resources._csrf_token output_path=output/2024-08-25-hdx-snapshot.json --verbose
+hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_frequency
+hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
 ```
