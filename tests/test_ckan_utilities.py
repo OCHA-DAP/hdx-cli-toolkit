@@ -1,9 +1,8 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-from copy import deepcopy
 import json
-import os
+from unittest import mock
 
 from hdx_cli_toolkit.ckan_utilities import (
     scan_delete_key,
@@ -21,8 +20,13 @@ def test_scan_survey(json_fixture):
     assert key_occurence_counter == {"resources._csrf_token": 3, "resources.in_quarantine": 136}
 
 
-def test_scan_delete_key(json_fixture):
-    pass
+@mock.patch("ckanapi.RemoteCKAN.call_action")
+def test_scan_delete_key(mock_ckanapi, json_fixture):
+    key = "resources._csrf_token"
+    response = json_fixture("2024-08-24-hdx-snapshot-filtered.json")
+    key_occurence_counter = scan_delete_key(response, key, verbose=False)
+
+    assert key_occurence_counter == {"resources._csrf_token": 3}
 
 
 def test_scan_distribution(json_fixture):
@@ -34,36 +38,23 @@ def test_scan_distribution(json_fixture):
     assert key_occurence_counter == {"-1": 15, "-2": 9, "365": 5, "180": 4, "0": 2, "14": 1}
 
 
-def test_fetch_data_from_ckan_package_search():
-    pass
-
-
-def test_sneaky_filter_pretending_to_be_a_test():
-    original_json_path = os.path.join(
-        os.path.dirname(__file__), "fixtures", "2024-08-24-hdx-snapshot.json"
+@mock.patch("urllib3.request")
+def test_fetch_data_from_ckan_package_search(mock_request, json_fixture):
+    mock_response = json_fixture("2024-08-24-hdx-snapshot-filtered.json")
+    mock_request.return_value.data = json.dumps(mock_response)
+    package_search_url = "https://fake_hdx_site.org/api/action/package_search"
+    query = {"fq": "*:*", "start": 0, "rows": 100}
+    _ = fetch_data_from_ckan_package_search(
+        package_search_url, query, hdx_api_key="", fetch_all=False
     )
-    filtered_json_path = os.path.join(
-        os.path.dirname(__file__), "fixtures", "2024-08-24-hdx-snapshot-filtered.json"
+
+    mock_request.assert_called_with(
+        "POST",
+        package_search_url,
+        headers={
+            "Authorization": "",
+            "Content-Type": "application/json",
+        },
+        json=query,
+        timeout=20,
     )
-    with open(original_json_path, encoding="utf-8") as json_file_handle:
-        response = json.load(json_file_handle)
-
-    filtered_response = deepcopy(response)
-
-    filtered_response["result"]["results"] = []
-
-    filter_count = 0
-    for i, dataset in enumerate(response["result"]["results"]):
-        # if i > 10:
-        #     break
-        for resource in dataset["resources"]:
-            # print(resource.keys(), flush=True)
-            if "_csrf_token" in resource.keys() or "in_quarantine" in resource.keys():
-                filter_count += 1
-                filtered_response["result"]["results"].append(dataset)
-                break
-
-    print(f"Selected {filter_count} datasets", flush=True)
-    with open(filtered_json_path, "w", encoding="utf-8") as json_file_handle:
-        json.dump(filtered_response, json_file_handle)
-    assert False
