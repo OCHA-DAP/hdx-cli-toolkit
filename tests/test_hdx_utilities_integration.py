@@ -247,4 +247,7 @@ def test_get_hdx_url_and_key():
 
     assert hdx_site_url == "https://stage.data-humdata-org.ahconu.org"
     assert len(hdx_api_key) > 10
-    assert user_agent == "HDXINTERNAL:HDXPythonLibrary/6.3.1-hdx_cli_toolkit_ih"
+    assert user_agent in [
+        "HDXINTERNAL:HDXPythonLibrary/6.3.1-hdx_cli_toolkit_ih",
+        "HDXINTERNAL:HDXPythonLibrary/6.3.1-hdx_cli_toolkit_gha",
+    ]

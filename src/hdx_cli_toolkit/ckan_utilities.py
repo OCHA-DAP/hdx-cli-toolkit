@@ -64,17 +64,12 @@ def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
     list_of_keys = key.split(",")
 
     for dataset in response["result"]["results"]:
-        # if i % 100 == 0:
-        #     print(f"{i}. {dataset['name']}", flush=True)
-
-        # Query Dict implementation
         output_row = {"dataset_name": dataset["name"]}
         for key_ in list_of_keys:
             output_row[key_] = f"{key_} key absent"
         output_rows = query_dict(list_of_keys, dataset, output_row)
 
         for row in output_rows:
-            # print(row, flush=True)
             for key_ in list_of_keys:
                 if "key absent" not in str(row[key_]):
                     key_occurence_counter[key_] += 1
@@ -88,25 +83,6 @@ def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
                                 )
                             else:
                                 print(f"{dataset['name']} {comment}", flush=True)
-        # End query_dict implementation
-
-        # Old implementation
-        # for key_ in list_of_keys:
-        #     if key_.startswith("resources."):
-        #         resource_key = key_.split(".")[1]
-        #         for resource in dataset["resources"]:
-        #             if resource_key in resource.keys():
-        #                 key_occurence_counter[key_] += 1
-        #                 if verbose:
-        #                     comment = f"has {key_}"
-        #                     print(dataset["name"], flush=True)
-        #                     print(f"\t{resource['name']} {comment}", flush=True)
-        #     else:
-        #         if key_ in dataset.keys():
-        #             key_occurence_counter[key_] += 1
-        #             if verbose:
-        #                 comment = f"has {key_}"
-        #                 print(f"{dataset['name']} {comment}", flush=True)
 
     return key_occurence_counter
 
