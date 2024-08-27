@@ -393,6 +393,7 @@ def query_dict(
                     for key2 in key2s:
                         tmp_row[f"{key1}.{key2}"] = element.get(key2, f"'{key2}' key absent")
                     output.append(tmp_row)
+                break
     else:
         output.append(output_row)
 

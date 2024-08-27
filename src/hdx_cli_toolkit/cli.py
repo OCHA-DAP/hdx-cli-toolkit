@@ -835,10 +835,10 @@ def scan(
 
     # print(json.dumps(response, indent=4), flush=True)
     t0 = time.time()
+    key_occurence_counter = Counter()
     if action == "survey":
         key_occurence_counter = scan_survey(response, key, verbose=verbose)
     elif action == "delete_key":
-        key_occurence_counter = Counter()
         if key not in ["extras", "resources._csrf_token"]:
             click.secho(
                 "Scan->delete_key will only act on 'extras' and 'resources._csrf_token' "

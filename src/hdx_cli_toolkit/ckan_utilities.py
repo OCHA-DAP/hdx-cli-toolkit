@@ -63,25 +63,50 @@ def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
     key_occurence_counter = Counter()
     list_of_keys = key.split(",")
 
-    for i, dataset in enumerate(response["result"]["results"]):
+    for dataset in response["result"]["results"]:
         # if i % 100 == 0:
         #     print(f"{i}. {dataset['name']}", flush=True)
+
+        # Query Dict implementation
+        output_row = {"dataset_name": dataset["name"]}
         for key_ in list_of_keys:
-            if key_.startswith("resources."):
-                resource_key = key_.split(".")[1]
-                for resource in dataset["resources"]:
-                    if resource_key in resource.keys():
-                        key_occurence_counter[key_] += 1
-                        if verbose:
-                            comment = f"has {key_}"
-                            print(dataset["name"], flush=True)
-                            print(f"\t{resource['name']} {comment}", flush=True)
-            else:
-                if key_ in dataset.keys():
+            output_row[key_] = f"{key_} key absent"
+        output_rows = query_dict(list_of_keys, dataset, output_row)
+
+        for row in output_rows:
+            # print(row, flush=True)
+            for key_ in list_of_keys:
+                if "key absent" not in str(row[key_]):
                     key_occurence_counter[key_] += 1
                     if verbose:
-                        comment = f"has {key_}"
-                        print(f"{dataset['name']} {comment}", flush=True)
+                        if key_ != "resources.name":
+                            comment = f"has {key_}"
+                            if key_.startswith("resources.") and "resources.name" in row.keys():
+                                print(
+                                    f"{dataset['name']} Resource:{row['resources.name']} {comment}",
+                                    flush=True,
+                                )
+                            else:
+                                print(f"{dataset['name']} {comment}", flush=True)
+        # End query_dict implementation
+
+        # Old implementation
+        # for key_ in list_of_keys:
+        #     if key_.startswith("resources."):
+        #         resource_key = key_.split(".")[1]
+        #         for resource in dataset["resources"]:
+        #             if resource_key in resource.keys():
+        #                 key_occurence_counter[key_] += 1
+        #                 if verbose:
+        #                     comment = f"has {key_}"
+        #                     print(dataset["name"], flush=True)
+        #                     print(f"\t{resource['name']} {comment}", flush=True)
+        #     else:
+        #         if key_ in dataset.keys():
+        #             key_occurence_counter[key_] += 1
+        #             if verbose:
+        #                 comment = f"has {key_}"
+        #                 print(f"{dataset['name']} {comment}", flush=True)
 
     return key_occurence_counter
 
@@ -89,6 +114,7 @@ def scan_survey(response: dict, key: str, verbose: bool = False) -> Counter:
 def scan_delete_key(
     response: dict, key: str, hdx_site: str = "stage", verbose: bool = False
 ) -> Counter:
+    # Does not use query_dict because we want this to be as controlled as possible
     configure_hdx_connection(hdx_site, verbose=True)
     hdx_site_url, hdx_api_key, user_agent = get_hdx_url_and_key(hdx_site=hdx_site)
     ckan = ckanapi.RemoteCKAN(
@@ -132,6 +158,7 @@ def scan_distribution(response: dict, key: str, verbose: bool = False) -> Counte
         output_row = {key: ""}
         output_rows = query_dict([key], dataset, output_row)
         for row in output_rows:
-            value_occurence_counter[row[key]] += 1
+            if "key absent" not in row[key]:
+                value_occurence_counter[row[key]] += 1
 
     return value_occurence_counter

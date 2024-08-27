@@ -207,7 +207,7 @@ def test_query_dict_multiple_nested(json_fixture):
         "resources.format": "CSV",
     }
 
-    assert len(output) == 10
+    assert len(output) == 5
 
 
 def test_query_dict_multiple_nested_different_key1(json_fixture):
@@ -220,7 +220,7 @@ def test_query_dict_multiple_nested_different_key1(json_fixture):
     for row in output:
         print(row, flush=True)
 
-    assert len(output) == 12
+    assert len(output) == 7
 
     assert {
         "dataset_name": "test",
