@@ -803,14 +803,15 @@ def scan(
     t0 = time.time()
     fetch_all = False
     if rows is None:
-        print(
-            "No rows value provided so fetching all data in 1000 row chunks. "
-            "This takes ~10 minutes and generates a 20MB file.",
-            flush=True,
-        )
         start = 0
         rows = 1000
         fetch_all = True
+    if fetch_all and input_path is None:
+        print(
+            "No rows value provided so fetching all data in 1000 row chunks. "
+            "This takes ~10 minutes and generates an 865MB file.",
+            flush=True,
+        )
     if input_path is None:
         hdx_site_url, hdx_api_key, _ = get_hdx_url_and_key(hdx_site=hdx_site)
         package_search_url = f"{hdx_site_url}/api/action/package_search"
