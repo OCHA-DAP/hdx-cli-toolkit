@@ -17,7 +17,6 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
   showcase                   Upload showcase to HDX
   update                     Update datasets in HDX
   update_resource            Update a resource in HDX
-
 ```
 
 It is a thin wrapper to the [hdx-python-api](https://github.com/OCHA-DAP/hdx-python-api) library written by Mike Rans.

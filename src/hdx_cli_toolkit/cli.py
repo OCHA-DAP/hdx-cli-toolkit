@@ -859,7 +859,9 @@ def scan(
             )
             return
         else:
-            key_occurence_counter = scan_delete_key(response, key, verbose=verbose)
+            key_occurence_counter = scan_delete_key(
+                response, key, hdx_site=hdx_site, verbose=verbose
+            )
     elif action == "distribution":
         key_occurence_counter = scan_distribution(response, key, verbose=verbose)
 

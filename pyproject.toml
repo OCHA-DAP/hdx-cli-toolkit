@@ -13,6 +13,7 @@ authors = [
 dependencies = [
   "hdx-python-api==6.3.1",
   "hdx-python-country",
+  "ckanapi",
   "quantulum3[classifier]", # This stops the UserWarning but has a number of large dependencies
   "click",
   "hatch",

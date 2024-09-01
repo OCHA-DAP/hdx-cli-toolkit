@@ -11,6 +11,8 @@ import ckanapi
 from hdx_cli_toolkit.hdx_utilities import get_hdx_url_and_key, configure_hdx_connection
 from hdx_cli_toolkit.utilities import query_dict
 
+DEFAULT_ROW_LIMIT = 100
+
 
 def fetch_data_from_ckan_package_search(
     query_url: str, query: dict, hdx_api_key: str, fetch_all: bool = False
@@ -24,7 +26,7 @@ def fetch_data_from_ckan_package_search(
     if "start" not in query.keys():
         query["start"] = start
     if "rows" not in query.keys():
-        query["rows"] = 10
+        query["rows"] = DEFAULT_ROW_LIMIT
     payload = json.dumps(query)
     i = 1
     print(f"{i}. Querying {query_url} with {payload}", flush=True)
