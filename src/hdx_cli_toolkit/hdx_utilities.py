@@ -34,6 +34,7 @@ from hdx_cli_toolkit.utilities import (
     write_dictionary,
     make_path_unique,
     print_dictionary_comparison,
+    query_dict,
 )
 
 
@@ -632,3 +633,31 @@ def get_hdx_url_and_key(hdx_site: str) -> tuple[str, str, str]:
     hdx_api_key = Configuration.read().get_api_key()
     user_agent = Configuration.read().get_user_agent()
     return hdx_url, hdx_api_key, user_agent  # type:ignore
+
+
+def list_from_datasets(
+    filtered_datasets: list[dict] | list[Dataset],
+    key: str,
+    with_extras: bool = False,
+) -> list[dict]:
+    keys = key.split(",")
+    output_template = {"dataset_name": ""}
+    for key_ in keys:
+        output_template[key_] = ""
+    output = []
+    for dataset in filtered_datasets:
+        # We always get extras for list, in case we need to access keys from there
+        if not isinstance(dataset, dict):
+            dataset_dict = dataset.data
+            if dataset_dict is None:
+                continue
+            if with_extras:
+                dataset_dict = decorate_dataset_with_extras(dataset)
+        else:
+            dataset_dict = dataset
+        output_row = output_template.copy()
+        output_row["dataset_name"] = dataset_dict["name"]
+        new_rows = query_dict(keys, dataset_dict, output_row)
+        if new_rows:
+            output.extend(new_rows)
+    return output

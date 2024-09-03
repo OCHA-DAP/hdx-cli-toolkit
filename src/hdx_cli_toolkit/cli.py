@@ -23,7 +23,6 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     print_banner,
     make_path_unique,
-    query_dict,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -42,6 +41,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     remove_extras_key_from_dataset,
     check_api_key,
     get_hdx_url_and_key,
+    list_from_datasets,
 )
 
 from hdx_cli_toolkit.ckan_utilities import (
@@ -143,24 +143,7 @@ def list_datasets(
         if extra_key in key:
             with_extras = True
 
-    keys = key.split(",")
-    output_template = {"dataset_name": ""}
-    for key_ in keys:
-        output_template[key_] = ""
-
-    output = []
-    for dataset in filtered_datasets:
-        # We always get extras for list, in case we need to access keys from there
-        dataset_dict = dataset.data
-        if dataset_dict is None:
-            continue
-        if with_extras:
-            dataset_dict = decorate_dataset_with_extras(dataset)
-        output_row = output_template.copy()
-        output_row["dataset_name"] = dataset_dict["name"]
-        new_rows = query_dict(keys, dataset_dict, output_row)
-        if new_rows:
-            output.extend(new_rows)
+    output = list_from_datasets(filtered_datasets, key, with_extras=with_extras)
 
     # Check output columns for lists or dicts
     if len(output) != 0:
@@ -756,7 +739,7 @@ def remove_extras_key(
 )
 @click.option(
     "--action",
-    type=click.Choice(["survey", "delete_key", "distribution"]),
+    type=click.Choice(["survey", "delete_key", "distribution", "list"]),
     is_flag=False,
     default="survey",
     help="an action to take",
@@ -790,10 +773,17 @@ def remove_extras_key(
     default=None,
     help="A file path to import package_search records for datasets",
 )
+@click.option(
+    "--result_path",
+    is_flag=False,
+    default=None,
+    help="A file path to output results from list action",
+)
 def scan(
     hdx_site: str = "stage",
     output_path: Optional[str] = None,
     input_path: Optional[str] = None,
+    result_path: Optional[str] = None,
     action: str = "survey",
     start: int = 0,
     rows: Optional[int] = 0,
@@ -808,6 +798,9 @@ def scan(
 
     3. delete_key - delete occurrences of a key across all datasets in HDX, this is currently
     configured so that it only accepts "extras" and "resource._csrf_token" as valid keys to delete
+
+    4. list - replicates the list command, providing a table of datasets with values
+    of selected keys
     """
     print_banner("Scan HDX")
     t0 = time.time()
@@ -864,6 +857,12 @@ def scan(
             )
     elif action == "distribution":
         key_occurence_counter = scan_distribution(response, key, verbose=verbose)
+    elif action == "list":
+        filtered_datasets = response["result"]["results"]
+        output_rows = list_from_datasets(filtered_datasets, key, with_extras=False)
+        output_for_list(result_path, output_rows)
+        print(f"Action '{action}' results took {(time.time() - t0):0.2f} seconds")
+        return
 
     if len(key_occurence_counter) == 0:
         print(f"Found no occurrences of {key} in {hdx_site}", flush=True)
@@ -873,3 +872,19 @@ def scan(
         for key_, value in key_occurence_counter.most_common():
             print(f"{key_:<{key_width}}, {value}", flush=True)
     print(f"Action '{action}' results took {(time.time() - t0):0.2f} seconds")
+
+
+def output_for_list(output_path: str | None, output_rows: list[dict]):
+    if len(output_rows) != 0:
+        for k, v in output_rows[0].items():
+            if isinstance(v, list) or isinstance(v, dict):
+                click.secho(
+                    f"Field '{k}' is list or dict type, use --result_path to see full output",
+                    fg="red",
+                    color=True,
+                )
+    print_table_from_list_of_dicts(output_rows)
+    if output_path is not None:
+        output_path = make_path_unique(output_path)
+        status = write_dictionary(output_path, output_rows, append=False)
+        print(status, flush=True)

@@ -256,12 +256,15 @@ The supported actions are:
 3. `delete_key` - delete occurrences of a key across all datasets in HDX, this
   is currently configured so that it only accepts "extras" and
   "resource._csrf_token" as valid keys to delete
+4. `list` - replicates the list command, providing a table of datasets with values
+  of selected keys
 
 Examples of invocations of the scan command are as follows:
 ```
 hdx-toolkit scan --hdx_site="stage" --action=survey --key=resources._csrf_token output_path=output/2024-08-25-hdx-snapshot.json --verbose
 hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_frequency
 hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
+hdx-toolkit scan --hdx_site="stage" --action=list --key=organization.name,data_update_frequency --rows=100
 ```
 ## Miscellaneous
 
@@ -304,4 +307,6 @@ hdx-toolkit remove_extras_key --organization=healthsites --dataset_filter=*al*-h
 hdx-toolkit scan --hdx_site="stage" --action=survey --key=resources._csrf_token output_path=output/2024-08-25-hdx-snapshot.json --verbose
 hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_frequency
 hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
+hdx-toolkit scan --hdx_site="stage" --action=list --key=organization.name,data_update_frequency --rows=100
+hdx-toolkit scan --hdx_site="stage" --action=list --key=data_update_frequency --input_path=output/2024-08-24-hdx-snapshot.json --result_path=output/2024-09-03-scan-results.csv
 ```
