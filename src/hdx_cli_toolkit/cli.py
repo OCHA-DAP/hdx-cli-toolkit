@@ -709,7 +709,7 @@ def remove_extras_key(
         flush=True,
     )
     print(
-        f"{'dataset_name':<70.70}{'had_extras':<20.20}{'removed_--outsuccessfully':<20.20}",
+        f"{'dataset_name':<70.70}{'had_extras':<20.20}{'removed_successfully':<20.20}",
         flush=True,
     )
     output_rows = []
@@ -867,7 +867,7 @@ def scan(
     if len(key_occurence_counter) == 0:
         print(f"Found no occurrences of {key} in {hdx_site}", flush=True)
     else:
-        key_width = max(len(k) for k, _ in key_occurence_counter.most_common()) + 1
+        key_width = max(len(str(k)) for k, _ in key_occurence_counter.most_common()) + 1
         print("key, n_occurrences", flush=True)
         for key_, value in key_occurence_counter.most_common():
             print(f"{key_:<{key_width}}, {value}", flush=True)

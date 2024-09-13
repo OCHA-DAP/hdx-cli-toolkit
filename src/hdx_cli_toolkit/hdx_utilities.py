@@ -67,8 +67,6 @@ def parse_hdxerror_traceback(traceback_message: str):
     message = "unknown"
     if "Authorization Error" in traceback_message:
         message = "Authorization Error"
-    elif "extras" in traceback_message:
-        message = "Extras Key Error"
     elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
     elif "{'dataset_date': ['Invalid old HDX date" in traceback_message:
@@ -79,6 +77,10 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "There is no HDX configuration Error"
     elif "No HDX API key supplied as a parameter or in configuration" in traceback_message:
         message = "No HDX API key supplied Error"
+    elif "Maintainer does not exist" in traceback_message:
+        message = "Maintainer does not exist or is not a member of current owner organization Error"
+    elif "extras" in traceback_message:
+        message = "Extras Key Error"
 
     return message
 

@@ -136,7 +136,7 @@ def scan_distribution(response: dict, key: str, verbose: bool = False) -> Counte
         output_row = {key: ""}
         output_rows = query_dict([key], dataset, output_row)
         for row in output_rows:
-            if "key absent" not in row[key]:
+            if "key absent" not in str(row[key]):
                 value_occurence_counter[row[key]] += 1
 
     return value_occurence_counter
