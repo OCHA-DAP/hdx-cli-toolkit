@@ -20,6 +20,7 @@ from hdx_cli_toolkit.hdx_utilities import (
     add_quickcharts,
     get_approved_tag_list,
     update_values_in_hdx_from_file,
+    get_hdx_url_and_key,
 )
 
 from hdx_cli_toolkit.utilities import make_conversion_func
@@ -225,6 +226,7 @@ def test_update_values_in_hdx_from_file():
 
 
 def test_error_handling(capfd):
+    # This test isn't really testing the extras key issue
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     key = "extras"
     value = "Extras key is illegal"
@@ -239,3 +241,14 @@ def test_error_handling(capfd):
     output, _ = capfd.readouterr()
 
     assert "Could not update hdx_cli_toolkit_test on 'stage' - Extras Key Error" in output
+
+
+def test_get_hdx_url_and_key():
+    hdx_site_url, hdx_api_key, user_agent = get_hdx_url_and_key(hdx_site=HDX_SITE)
+
+    assert hdx_site_url == "https://stage.data-humdata-org.ahconu.org"
+    assert len(hdx_api_key) > 10
+    assert user_agent in [
+        "HDXINTERNAL:HDXPythonLibrary/6.3.1-hdx_cli_toolkit_ih",
+        "HDXINTERNAL:HDXPythonLibrary/6.3.1-hdx_cli_toolkit_gha",
+    ]

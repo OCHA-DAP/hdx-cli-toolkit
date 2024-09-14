@@ -34,6 +34,7 @@ from hdx_cli_toolkit.utilities import (
     write_dictionary,
     make_path_unique,
     print_dictionary_comparison,
+    query_dict,
 )
 
 
@@ -44,7 +45,7 @@ def hdx_error_handler(f):
             return f(*args, **kwargs)
         except (
             HDXError,
-            ckanapi.errors.ValidationError,
+            ckanapi.errors.ValidationError,  # type:ignore
             FileNotFoundError,
             ConfigurationError,
         ):
@@ -66,8 +67,6 @@ def parse_hdxerror_traceback(traceback_message: str):
     message = "unknown"
     if "Authorization Error" in traceback_message:
         message = "Authorization Error"
-    elif "extras" in traceback_message:
-        message = "Extras Key Error"
     elif "KeyError: 'resources'" in traceback_message:
         message = "No Resources Error"
     elif "{'dataset_date': ['Invalid old HDX date" in traceback_message:
@@ -78,6 +77,12 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "There is no HDX configuration Error"
     elif "No HDX API key supplied as a parameter or in configuration" in traceback_message:
         message = "No HDX API key supplied Error"
+    elif "Maintainer does not exist" in traceback_message:
+        message = "Maintainer does not exist or is not a member of current owner organization Error"
+    # ckanapi.errors.ValidationError: {'extras': [{}, {'key':
+    # ['There is a schema field with the same name']}], '__type': 'Validation Error'}
+    elif "'extras'" in traceback_message:
+        message = "Extras Key Error"
 
     return message
 
@@ -263,7 +268,7 @@ def update_values_in_hdx(
             row["message"] = message
             output_rows.append(row)
             n_changed += 1
-        except (HDXError, KeyError, ckanapi.errors.ValidationError):
+        except (HDXError, KeyError, ckanapi.errors.ValidationError):  # type: ignore
             traceback_message = parse_hdxerror_traceback(traceback.format_exc())
             message = f"Could not update {dataset['name']} on '{hdx_site}' - {traceback_message}"
             n_failures += 1
@@ -608,7 +613,7 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
     statuses = []
-    for hdx_site in hdx_sites:
+    for hdx_site in hdx_sites:  # type:ignore
         configure_hdx_connection(hdx_site, verbose=True)
         result = User.check_current_user_organization_access(
             organization, permission="create_datasets"
@@ -623,3 +628,40 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) ->
             )
 
     return statuses
+
+
+@hdx_error_handler
+def get_hdx_url_and_key(hdx_site: str) -> tuple[str, str, str]:
+    configure_hdx_connection(hdx_site, verbose=True)
+    hdx_url = Configuration.read().get_hdx_site_url()
+    hdx_api_key = Configuration.read().get_api_key()
+    user_agent = Configuration.read().get_user_agent()
+    return hdx_url, hdx_api_key, user_agent  # type:ignore
+
+
+def list_from_datasets(
+    filtered_datasets: list[dict] | list[Dataset],
+    key: str,
+    with_extras: bool = False,
+) -> list[dict]:
+    keys = key.split(",")
+    output_template = {"dataset_name": ""}
+    for key_ in keys:
+        output_template[key_] = ""
+    output = []
+    for dataset in filtered_datasets:
+        # We always get extras for list, in case we need to access keys from there
+        if not isinstance(dataset, dict):
+            dataset_dict = dataset.data
+            if dataset_dict is None:
+                continue
+            if with_extras:
+                dataset_dict = decorate_dataset_with_extras(dataset)
+        else:
+            dataset_dict = dataset
+        output_row = output_template.copy()
+        output_row["dataset_name"] = dataset_dict["name"]
+        new_rows = query_dict(keys, dataset_dict, output_row)
+        if new_rows:
+            output.extend(new_rows)
+    return output
