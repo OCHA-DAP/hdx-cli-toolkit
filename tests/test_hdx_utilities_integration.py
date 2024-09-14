@@ -226,6 +226,7 @@ def test_update_values_in_hdx_from_file():
 
 
 def test_error_handling(capfd):
+    # This test isn't really testing the extras key issue
     dataset = Dataset.read_from_hdx(DATASET_NAME)
     key = "extras"
     value = "Extras key is illegal"

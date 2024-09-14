@@ -79,7 +79,9 @@ def parse_hdxerror_traceback(traceback_message: str):
         message = "No HDX API key supplied Error"
     elif "Maintainer does not exist" in traceback_message:
         message = "Maintainer does not exist or is not a member of current owner organization Error"
-    elif "extras" in traceback_message:
+    # ckanapi.errors.ValidationError: {'extras': [{}, {'key':
+    # ['There is a schema field with the same name']}], '__type': 'Validation Error'}
+    elif "'extras'" in traceback_message:
         message = "Extras Key Error"
 
     return message
