@@ -98,7 +98,7 @@ which selects 29 datasets matching the filter `*la*`, or
 ```shell
 hdx-toolkit list --organization=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
-which selects all the datasets of an organization. The `update` command can provide an output file listing the changes made which can subsequently be used in an `undo` operation:
+which selects all the datasets of an organization. Note that the filters acts on dataset names (used in URL), not the titles (shown in the HDX dataset page). The `update` command can provide an output file listing the changes made which can subsequently be used in an `undo` operation:
 ```shell
 hdx-toolkit update --organization=healthsites --dataset_filter=somalia-healthsites --hdx_site=stage --key=caveats --value="test entry" --output_path=2024-04-29-undo-test.csv
 ```
