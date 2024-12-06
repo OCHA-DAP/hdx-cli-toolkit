@@ -177,7 +177,7 @@ It is possible to include resource, showcase and QuickChart (resource_view) meta
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 ```
 
-This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
+This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info`, `shape_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
 
 ## Quick Charts
 
@@ -299,6 +299,7 @@ hdx-toolkit get_user_metadata --user=hopkinson
 hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
+hdx-toolkit print --dataset_filter=geoboundaries-admin-boundaries-for-nepal --with_extras
 hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
 hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
 hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name="test_resource_1" --hdx_site=stage --resource_file_path=test-2.csv --live

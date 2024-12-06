@@ -139,7 +139,7 @@ def list_datasets(
     )
     # Automate setting of with_extras
     with_extras = False
-    for extra_key in ["resources", "quickcharts", "showcases", "fs_check_info"]:
+    for extra_key in ["resources", "quickcharts", "showcases", "fs_check_info", "shape_info"]:
         if extra_key in key:
             with_extras = True
 
