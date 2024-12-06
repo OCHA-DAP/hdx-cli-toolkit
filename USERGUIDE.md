@@ -31,8 +31,8 @@ Users may prefer to make a global, isolated installation using [pipx](https://py
 `hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
 ```
-hdx_key_stage: "[hdx_key from the staging HDX site]"
-hdx_key: "[hdx_key from the prod HDX site]"
+hdx_key_stage: "[an HDX API token from the staging HDX site]"
+hdx_key: "[an HDX API token from the prod HDX site]"
 ```
 
 A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file with the * replaced with the users initials.
