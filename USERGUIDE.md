@@ -31,8 +31,8 @@ Users may prefer to make a global, isolated installation using [pipx](https://py
 `hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
 ```
-hdx_key_stage: "[hdx_key from the staging HDX site]"
-hdx_key: "[hdx_key from the prod HDX site]"
+hdx_key_stage: "[an HDX API token from the staging HDX site]"
+hdx_key: "[an HDX API token from the prod HDX site]"
 ```
 
 A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file with the * replaced with the users initials.
@@ -96,9 +96,9 @@ hdx-toolkit list --organization=healthsites --dataset_filter=*la* --hdx_site=sta
 
 which selects 29 datasets matching the filter `*la*`, or
 ```shell
-hdx-toolkit list --organization=healthsites--dataset_filter=* --hdx_site=stage --key=private --value=True
+hdx-toolkit list --organization=healthsites --dataset_filter=* --hdx_site=stage --key=private --value=True
 ```
-which selects all the datasets of an organization. The `update` command can provide an output file listing the changes made which can subsequently be used in an `undo` operation:
+which selects all the datasets of an organization. Note that the filters acts on dataset names (used in URL), not the titles (shown in the HDX dataset page). The `update` command can provide an output file listing the changes made which can subsequently be used in an `undo` operation:
 ```shell
 hdx-toolkit update --organization=healthsites --dataset_filter=somalia-healthsites --hdx_site=stage --key=caveats --value="test entry" --output_path=2024-04-29-undo-test.csv
 ```
@@ -177,7 +177,7 @@ It is possible to include resource, showcase and QuickChart (resource_view) meta
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 ```
 
-This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
+This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info`, `shape_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
 
 ## Quick Charts
 
@@ -299,6 +299,7 @@ hdx-toolkit get_user_metadata --user=hopkinson
 hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
+hdx-toolkit print --dataset_filter=geoboundaries-admin-boundaries-for-nepal --with_extras
 hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
 hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
 hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name="test_resource_1" --hdx_site=stage --resource_file_path=test-2.csv --live

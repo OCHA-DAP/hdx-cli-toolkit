@@ -39,8 +39,8 @@ Users may prefer to make a global, isolated installation using [pipx](https://py
 `hdx-cli-toolkit` uses the `hdx-python-api` library, this requires the following to be added to a file called `.hdx_configuration.yaml` in the user's home directory.
 
 ```
-hdx_key_stage: "[hdx_key from the staging HDX site]"
-hdx_key: "[hdx_key from the prod HDX site]"
+hdx_key_stage: "[an HDX API token from the staging HDX site]"
+hdx_key: "[an HDX API token from the prod HDX site]"
 ```
 
 A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file with the * replaced with the users initials.
@@ -54,7 +54,7 @@ hdx-cli-toolkit:
 
 The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`, and details of the arguments for a command can be found using `hdx-toolkit [COMMAND] --help`
 
-A detailed guide can be found in the [USERGUIDE.md](USERGUIDE.md) file
+A detailed guide can be found in the [USERGUIDE.md](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/USERGUIDE.md) file
 
 ## Contributions
 
@@ -77,7 +77,7 @@ This project uses a GitHub Action to run tests and linting. It requires the foll
 
 ```
 HDX_KEY - secret. Value: fake secret
-HDX_KEY_STAGE - secret. Value: a live API key for the stage server
+HDX_KEY_STAGE - secret. Value: a live API token for the stage server
 HDX_SITE - environment variable. Value: stage
 USER_AGENT - environment variable. Value: hdx_cli_toolkit_gha
 PREPREFIX - - environment variable. Value: [YOUR_organization]
