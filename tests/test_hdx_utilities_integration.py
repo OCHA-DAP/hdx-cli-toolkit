@@ -208,7 +208,7 @@ def test_add_quickcharts():
 
 def test_get_approved_tag_list():
     approved_tags = get_approved_tag_list()
-    assert len(approved_tags) == 140
+    assert len(approved_tags) == 141
 
 
 def test_update_values_in_hdx_from_file():
