@@ -310,9 +310,10 @@ def decorate_dataset_with_extras(
     dataset: Dataset, hdx_site: str = "stage", verbose: bool = False
 ) -> dict:
     """A function to add resource, quickcharts (resource_view) and showcases keys to a dataset
-    dictionary representation for the print command. fs_check_info, shape_info and hxl_preview_config are
-    converted from JSON objects serialised as single strings to dictionaries to make printed output
-    more readable. This decoration means that the dataset dictionary cannot be uploaded to HDX.
+    dictionary representation for the print command. fs_check_info, shape_info and
+    hxl_preview_config are converted from JSON objects serialised as single strings to
+    dictionaries to make printed output more readable. This decoration means that the dataset
+    dictionary cannot be uploaded to HDX.
 
     Arguments:
         dataset {Dataset} -- a Dataset object to process
