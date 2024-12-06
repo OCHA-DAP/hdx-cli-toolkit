@@ -54,7 +54,7 @@ hdx-cli-toolkit:
 
 The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`, and details of the arguments for a command can be found using `hdx-toolkit [COMMAND] --help`
 
-A detailed guide can be found in the [USERGUIDE.md](USERGUIDE.md) file
+A detailed guide can be found in the [USERGUIDE.md](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/USERGUIDE.md) file
 
 ## Contributions
 
