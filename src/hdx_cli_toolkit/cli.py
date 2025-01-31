@@ -365,7 +365,7 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
     default=None,
     help="an organization name to check API keys against",
 )
-def show_configuration(approved_tag_list: bool = False, organization: str = "hdx"):
+def show_configuration(approved_tag_list: bool = False, organization: Optional[str] = None):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
