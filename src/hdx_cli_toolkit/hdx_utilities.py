@@ -113,21 +113,31 @@ def get_filtered_datasets(
     """
     configure_hdx_connection(hdx_site=hdx_site, verbose=False)
 
+    organization_dict = {"display_name": "", "name": ""}
     if organization != "":
-        organization = Organization.read_from_hdx(organization)
-        datasets = organization.get_datasets(include_private=True)
+        organization_cls = Organization.read_from_hdx(organization)
+        if organization_cls is None:
+            print(f"Organization '{organization}' not found", flush=True)
+            datasets = []
+        else:
+            datasets = organization_cls.get_datasets(include_private=True)
+            organization_dict = {
+                "display_name": organization_cls["title"],
+                "name": organization_cls["name"],
+            }
     elif query is not None:
         datasets = Dataset.search_in_hdx(query=query)
-        organization = {"display_name": "", "name": ""}
     else:
         dataset = Dataset.read_from_hdx(dataset_filter)
         if dataset is None:
             datasets = []
-            organization = {"display_name": "", "name": ""}
         else:
             datasets = [dataset]
-            organization = dataset.get_organization()
-            organization = {"display_name": organization["title"], "name": organization["name"]}
+            organization_cls = dataset.get_organization()
+            organization_dict = {
+                "display_name": organization_cls["title"],
+                "name": organization_cls["name"],
+            }
 
     filtered_datasets = []
     for dataset in datasets:
@@ -138,8 +148,8 @@ def get_filtered_datasets(
         print(Configuration.read().hdx_site, flush=True)
         print(
             f"Found {len(filtered_datasets)} datasets for organization "
-            f"'{organization['display_name']} "
-            f"({organization['name']})' matching filter conditions:",
+            f"'{organization_dict['display_name']} "
+            f"({organization_dict['name']})' matching filter conditions:",
             flush=True,
         )
 
@@ -370,8 +380,11 @@ def add_showcase(showcase_name: str, hdx_site: str, attributes_file_path: str) -
 
     showcase.create_in_hdx()
     dataset = Dataset.read_from_hdx(showcase_attributes["parent_dataset"])
-    showcase.add_dataset(dataset)
-    statuses.append(f"Added dataset '{dataset['name']}' to showcase '{showcase_name}'")
+    if dataset is not None:
+        showcase.add_dataset(dataset)
+        statuses.append(f"Added dataset '{dataset['name']}' to showcase '{showcase_name}'")
+    else:
+        statuses.append(f"Parent dataset not found for '{showcase_name}'")
 
     return statuses
 
@@ -496,8 +509,9 @@ def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_
         yaml.dump(processed_recipe, yaml_file)
 
     dataset = Dataset.read_from_hdx(dataset_name)
-    dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-    dataset.update_in_hdx(update_resources=False, hxl_update=False)
+    if dataset is not None:
+        dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
+        dataset.update_in_hdx(update_resources=False, hxl_update=False)
 
     # delete the temp file
     if os.path.exists(temp_yaml_path):
@@ -523,8 +537,12 @@ def download_hdx_datasets(
         resource_filter = "*"
 
     dataset = Dataset.read_from_hdx(dataset_filter)
-    resources = dataset.get_resources()
     download_paths = []
+    if dataset is not None:
+        resources = dataset.get_resources()
+    else:
+        return download_paths
+
     for resource in resources:
         if fnmatch.fnmatch(resource["name"], resource_filter):
             expected_file_path = os.path.join(download_directory, f"{resource['name']}")
@@ -612,7 +630,7 @@ def remove_extras_key_from_dataset(
 
 
 @hdx_error_handler
-def check_api_key(organization: str = "hdx", hdx_sites: Optional[str] = None) -> list[str]:
+def check_api_key(organization: str = "hdx", hdx_sites: Optional[list[str]] = None) -> list[str]:
     if hdx_sites is None:
         hdx_sites = ["stage", "prod"]
     statuses = []
