@@ -641,11 +641,13 @@ def check_api_key(organization: str = "hdx", hdx_sites: Optional[list[str]] = No
         )
         if result:
             statuses.append(
-                f"API key valid on '{hdx_site}' to create datasets for '{organization}'"
+                f"API key valid on '{hdx_site}' to create datasets for "
+                f"organization '{organization}'"
             )
         else:
             statuses.append(
-                f"API key not valid on '{hdx_site}' to create datasets for '{organization}'"
+                f"API key not valid on '{hdx_site}' to create datasets for "
+                f"organization '{organization}'"
             )
 
     return statuses

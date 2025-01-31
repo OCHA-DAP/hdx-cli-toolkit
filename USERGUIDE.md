@@ -33,7 +33,10 @@ Users may prefer to make a global, isolated installation using [pipx](https://py
 ```
 hdx_key_stage: "[an HDX API token from the staging HDX site]"
 hdx_key: "[an HDX API token from the prod HDX site]"
+default_organization: "[your organization]"
 ```
+
+The `default_organization` is required for the `configuration` command and can be supplied using the `--organization=` commandline parament. If not defined it will default to `hdx`. 
 
 A user agent (`hdx_cli_toolkit_*`) is specified in the `~/.useragents.yaml` file with the * replaced with the users initials.
 ```

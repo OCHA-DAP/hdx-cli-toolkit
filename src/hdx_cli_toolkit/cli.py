@@ -362,7 +362,7 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 @click.option(
     "--organization",
     is_flag=False,
-    default="hdx",
+    default=None,
     help="an organization name to check API keys against",
 )
 def show_configuration(approved_tag_list: bool = False, organization: str = "hdx"):
@@ -393,7 +393,17 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
                     key_part, secret_part = row.split(":")
                     secret_part = censor_secret(secret_part)
                     row = key_part + ': "' + secret_part
+                if row.startswith("default_organization") and organization is None:
+                    key_part, organization = row.split(":")
+                    organization = organization.strip().replace('"', "")
                 print(row, flush=True)
+        if organization is None:
+            print(
+                "No organization provided in commandline or "
+                "configuration file so defaulting to 'hdx'",
+                flush=True,
+            )
+            organization = "hdx"
     else:
         click.secho(
             f"No user configuration file at {user_hdx_config_yaml}. ",
