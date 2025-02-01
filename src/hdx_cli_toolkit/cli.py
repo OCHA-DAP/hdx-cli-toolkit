@@ -397,13 +397,6 @@ def show_configuration(approved_tag_list: bool = False, organization: Optional[s
                     key_part, organization = row.split(":")
                     organization = organization.strip().replace('"', "")
                 print(row, flush=True)
-        if organization is None:
-            print(
-                "No organization provided in commandline or "
-                "configuration file so defaulting to 'hdx'",
-                flush=True,
-            )
-            organization = "hdx"
     else:
         click.secho(
             f"No user configuration file at {user_hdx_config_yaml}. ",
@@ -417,6 +410,14 @@ def show_configuration(approved_tag_list: bool = False, organization: Optional[s
             'hdx_key: "[API Key obtained from '
             'https://data.humdata.org/user/[your username]]/api-tokens]"\n'
         )
+
+    if organization is None:
+        print(
+            "No organization provided in commandline or "
+            "configuration file so defaulting to 'hdx'",
+            flush=True,
+        )
+        organization = "hdx"
 
     user_agent_config_yaml = os.path.join(os.path.expanduser("~"), ".useragents.yaml")
     if os.path.exists(user_agent_config_yaml):
