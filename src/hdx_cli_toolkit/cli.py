@@ -362,10 +362,10 @@ def get_user_metadata(user: str, hdx_site: str = "stage", verbose: bool = False)
 @click.option(
     "--organization",
     is_flag=False,
-    default="hdx",
+    default=None,
     help="an organization name to check API keys against",
 )
-def show_configuration(approved_tag_list: bool = False, organization: str = "hdx"):
+def show_configuration(approved_tag_list: bool = False, organization: Optional[str] = None):
     """Print configuration information to terminal"""
     if approved_tag_list:
         approved_tags = get_approved_tag_list()
@@ -393,6 +393,9 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
                     key_part, secret_part = row.split(":")
                     secret_part = censor_secret(secret_part)
                     row = key_part + ': "' + secret_part
+                if row.startswith("default_organization") and organization is None:
+                    key_part, organization = row.split(":")
+                    organization = organization.strip().replace('"', "")
                 print(row, flush=True)
     else:
         click.secho(
@@ -407,6 +410,14 @@ def show_configuration(approved_tag_list: bool = False, organization: str = "hdx
             'hdx_key: "[API Key obtained from '
             'https://data.humdata.org/user/[your username]]/api-tokens]"\n'
         )
+
+    if organization is None:
+        print(
+            "No organization provided in commandline or "
+            "configuration file so defaulting to 'hdx'",
+            flush=True,
+        )
+        organization = "hdx"
 
     user_agent_config_yaml = os.path.join(os.path.expanduser("~"), ".useragents.yaml")
     if os.path.exists(user_agent_config_yaml):
