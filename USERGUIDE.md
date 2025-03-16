@@ -123,15 +123,15 @@ The `list` command can output multiple comma separated keys to a table, and also
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
 
-`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. If the `--with_extras` flag is applied then keys within `resources`, `resource_views` and `showcases` can also be seen. The `--with_extras` flag forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
+`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. The displaying attributes from `resources`, `quickcharts`, `showcases`, `fs_check_info` and `shape_info` forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
 
 ```shell
-hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
+hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True
 ```
 
 Functionality to access multiple keys and nested keys is not available to the `update` command.
 
-If the `query` keyword is supplied then `organization` and `dataset_filter` keywords are ignored and the `query` is passed to CKAN:
+If a `query` keyword is supplied then the search term is passed to CKAN directly as long as `organization` is not supplied, if `organization` is supplied then it takes precedence. In either case the supplied `dataset_filter` is applied to the datasets retreived by `organization` or `query`:
 
 ```shell
 hdx-toolkit list --query=archived:true --key=owner_org
@@ -292,7 +292,7 @@ hdx-toolkit configuration
 hdx-toolkit configuration --approved_tag_list
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=private --value=True --output_path=2024-04-24-update-details.csv
 hdx-toolkit list --organization=healthsites --dataset_filter=*al*-healthsites --hdx_site=stage --key=organization.name --value=True
- hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True --with_extras
+ hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 hdx-toolkit list --query=archived:true --key=owner_org --output_path=2024-02-08-archived-datasets.csv
  hdx-toolkit list --query="cod_level:(cod-standard and cod-enhanced) +dataseries_name:COD\ -\ Subnational\ Population\ Statistics" --key=title,organization.name,dataset_date --output_path=2024-08-15-COD-export.csv
