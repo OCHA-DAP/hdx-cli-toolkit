@@ -6,7 +6,7 @@ readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
 requires-python = ">=3.11"
 authors = [
-  {email = "ian.hopkinson@un.org"},
+  {email = "ianhopkinson@googlemail.com"},
   {name = "Ian Hopkinson"}
 ]
 
