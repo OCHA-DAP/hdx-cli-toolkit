@@ -51,6 +51,8 @@ from hdx_cli_toolkit.ckan_utilities import (
     scan_distribution,
 )
 
+from hdx_cli_toolkit.data_quality_utilities import compile_data_quality_report
+
 
 @click.group()
 @click.version_option()
@@ -899,3 +901,28 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
         output_path = make_path_unique(output_path)
         status = write_dictionary(output_path, output_rows, append=False)
         print(status, flush=True)
+
+
+@hdx_toolkit.command(name="data_quality_report")
+@click.option(
+    "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value",
+)
+@click.option(
+    "--dataset_filter",
+    is_flag=False,
+    default="*",
+    help="a dataset name or pattern on which to filter list",
+)
+def data_quality_report(
+    hdx_site: str = "stage",
+    dataset_filter: str = "*",
+):
+    """Compile a data quality report for a specified dataset,
+    based on the Q2 2025 Data Quality Project"""
+    print_banner("data_quality_report")
+
+    compile_data_quality_report(dataset_filter, hdx_site)
