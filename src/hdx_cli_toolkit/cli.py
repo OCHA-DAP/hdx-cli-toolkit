@@ -912,17 +912,24 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
     help="an hdx_site value",
 )
 @click.option(
-    "--dataset_filter",
+    "--dataset_name",
     is_flag=False,
-    default="*",
+    default=None,
     help="a dataset name or pattern on which to filter list",
 )
-def data_quality_report(
-    hdx_site: str = "stage",
-    dataset_filter: str = "*",
-):
+@click.option(
+    "--lucky_dip",
+    is_flag=True,
+    default=False,
+    help="select a dataset at random",
+)
+def data_quality_report(hdx_site: str = "stage", dataset_name: str = None, lucky_dip: bool = False):
     """Compile a data quality report for a specified dataset,
     based on the Q2 2025 Data Quality Project"""
     print_banner("data_quality_report")
 
-    compile_data_quality_report(dataset_filter, hdx_site)
+    if not lucky_dip and dataset_name is None:
+        print("Lucky_dip not specified, and no dataset_name provided - returning", flush=True)
+        return
+
+    compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
