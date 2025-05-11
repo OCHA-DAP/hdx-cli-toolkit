@@ -13,8 +13,6 @@ CKAN_API_ROOT_URL = "https://data.humdata.org/api/action/"
 def compile_data_quality_report(
     dataset_name: str, hdx_site: str = "stage", lucky_dip: bool = False
 ):
-    print("Here in the compile_data_quality_function")
-
     if lucky_dip:
         metadata_dict = lucky_dip_search(hdx_site=hdx_site)
 
@@ -28,7 +26,10 @@ def compile_data_quality_report(
         metadata_dict = read_metadata_from_hdx(dataset_name)
         # Need a call to package show here.
 
-    print(json.dumps(metadata_dict, indent=4), flush=True)
+    report = {}
+    report["dataset_name"] = dataset_name
+    add_relevance_entries(metadata_dict, report)
+    print(json.dumps(report, indent=4), flush=True)
     # print(json.dumps(response, indent=4), flush=True)
 
     # Really Data Quality is a resource level attribute, not dataset
@@ -41,6 +42,74 @@ def compile_data_quality_report(
     # *Data series
     # *Crises
     #
+
+
+def add_relevance_entries(metadata_dict: dict, report: dict):
+    report["relevance"] = {}
+    if metadata_dict is None:
+        report["in_hdx"] = False
+        return
+    report["relevance"]["in_hdx"] = True
+    report["relevance"]["in_dataseries"] = (
+        metadata_dict["result"]["dataseries_name"]
+        if "dataseries_name" in metadata_dict["result"].keys()
+        else False
+    )
+    report["relevance"]["in_pipeline"] = (
+        metadata_dict["result"]["updated_by_script"]
+        if "updated_by_script" in metadata_dict["result"].keys()
+        else False
+    )
+    report["relevance"]["in_cod"] = (
+        metadata_dict["result"]["cod_level"]
+        if "cod_level" in metadata_dict["result"].keys()
+        else False
+    )
+    report["relevance"]["in_signals"] = check_for_signals(metadata_dict)
+    report["relevance"]["in_crisis"] = check_for_crisis(metadata_dict)
+
+    report["relevance"]["in_data_grids"] = None
+    report["relevance"]["in_hapi"] = None
+
+
+def check_for_signals(metadata_dict: dict) -> str | bool:
+    in_signals = False
+
+    # This list is derived from (on 2025-05-11) - needs checking regularly:
+    # https://github.com/OCHA-DAP/hdx-ckan/blob/
+    # e42f76e9ea204bbe4ec43c10088a756bb5ae8001/
+    # ckanext-hdx_theme/ckanext/hdx_theme/helpers/ui_constants/landing_pages/signals.py#L40
+    signals_datasets = [
+        "asap-hotspots-monthly",
+        "global-acute-food-insecurity-country-data",
+        "inform-global-crisis-severity-index",
+        "global-market-monitor",
+    ]
+    signals_organizations = ["acled", "international-displacement-monitoring-centre-idmc"]
+
+    dataset_name = metadata_dict["result"]["name"]
+    organization_name = metadata_dict["result"]["organization"]["name"]
+
+    if dataset_name in signals_datasets:
+        in_signals = True
+
+    if organization_name in signals_organizations:
+        in_signals = True
+
+    return in_signals
+
+
+def check_for_crisis(metadata_dict) -> list[str] | bool:
+    in_crisis = False
+
+    for tag in metadata_dict["result"]["tags"]:
+        if tag["name"].startswith("crisis-"):
+            if not in_crisis:
+                in_crisis = [tag["name"]]
+            else:
+                in_crisis.append(tag["name"])
+
+    return in_crisis
 
 
 def lucky_dip_search(hdx_site: str = "stage"):
