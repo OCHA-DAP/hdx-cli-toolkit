@@ -6,6 +6,7 @@ import urllib3
 
 from random import randrange
 from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, get_hdx_url_and_key
+from hdx_cli_toolkit.hapi_utilities import get_hapi_resource_ids
 
 CKAN_API_ROOT_URL = "https://data.humdata.org/api/action/"
 
@@ -22,13 +23,12 @@ def compile_data_quality_report(
 
     else:
         # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
-        print(f"Retreiving metadata for {dataset_name}", flush=True)
         metadata_dict = read_metadata_from_hdx(dataset_name)
         # Need a call to package show here.
 
     report = {}
     report["dataset_name"] = dataset_name
-    add_relevance_entries(metadata_dict, report)
+    report = add_relevance_entries(metadata_dict, report)
     print(json.dumps(report, indent=4), flush=True)
     # print(json.dumps(response, indent=4), flush=True)
 
@@ -42,13 +42,15 @@ def compile_data_quality_report(
     # *Data series
     # *Crises
     #
+    return report
 
 
-def add_relevance_entries(metadata_dict: dict, report: dict):
+def add_relevance_entries(metadata_dict: dict | None, report: dict):
+    dataset_name = metadata_dict["result"]["name"]
     report["relevance"] = {}
     if metadata_dict is None:
-        report["in_hdx"] = False
-        return
+        report["relevance"]["in_hdx"] = False
+        return report
     report["relevance"]["in_hdx"] = True
     report["relevance"]["in_dataseries"] = (
         metadata_dict["result"]["dataseries_name"]
@@ -65,11 +67,30 @@ def add_relevance_entries(metadata_dict: dict, report: dict):
         if "cod_level" in metadata_dict["result"].keys()
         else False
     )
+    report["relevance"]["in_hapi_output"] = True if dataset_name.startswith("hdx-hapi-") else False
     report["relevance"]["in_signals"] = check_for_signals(metadata_dict)
     report["relevance"]["in_crisis"] = check_for_crisis(metadata_dict)
 
+    report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
     report["relevance"]["in_data_grids"] = None
-    report["relevance"]["in_hapi"] = None
+
+    return report
+
+
+def check_for_hapi(metadata_dict: dict) -> str | bool:
+    in_hapi_input = False
+    hapi_resource_ids = get_hapi_resource_ids("hapi")
+
+    n_resources = len(metadata_dict["result"]["resources"])
+    n_in_hapi = 0
+    for resource in metadata_dict["result"]["resources"]:
+        if resource["id"] in hapi_resource_ids:
+            n_in_hapi += 1
+
+    if n_in_hapi != 0:
+        in_hapi_input = f"{n_in_hapi} of {n_resources}"
+
+    return in_hapi_input
 
 
 def check_for_signals(metadata_dict: dict) -> str | bool:
@@ -142,21 +163,22 @@ def lucky_dip_search(hdx_site: str = "stage"):
 
 
 # Borrowed from hdx-stable-schema 2025-05-10
-def reformat_metadata_keys(metadata_dict):
-    for resource in metadata_dict["result"]["resources"]:
-        if "fs_check_info" in resource.keys():
-            resource["fs_check_info"] = json.loads(resource["fs_check_info"])
-        if "shape_info" in resource.keys():
-            resource["shape_info"] = json.loads(resource["shape_info"])
+def reformat_metadata_keys(metadata_dict: dict | None):
+    if metadata_dict is not None:
+        for resource in metadata_dict["result"]["resources"]:
+            if "fs_check_info" in resource.keys():
+                resource["fs_check_info"] = json.loads(resource["fs_check_info"])
+            if "shape_info" in resource.keys():
+                resource["shape_info"] = json.loads(resource["shape_info"])
 
 
 # Borrowed from hdx-stable-schema 2025-05-10
-def read_metadata_from_hdx(dataset_name: str) -> dict:
+def read_metadata_from_hdx(dataset_name: str) -> dict | None:
     query_url = f"{CKAN_API_ROOT_URL}package_show"
     params = {"id": dataset_name}
 
     response = urllib3.request("GET", query_url, fields=params)
-    metadata_dict = {}
+    metadata_dict = None
     if response.status == 200:
         metadata_dict = response.json()
 

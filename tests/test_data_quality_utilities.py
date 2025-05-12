@@ -15,6 +15,7 @@ TEST_DATASETS = [
     "inform-global-crisis-severity-index",
     # HDX HAPI – the initial release follows the Data Grid datasets
     "hdx-hapi-rainfall",  # this one is derived from HDX HAPI
+    "global-iom-dtm-from-api",
     # Should we include COD (Common operational datasets?) – cod_level key
     "cod-ps-global",
     "cod-ab-ecu",
@@ -30,3 +31,8 @@ def test_dataset_data_quality():
         report = compile_data_quality_report(dataset_name)
 
     assert False
+
+
+def test_handle_a_nonexistent_dataset():
+    report = compile_data_quality_report("thing")
+    assert report == {"dataset_name": "thing", "relevance": {"in_hdx": False}}
