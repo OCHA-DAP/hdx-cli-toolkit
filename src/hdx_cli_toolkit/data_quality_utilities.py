@@ -3,7 +3,9 @@
 
 import json
 import urllib3
+import csv
 
+from pathlib import Path
 from random import randrange
 from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, get_hdx_url_and_key
 from hdx_cli_toolkit.hapi_utilities import get_hapi_resource_ids
@@ -72,7 +74,7 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict):
     report["relevance"]["in_crisis"] = check_for_crisis(metadata_dict)
 
     report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
-    report["relevance"]["in_data_grids"] = None
+    report["relevance"]["in_data_grids"] = check_for_datagrid(metadata_dict)
 
     return report
 
@@ -91,6 +93,19 @@ def check_for_hapi(metadata_dict: dict) -> str | bool:
         in_hapi_input = f"{n_in_hapi} of {n_resources}"
 
     return in_hapi_input
+
+
+def check_for_datagrid(metadata_dict: dict) -> str | bool:
+    in_datagrid = False
+    datagrid_filepath = Path(__file__).parent / "data" / "2025-05-13-datagrid-datasets.csv"
+    with open(datagrid_filepath, newline="", encoding="utf-8") as csvfile:
+        dataset_name_rows = csv.DictReader(csvfile)
+        datagrid_datasets = [x["dataset_name"] for x in dataset_name_rows]
+
+    if metadata_dict["result"]["name"] in datagrid_datasets:
+        in_datagrid = True
+
+    return in_datagrid
 
 
 def check_for_signals(metadata_dict: dict) -> str | bool:
