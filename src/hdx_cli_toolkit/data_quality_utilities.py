@@ -158,7 +158,8 @@ def lucky_dip_search(hdx_site: str = "stage"):
 
     n_datasets = response["result"]["count"]
 
-    # Now do a second query with a random start, using the first to get the range of offsets possible
+    # Now do a second query with a random start,
+    # using the first to get the range of offsets possible
     # Make a random offset in the range 0, n datasets
     random_start = randrange(0, n_datasets)
     # query with offset (start) = random, limit (rows) = 1
