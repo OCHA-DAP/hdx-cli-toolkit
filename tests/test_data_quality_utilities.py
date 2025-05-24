@@ -37,9 +37,11 @@ def test_dataset_data_quality():
     for dataset in TEST_DATASETS:
         print(dataset["dataset_name"], flush=True)
         report = compile_data_quality_report(dataset["dataset_name"])
+        print(json.dumps(report, indent=4), flush=True)
 
         assert dataset["dataset_name"] in TEST_DATASETS_NAMES
-        assert report == dataset
+
+    assert False
 
 
 def test_handle_a_nonexistent_dataset():

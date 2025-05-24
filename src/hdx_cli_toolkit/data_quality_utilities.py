@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import datetime
 import json
 import urllib3
 import csv
@@ -31,6 +32,7 @@ def compile_data_quality_report(
     report = {}
     report["dataset_name"] = dataset_name
     report = add_relevance_entries(metadata_dict, report)
+    report = add_timeliness_entries(metadata_dict, report)
     print(json.dumps(report, indent=4), flush=True)
     # print(json.dumps(response, indent=4), flush=True)
 
@@ -47,7 +49,7 @@ def compile_data_quality_report(
     return report
 
 
-def add_relevance_entries(metadata_dict: dict | None, report: dict):
+def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     dataset_name = metadata_dict["result"]["name"]
     report["relevance"] = {}
     if metadata_dict is None:
@@ -79,6 +81,105 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict):
     return report
 
 
+def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
+    dataset_name = metadata_dict["result"]["name"]
+    report["timeliness"] = {}
+    if metadata_dict is None:
+        return report
+
+    due_date = metadata_dict["result"].get("due_date", False)
+
+    today = datetime.datetime.now().isoformat()[0:10]
+    report["timeliness"]["is_fresh"] = metadata_dict["result"].get("is_fresh", False)
+    report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
+    report["timeliness"]["due_date"] = due_date
+    # report["timeliness"]["last_modified"] = metadata_dict["result"]["last_modified"]
+    # report["timeliness"]["metadata_modified"] = metadata_dict["result"]["metadata_modified"]
+    report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
+    # report["timeliness"]["days_until_due_date"] = (
+    #     (datetime.datetime.fromisoformat(due_date) - datetime.datetime.now()).days
+    #     if due_date is not None
+    #     else False
+    # )
+    report["timeliness"]["days_since_last_modified"] = (
+        datetime.datetime.fromisoformat(today)
+        - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
+    ).days
+    report["timeliness"]["crisis_appropriate"] = None
+
+    # Frequency of update is respected
+    # Publication time is relevant to crisis
+    resource_changes = summarise_resource_changes(metadata_dict)
+    resource_summary = summarise_resource(metadata_dict)
+    report["timeliness"]["resources"] = []
+    for resource in metadata_dict["result"]["resources"]:
+        # print(resource["name"], flush=True)
+        resource_report = {}
+        resource_report["name"] = resource["name"]
+        if due_date is not None:
+            resource_report["is_fresh"] = (
+                True if datetime.datetime.now().isoformat() < due_date else False
+            )
+        # resource_report["last_modified"] = metadata_dict["result"]["last_modified"]
+        # resource_report["metadata_modified"] = metadata_dict["result"]["metadata_modified"]
+        resource_report["days_since_last_modified"] = (
+            datetime.datetime.fromisoformat(today)
+            - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
+        ).days
+
+        #
+        # Process fs_check_info
+        checks = resource_changes[resource["name"]]["checks"]
+        # for check in checks:
+        #     print(check, flush=True)
+        # Number of updates
+        resource_report["n_updates"] = len(checks)
+        # Days since last update
+        if len(checks) != 0:
+            resource_report["days_since_last_update"] = (
+                datetime.datetime.fromisoformat(today)
+                - datetime.datetime.fromisoformat(checks[-1][0:10])
+            ).days
+            # Days since last nrows change
+            last_change_date = None
+            for check in reversed(checks):
+                if "nrows" in check:
+                    last_change_date = check[0:10]
+            if last_change_date is not None:
+                resource_report["days_since_last_data_change"] = (
+                    datetime.datetime.fromisoformat(today)
+                    - datetime.datetime.fromisoformat(last_change_date)
+                ).days
+            else:
+                resource_report["days_since_last_data_change"] = None
+            # days between updates
+            days_between_updates = []
+            previous = datetime.datetime.fromisoformat(checks[0][0:10])
+            for check in checks[1:]:
+                current = datetime.datetime.fromisoformat(check[0:10])
+                days = (current - previous).days
+                days_between_updates.append(days)
+                previous = current
+
+            resource_report["cadence"] = days_between_updates
+        report["timeliness"]["resources"].append(resource_report)
+    # Resources have a last_modified and metadata_modified keys
+    # Datasets have:
+    # "is_fresh": false,
+    # "update_status": "needs_update",
+    # "data_update_frequency": "365",
+    # "due_date": "2021-12-31T23:59:59",
+    # "last_modified": "2025-04-02T07:21:54.377501",
+    # "metadata_modified": "2025-05-05T10:46:55.687736",
+
+    # print(json.dumps(resource_summary, indent=4), flush=True)
+    # print(json.dumps(resource_changes, indent=4), flush=True)
+
+    # print_resource_summary(resource_summary, resource_changes, target_resource_name=None)
+
+    return report
+
+
 def check_for_hapi(metadata_dict: dict) -> str | bool:
     in_hapi_input = False
     hapi_resource_ids = get_hapi_resource_ids("hapi")
@@ -101,6 +202,8 @@ def check_for_datagrid(metadata_dict: dict) -> str | bool:
     with open(datagrid_filepath, newline="", encoding="utf-8") as csvfile:
         dataset_name_rows = csv.DictReader(csvfile)
         datagrid_datasets = [x["dataset_name"] for x in dataset_name_rows]
+        print(f"Length of datagrid list {len(datagrid_datasets)}", flush=True)
+        print(f"Length of datagrid set {len(set(datagrid_datasets))}", flush=True)
 
     if metadata_dict["result"]["name"] in datagrid_datasets:
         in_datagrid = True
@@ -171,9 +274,10 @@ def lucky_dip_search(hdx_site: str = "stage"):
     response = fetch_data_from_ckan_package_search(
         package_search_url, random_offset_params, hdx_api_key=hdx_api_key, fetch_all=False
     )
-    metadata_dict = {}
-    metadata_dict["result"] = response["result"]["results"][0]
-    reformat_metadata_keys(metadata_dict)
+
+    dataset_name = response["result"]["results"][0]["name"]
+
+    metadata_dict = read_metadata_from_hdx(dataset_name=dataset_name)
 
     return metadata_dict
 
@@ -200,3 +304,168 @@ def read_metadata_from_hdx(dataset_name: str) -> dict | None:
 
     reformat_metadata_keys(metadata_dict)
     return metadata_dict
+
+
+# Borrowed from hdx-stable-schema 2025-05-21
+def summarise_resource_changes(metadata: dict) -> dict:
+    resource_changes = {}
+    for resource in metadata["result"]["resources"]:
+        resource_changes[resource["name"]] = {}
+        resource_changes[resource["name"]]["checks"] = []
+
+        if "fs_check_info" in resource.keys():
+            for check in resource["fs_check_info"]:
+                if check["message"] == "File structure check completed":
+                    if len(check["sheet_changes"]) != 0:
+                        for change in check["sheet_changes"]:
+                            change_indicator = f"{check['timestamp'][0:10]}"
+                            if change["event_type"] == "spreadsheet-sheet-changed":
+                                change_indicator += (
+                                    f"* Schema changes in sheet "
+                                    f"'{change['name']}' field: "
+                                    f"{change['changed_fields'][0]['field']}"
+                                )
+                            else:
+                                change_indicator += (
+                                    f"* Schema changes in sheet "
+                                    f"'{change['name']}' - "
+                                    f"{change['event_type']}"
+                                )
+
+                            resource_changes[resource["name"]]["checks"].extend([change_indicator])
+                    else:
+                        change_indicator = f"{check['timestamp'][0:10]}"
+                        resource_changes[resource["name"]]["checks"].extend([change_indicator])
+        elif "shape_info" in resource.keys():
+            previous_bounding_box = ""
+            previous_headers = set()
+            for check in resource["shape_info"]:
+                change_indicator = ""
+                first_check = True
+                if isinstance(check, str):
+                    continue
+                if check["message"] == "Import successful":
+                    # (json.dumps(check, indent=4), flush=True)
+                    if "layer_fields" in check.keys():
+                        headers = {x["field_name"] for x in check["layer_fields"]}
+                    else:
+                        headers = set()
+                    bounding_box = check["bounding_box"]
+                    if "timestamp" in check.keys():
+                        change_indicator += f"{check['timestamp'][0:10]}"
+                    else:
+                        change_indicator += "1900-01-01"
+                    if not first_check:
+                        if (bounding_box != previous_bounding_box) or (previous_headers != headers):
+                            change_indicator += "* "
+                        if bounding_box != previous_bounding_box:
+                            change_indicator += "bounding box change "
+                        if previous_headers != headers:
+                            change_indicator += "header change"
+
+                    previous_headers = headers
+                    previous_bounding_box = bounding_box
+                    first_check = False
+                    resource_changes[resource["name"]]["checks"].extend([change_indicator])
+                # else:
+                #     print(json.dumps(check, indent=4), flush=True)
+
+    return resource_changes
+
+
+# Borrowed from hdx-stable-schema 2025-05-21
+def print_resource_summary(resource_summary, resource_changes, target_resource_name=None):
+    if target_resource_name is None:
+        resource_names = list(resource_changes.keys())
+    else:
+        resource_names = [target_resource_name]
+    for i, resource_name in enumerate(resource_names, start=1):
+        checks = resource_changes[resource_name]["checks"]
+        print(f"\n{i:>2d}. {resource_name}", flush=True)
+        print(
+            f"\tFilename: {resource_summary[resource_name]['filename']} "
+            f"\n\tFormat: {resource_summary[resource_name]['format']}"
+            f"\n\tSheets: {', '.join(resource_summary[resource_name]['sheets'])}",
+            flush=True,
+        )
+        if "bounding_box" in resource_summary[resource_name].keys():
+            print(f"\tBounding box: {resource_summary[resource_name]['bounding_box']}", flush=True)
+        if resource_summary[resource_name]["in_quarantine"]:
+            print("\t**in quarantine**", flush=True)
+        print(f"\tChecks ({len(checks)} file structure checks):", flush=True)
+        for check in checks:
+            print(f"\t\t{check}", flush=True)
+
+
+# Borrowed from hdx-stable-schema 2025-05-21
+def summarise_resource(metadata: dict) -> dict:
+    resource_summary = {}
+    error_message = "Neither fs_check_info nor shape_info found"
+    for resource in metadata["result"]["resources"]:
+        resource_summary[resource["name"]] = {}
+        resource_summary[resource["name"]]["format"] = resource["format"]
+        if "download_url" in resource.keys():
+            resource_summary[resource["name"]]["filename"] = resource["download_url"].split("/")[-1]
+        else:
+            resource_summary[resource["name"]]["filename"] = ""
+        resource_summary[resource["name"]]["in_quarantine"] = resource.get("in_quarantine", False)
+
+        resource_summary[resource["name"]]["sheets"] = []
+
+        if "fs_check_info" in resource.keys():
+            check, error_message = get_last_complete_check(resource, "fs_check_info")
+            if error_message == "Success":
+                # print(json.dumps(check, indent=4), flush=True)
+                for sheet in check["hxl_proxy_response"]["sheets"]:
+                    sheet_name = sheet["name"]
+                    nrows = sheet["nrows"]
+                    ncols = sheet["ncols"]
+                    resource_summary[resource["name"]]["sheets"].append(
+                        f"{sheet_name} (n_columns:{ncols} x n_rows:{nrows})"
+                    )
+        elif "shape_info" in resource.keys():
+            check, error_message = get_last_complete_check(resource, "shape_info")
+            if error_message == "Success":
+                sheet_name = "__DEFAULT__"
+                ncols = len(check["layer_fields"])
+                nrows = "N/A"
+                resource_summary[resource["name"]]["sheets"].append(
+                    f"{sheet_name} (n_columns:{ncols} x n_rows:{nrows})"
+                )
+                resource_summary[resource["name"]]["bounding_box"] = check["bounding_box"]
+
+    if error_message != "Success":
+        print(error_message, flush=True)
+
+    return resource_summary
+
+
+# Borrowed from hdx-stable-schema 2025-05-21
+def get_last_complete_check(resource_metadata: dict, metadata_key: str) -> tuple[dict, str]:
+    success = False
+    error_message = "Success"
+    fingerprint = (
+        "Import successful" if metadata_key == "shape_info" else "File structure check completed"
+    )
+    if metadata_key not in resource_metadata:
+        error_message = f"metadata_key '{metadata_key}' not found in resource metadata"
+        check = {}
+        return check, error_message
+
+    for check in reversed(resource_metadata[metadata_key]):
+        try:
+            if check["message"] == fingerprint:
+                # print(json.dumps(check, indent=4), flush=True)
+                success = True
+                break
+        except TypeError:
+            success = False
+
+    if not success:
+        error_message = (
+            f"\nError, could not find an '{fingerprint}' check "
+            f"for {resource_metadata['name']}\n"
+            f"final message was '{check}'"
+        )
+        check = {}
+    return check, error_message
