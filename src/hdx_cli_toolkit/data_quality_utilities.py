@@ -19,11 +19,9 @@ def compile_data_quality_report(
 ):
     if lucky_dip:
         metadata_dict = lucky_dip_search(hdx_site=hdx_site)
-
-        dataset_name = metadata_dict["result"]["name"]
-
-        print(f"Lucky dip search retreived dataset with name: {dataset_name}")
-
+        if metadata_dict:
+            dataset_name = metadata_dict["result"]["name"]
+            print(f"Lucky dip search retreived dataset with name: {dataset_name}")
     else:
         # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
         metadata_dict = read_metadata_from_hdx(dataset_name)
@@ -33,6 +31,7 @@ def compile_data_quality_report(
     report["dataset_name"] = dataset_name
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
+    report = add_accessibility_entries(metadata_dict, report)
     print(json.dumps(report, indent=4), flush=True)
     # print(json.dumps(response, indent=4), flush=True)
 
@@ -50,7 +49,10 @@ def compile_data_quality_report(
 
 
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
-    dataset_name = metadata_dict["result"]["name"]
+    if metadata_dict:
+        dataset_name = metadata_dict["result"]["name"]
+    else:
+        return report
     report["relevance"] = {}
     if metadata_dict is None:
         report["relevance"]["in_hdx"] = False
@@ -77,12 +79,13 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
     report["relevance"]["in_data_grids"] = check_for_datagrid(metadata_dict)
+    relevance_summary = [1 if v else 0 for k, v in report["relevance"].items()]
+    report["relevance"]["score"] = sum(relevance_summary)
 
     return report
 
 
 def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
-    dataset_name = metadata_dict["result"]["name"]
     report["timeliness"] = {}
     if metadata_dict is None:
         return report
@@ -91,47 +94,40 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     today = datetime.datetime.now().isoformat()[0:10]
     report["timeliness"]["is_fresh"] = metadata_dict["result"].get("is_fresh", False)
+    report["timeliness"]["is_crisis_relevant"] = (
+        True
+        if check_for_crisis(metadata_dict)
+        and metadata_dict["result"]["data_update_frequency"] == "0"
+        else False
+    )
+    report["timeliness"]["has_correct_cadence"] = None
+
     report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
     report["timeliness"]["due_date"] = due_date
-    # report["timeliness"]["last_modified"] = metadata_dict["result"]["last_modified"]
-    # report["timeliness"]["metadata_modified"] = metadata_dict["result"]["metadata_modified"]
     report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
-    # report["timeliness"]["days_until_due_date"] = (
-    #     (datetime.datetime.fromisoformat(due_date) - datetime.datetime.now()).days
-    #     if due_date is not None
-    #     else False
-    # )
     report["timeliness"]["days_since_last_modified"] = (
         datetime.datetime.fromisoformat(today)
         - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
     ).days
-    report["timeliness"]["crisis_appropriate"] = None
 
     # Frequency of update is respected
     # Publication time is relevant to crisis
     resource_changes = summarise_resource_changes(metadata_dict)
-    resource_summary = summarise_resource(metadata_dict)
     report["timeliness"]["resources"] = []
     for resource in metadata_dict["result"]["resources"]:
-        # print(resource["name"], flush=True)
         resource_report = {}
         resource_report["name"] = resource["name"]
         if due_date is not None:
             resource_report["is_fresh"] = (
                 True if datetime.datetime.now().isoformat() < due_date else False
             )
-        # resource_report["last_modified"] = metadata_dict["result"]["last_modified"]
-        # resource_report["metadata_modified"] = metadata_dict["result"]["metadata_modified"]
         resource_report["days_since_last_modified"] = (
             datetime.datetime.fromisoformat(today)
             - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
         ).days
 
-        #
         # Process fs_check_info
         checks = resource_changes[resource["name"]]["checks"]
-        # for check in checks:
-        #     print(check, flush=True)
         # Number of updates
         resource_report["n_updates"] = len(checks)
         # Days since last update
@@ -163,20 +159,48 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
             resource_report["cadence"] = days_between_updates
         report["timeliness"]["resources"].append(resource_report)
-    # Resources have a last_modified and metadata_modified keys
-    # Datasets have:
-    # "is_fresh": false,
-    # "update_status": "needs_update",
-    # "data_update_frequency": "365",
-    # "due_date": "2021-12-31T23:59:59",
-    # "last_modified": "2025-04-02T07:21:54.377501",
-    # "metadata_modified": "2025-05-05T10:46:55.687736",
+    return report
 
-    # print(json.dumps(resource_summary, indent=4), flush=True)
-    # print(json.dumps(resource_changes, indent=4), flush=True)
 
-    # print_resource_summary(resource_summary, resource_changes, target_resource_name=None)
+def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
+    report["accessibility"] = {}
+    if metadata_dict is None:
+        return report
 
+    resource_changes = summarise_resource_changes(metadata_dict)
+    report["accessibility"]["resources"] = []
+    for resource in metadata_dict["result"]["resources"]:
+        resource_report = {}
+        resource_report["name"] = resource["name"]
+        format_ = resource["format"].upper()
+        if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE"]:
+            format_score = 2
+        elif format_ in ["XLSX", "XLS", "SHP"]:
+            format_score = 1
+        elif format_ in ["PDF", "DOC", "DOCX"]:
+            format_score = 0
+        else:
+            print(f"Unknown resource format: {resource['format']}", flush=True)
+            sys.exit()
+
+        resource_report["format_score"] = f"{format_score} ({format_})"
+
+        # # Number of updates
+        # resource_report["n_updates"] = len(checks)
+        # Days since last update
+        resource_report["is_hxlated"] = False
+        if "fs_check_info" in resource.keys():
+            check, error_message = get_last_complete_check(resource, "fs_check_info")
+            # print(json.dumps(check, indent=4), flush=True)
+            if error_message == "Success":
+                # print(json.dumps(check, indent=4), flush=True)
+                for sheet in check["hxl_proxy_response"]["sheets"]:
+                    if sheet["is_hxlated"]:
+                        resource_report["is_hxlated"] = True
+        # elif "shape_info" in resource.keys():
+        #     check, error_message = get_last_complete_check(resource, "shape_info")
+
+        report["accessibility"]["resources"].append(resource_report)
     return report
 
 
