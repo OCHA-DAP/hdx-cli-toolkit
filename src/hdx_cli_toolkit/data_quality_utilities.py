@@ -12,11 +12,14 @@ from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, 
 from hdx_cli_toolkit.hapi_utilities import get_hapi_resource_ids
 
 CKAN_API_ROOT_URL = "https://data.humdata.org/api/action/"
+HAPI_RESOURCE_IDS = None
 
 
 def compile_data_quality_report(
     dataset_name: str, hdx_site: str = "stage", lucky_dip: bool = False
 ):
+    global HAPI_RESOURCE_IDS
+    HAPI_RESOURCE_IDS = get_hapi_resource_ids("hapi")
     if lucky_dip:
         metadata_dict = lucky_dip_search(hdx_site=hdx_site)
         if metadata_dict:
@@ -168,6 +171,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         return report
 
     resource_changes = summarise_resource_changes(metadata_dict)
+    print(json.dumps(resource_changes, indent=4), flush=True)
     report["accessibility"]["resources"] = []
     for resource in metadata_dict["result"]["resources"]:
         resource_report = {}
@@ -175,9 +179,9 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         format_ = resource["format"].upper()
         if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE"]:
             format_score = 2
-        elif format_ in ["XLSX", "XLS", "SHP"]:
+        elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE"]:
             format_score = 1
-        elif format_ in ["PDF", "DOC", "DOCX"]:
+        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG"]:
             format_score = 0
         else:
             print(f"Unknown resource format: {resource['format']}", flush=True)
@@ -188,6 +192,9 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         # # Number of updates
         # resource_report["n_updates"] = len(checks)
         # Days since last update
+        resource_report["in_hapi"] = False
+        if resource["id"] in HAPI_RESOURCE_IDS:
+            resource_report["in_hapi"] = True
         resource_report["is_hxlated"] = False
         if "fs_check_info" in resource.keys():
             check, error_message = get_last_complete_check(resource, "fs_check_info")
@@ -200,18 +207,24 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         # elif "shape_info" in resource.keys():
         #     check, error_message = get_last_complete_check(resource, "shape_info")
 
+        # Check for schema changes
+        resource_checks = resource_changes[resource["name"]]["checks"]
+        n_schema_changes = 0
+        for resource_check in resource_checks:
+            if "*" in resource_check and "nrows" not in resource_check:
+                n_schema_changes += 1
+        resource_report["n_schema_changes"] = n_schema_changes
         report["accessibility"]["resources"].append(resource_report)
     return report
 
 
 def check_for_hapi(metadata_dict: dict) -> str | bool:
     in_hapi_input = False
-    hapi_resource_ids = get_hapi_resource_ids("hapi")
 
     n_resources = len(metadata_dict["result"]["resources"])
     n_in_hapi = 0
     for resource in metadata_dict["result"]["resources"]:
-        if resource["id"] in hapi_resource_ids:
+        if resource["id"] in HAPI_RESOURCE_IDS:
             n_in_hapi += 1
 
     if n_in_hapi != 0:
