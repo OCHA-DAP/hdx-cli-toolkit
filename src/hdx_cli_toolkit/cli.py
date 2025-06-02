@@ -932,4 +932,5 @@ def data_quality_report(hdx_site: str = "stage", dataset_name: str = None, lucky
         print("Lucky_dip not specified, and no dataset_name provided - returning", flush=True)
         return
 
-    compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
+    report = compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
+    print(json.dumps(report, indent=4), flush=True)

@@ -35,19 +35,6 @@ def compile_data_quality_report(
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
     report = add_accessibility_entries(metadata_dict, report)
-    print(json.dumps(report, indent=4), flush=True)
-    # print(json.dumps(response, indent=4), flush=True)
-
-    # Really Data Quality is a resource level attribute, not dataset
-
-    # Revelance
-    # *Presence on HDX
-    # *Data Grids
-    # *Updated by script
-    # *Signals
-    # *Data series
-    # *Crises
-    #
     return report
 
 
@@ -160,7 +147,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 days_between_updates.append(days)
                 previous = current
 
-            resource_report["cadence"] = days_between_updates
+            resource_report["update_cadence"] = days_between_updates
         report["timeliness"]["resources"].append(resource_report)
     return report
 
@@ -171,7 +158,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         return report
 
     resource_changes = summarise_resource_changes(metadata_dict)
-    print(json.dumps(resource_changes, indent=4), flush=True)
+    # print(json.dumps(resource_changes, indent=4), flush=True)
     report["accessibility"]["resources"] = []
     for resource in metadata_dict["result"]["resources"]:
         resource_report = {}
@@ -179,7 +166,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         format_ = resource["format"].upper()
         if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE"]:
             format_score = 2
-        elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE"]:
+        elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]:
             format_score = 1
         elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG"]:
             format_score = 0
