@@ -35,6 +35,9 @@ def compile_data_quality_report(
 
     report = {}
     report["dataset_name"] = dataset_name
+    report["relevance_score"] = 0
+    report["timeliness_score"] = 0
+    report["accessibility_score"] = 0
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
     report = add_accessibility_entries(metadata_dict, report)
@@ -109,7 +112,9 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     resource_changes = summarise_resource_changes(metadata_dict)
     report["timeliness"]["resources"] = []
     expected_cadence = metadata_dict["result"]["data_update_frequency"]
+
     for resource in metadata_dict["result"]["resources"]:
+        has_correct_cadence = 1
         resource_report = {}
         resource_report["name"] = resource["name"]
         if due_date is not None:
@@ -154,23 +159,26 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
             resource_report["update_cadence"] = days_between_updates
             # Calculate cadence compliance metric
-            if len(resource_report["update_cadence"]) != 0:
-                cadence_metric = math.sqrt(
-                    sum(
-                        [
-                            ((float(x) - float(expected_cadence)) / float(expected_cadence)) ** 2
-                            for x in resource_report["update_cadence"]
-                        ]
-                    )
-                    / len(resource_report["update_cadence"])
-                )
-                resource_report["cadence_rms"] = round(cadence_metric, 2)
-            else:
-                resource_report["cadence_rms"] = None
+            # if len(resource_report["update_cadence"]) != 0:
+            #     cadence_metric = math.sqrt(
+            #         sum(
+            #             [
+            #                 ((float(x) - float(expected_cadence)) / float(expected_cadence)) ** 2
+            #                 for x in resource_report["update_cadence"]
+            #             ]
+            #         )
+            #         / len(resource_report["update_cadence"])
+            #     )
+            #     resource_report["cadence_rms"] = round(cadence_metric, 2)
+            # else:
+            #     resource_report["cadence_rms"] = None
 
             # Cadence
             # Cadence is as advertised
-            if float(expected_cadence) > 0 and len(resource_report["update_cadence"]) != 0:
+            resource_report["cadence_mean_ratio"] = None
+            resource_report["cadence_std_ratio"] = None
+            resource_report["has_correct_cadence"] = has_correct_cadence
+            if float(expected_cadence) > 0 and len(resource_report["update_cadence"]) > 1:
                 average_interval = statistics.mean(resource_report["update_cadence"])
                 resource_report["cadence_mean_ratio"] = round(
                     average_interval / float(expected_cadence), 2
@@ -180,13 +188,29 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 resource_report["cadence_std_ratio"] = round(
                     std_interval / float(expected_cadence), 2
                 )
-            else:
-                resource_report["cadence_mean_ratio"] = None
-                resource_report["cadence_std_ratio"] = None
+                if abs(resource_report["cadence_mean_ratio"] - 1) < 0.1:
+                    has_correct_cadence += 1
+                if resource_report["cadence_std_ratio"] < 0.1:
+                    has_correct_cadence += 1
+            resource_report["has_correct_cadence"] = has_correct_cadence
+
         report["timeliness"]["resources"].append(resource_report)
 
-    timeliness_summary = [1 if v else 0 for k, v in report["timeliness"].items()]
-    report["timeliness_score"] = sum(timeliness_summary)
+    # Compile cadence score
+    # 3 if cadence is correct (mean ratio~1) and stable (std ratio ~0) for at least 1 resource
+    # 2 if one of mean ratio and std ratio is good for at least 1 resource
+    # 1 if neither
+    has_correct_cadence = max(
+        x.get("has_correct_cadence", 1) for x in report["timeliness"]["resources"]
+    )
+    report["timeliness"]["has_correct_cadence"] = has_correct_cadence
+
+    timeliness_summary = has_correct_cadence
+    if report["timeliness"]["is_fresh"]:
+        timeliness_summary += 1
+    if report["timeliness"]["is_crisis_relevant"]:
+        timeliness_summary += 1
+    report["timeliness_score"] = timeliness_summary
 
     return report
 
@@ -196,10 +220,15 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict is None:
         return report
 
+    n_tags = len(metadata_dict["result"]["tags"])
+    n_countries = len(metadata_dict["result"]["groups"])
+    report["accessibility"]["n_tags"] = n_tags + n_countries
     resource_changes = summarise_resource_changes(metadata_dict)
     # print(json.dumps(resource_changes, indent=4), flush=True)
     report["accessibility"]["resources"] = []
+    max_resource_score = 0
     for resource in metadata_dict["result"]["resources"]:
+        resource_score = 0
         resource_report = {}
         resource_report["name"] = resource["name"]
         format_ = resource["format"].upper()
@@ -215,12 +244,14 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
 
         resource_report["format_score"] = f"{format_score} ({format_})"
 
+        resource_score += format_score
         # # Number of updates
         # resource_report["n_updates"] = len(checks)
         # Days since last update
         resource_report["in_hapi"] = False
         if resource["id"] in HAPI_RESOURCE_IDS:
             resource_report["in_hapi"] = True
+            resource_score += 1
         resource_report["is_hxlated"] = False
         if "fs_check_info" in resource.keys():
             check, error_message = get_last_complete_check(resource, "fs_check_info")
@@ -230,6 +261,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
                 for sheet in check["hxl_proxy_response"]["sheets"]:
                     if sheet["is_hxlated"]:
                         resource_report["is_hxlated"] = True
+                        resource_score += 1
         # elif "shape_info" in resource.keys():
         #     check, error_message = get_last_complete_check(resource, "shape_info")
 
@@ -239,8 +271,16 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         for resource_check in resource_checks:
             if "*" in resource_check and "nrows" not in resource_check:
                 n_schema_changes += 1
+        if n_schema_changes == 1:
+            resource_score += 1
         resource_report["n_schema_changes"] = n_schema_changes
         report["accessibility"]["resources"].append(resource_report)
+        if resource_score > max_resource_score:
+            max_resource_score = resource_score
+
+    report["accessibility_score"] = max_resource_score
+    if n_tags > 0 and n_tags > 0:
+        report["accessibility_score"] += 1
     return report
 
 
