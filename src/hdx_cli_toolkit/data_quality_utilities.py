@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import csv
 import datetime
 import json
+import math
+import statistics
 import urllib3
-import csv
+
 
 from pathlib import Path
 from random import randrange
@@ -70,7 +73,7 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
     report["relevance"]["in_data_grids"] = check_for_datagrid(metadata_dict)
     relevance_summary = [1 if v else 0 for k, v in report["relevance"].items()]
-    report["relevance"]["score"] = sum(relevance_summary)
+    report["relevance_score"] = sum(relevance_summary)
 
     return report
 
@@ -92,18 +95,20 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     )
     report["timeliness"]["has_correct_cadence"] = None
 
+    # ** Should these be part of a verbose / diagnostic report
     report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
-    report["timeliness"]["due_date"] = due_date
-    report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
-    report["timeliness"]["days_since_last_modified"] = (
-        datetime.datetime.fromisoformat(today)
-        - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
-    ).days
+    # report["timeliness"]["due_date"] = due_date
+    # report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
+    # report["timeliness"]["days_since_last_modified"] = (
+    #     datetime.datetime.fromisoformat(today)
+    #     - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
+    # ).days
 
     # Frequency of update is respected
     # Publication time is relevant to crisis
     resource_changes = summarise_resource_changes(metadata_dict)
     report["timeliness"]["resources"] = []
+    expected_cadence = metadata_dict["result"]["data_update_frequency"]
     for resource in metadata_dict["result"]["resources"]:
         resource_report = {}
         resource_report["name"] = resource["name"]
@@ -148,7 +153,41 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 previous = current
 
             resource_report["update_cadence"] = days_between_updates
+            # Calculate cadence compliance metric
+            if len(resource_report["update_cadence"]) != 0:
+                cadence_metric = math.sqrt(
+                    sum(
+                        [
+                            ((float(x) - float(expected_cadence)) / float(expected_cadence)) ** 2
+                            for x in resource_report["update_cadence"]
+                        ]
+                    )
+                    / len(resource_report["update_cadence"])
+                )
+                resource_report["cadence_rms"] = round(cadence_metric, 2)
+            else:
+                resource_report["cadence_rms"] = None
+
+            # Cadence
+            # Cadence is as advertised
+            if float(expected_cadence) > 0 and len(resource_report["update_cadence"]) != 0:
+                average_interval = statistics.mean(resource_report["update_cadence"])
+                resource_report["cadence_mean_ratio"] = round(
+                    average_interval / float(expected_cadence), 2
+                )
+                # Updates are regular
+                std_interval = statistics.stdev(resource_report["update_cadence"])
+                resource_report["cadence_std_ratio"] = round(
+                    std_interval / float(expected_cadence), 2
+                )
+            else:
+                resource_report["cadence_mean_ratio"] = None
+                resource_report["cadence_std_ratio"] = None
         report["timeliness"]["resources"].append(resource_report)
+
+    timeliness_summary = [1 if v else 0 for k, v in report["timeliness"].items()]
+    report["timeliness_score"] = sum(timeliness_summary)
+
     return report
 
 
