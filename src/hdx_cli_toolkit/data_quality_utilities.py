@@ -19,19 +19,23 @@ HAPI_RESOURCE_IDS = None
 
 
 def compile_data_quality_report(
-    dataset_name: str, hdx_site: str = "stage", lucky_dip: bool = False
+    dataset_name: str,
+    hdx_site: str | None = "stage",
+    lucky_dip: bool | None = False,
+    metadata_dict: dict | None = None,
 ):
     global HAPI_RESOURCE_IDS
     HAPI_RESOURCE_IDS = get_hapi_resource_ids("hapi")
-    if lucky_dip:
-        metadata_dict = lucky_dip_search(hdx_site=hdx_site)
-        if metadata_dict:
-            dataset_name = metadata_dict["result"]["name"]
-            print(f"Lucky dip search retreived dataset with name: {dataset_name}")
-    else:
-        # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
-        metadata_dict = read_metadata_from_hdx(dataset_name)
-        # Need a call to package show here.
+    if metadata_dict is None:
+        if lucky_dip:
+            metadata_dict = lucky_dip_search(hdx_site=hdx_site)
+            if metadata_dict:
+                dataset_name = metadata_dict["result"]["name"]
+                print(f"Lucky dip search retreived dataset with name: {dataset_name}")
+        else:
+            # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
+            metadata_dict = read_metadata_from_hdx(dataset_name)
+            # Need a call to package show here.
 
     report = {}
     report["dataset_name"] = dataset_name

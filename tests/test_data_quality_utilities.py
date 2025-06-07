@@ -3,6 +3,9 @@
 
 import os
 import json
+
+import pytest
+
 from hdx_cli_toolkit.data_quality_utilities import compile_data_quality_report
 
 TEST_DATASETS_NAMES = [
@@ -33,6 +36,7 @@ with open(SAMPLE_REPORTS_FILEPATH, encoding="utf-8") as SAMPLE_HANDLE:
     TEST_DATASETS = json.load(SAMPLE_HANDLE)
 
 
+@pytest.mark.skip(reason="This is an integration test that makes live calls to HDX stage")
 def test_dataset_data_quality():
     for dataset in TEST_DATASETS:
         print(dataset["dataset_name"], flush=True)
@@ -47,3 +51,16 @@ def test_dataset_data_quality():
 def test_handle_a_nonexistent_dataset():
     report = compile_data_quality_report("thing")
     assert report == {"dataset_name": "thing", "relevance": {"in_hdx": False}}
+
+
+def test_with_gibraltar_metadata(json_fixture):
+    dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    metadata_dict = {}
+    metadata_dict["result"] = dataset_dict
+    report = compile_data_quality_report(
+        dataset_name="gibraltar-healthsites", metadata_dict=metadata_dict
+    )
+    assert report["dataset_name"] == "gibraltar-healthsites"
+    assert report["relevance_score"] == 3
+    assert report["timeliness_score"] == 1
+    assert report["accessibility_score"] == 4
