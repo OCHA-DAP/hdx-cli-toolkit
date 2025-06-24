@@ -7,14 +7,14 @@ import urllib3
 
 
 def get_hapi_resource_ids(hapi_site: str) -> set:
-    print("Creating app identifier", flush=True)
+    # print("Creating app identifier", flush=True)
     theme = "metadata/resource"
     hapi_app_identifier = get_app_identifier(
         "hapi",
         email_address="hello@deva-data.co.uk",
         app_name="HDXINTERNAL_hdx_cli_toolkit",
     )
-    print("Fetching data from HAPI resources endpoint", flush=True)
+    # print("Fetching data from HAPI resources endpoint", flush=True)
     query_url = (
         f"https://{hapi_site}.humdata.org/api/v1/{theme}?"
         f"output_format=json"
@@ -24,7 +24,7 @@ def get_hapi_resource_ids(hapi_site: str) -> set:
     hapi_results = fetch_data_from_hapi(query_url, limit=1000)
 
     hapi_resource_ids = {x["resource_hdx_id"] for x in hapi_results}
-    print(f"Found {len(hapi_results)} resources in HAPI", flush=True)
+    # print(f"Found {len(hapi_results)} resources in HAPI", flush=True)
     return hapi_resource_ids
 
 
@@ -67,7 +67,7 @@ def fetch_data_from_hapi(query_url: str, limit: int = 1000) -> dict | list[dict]
         offset = idx * limit
         url = f"{query_url}&offset={offset}&limit={limit}"
 
-        print(f"Getting results {offset} to {offset+limit-1}", flush=True)
+        # print(f"Getting results {offset} to {offset+limit-1}", flush=True)
 
         response = urllib3.request("GET", url)
         json_response = response.json()

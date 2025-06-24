@@ -327,8 +327,8 @@ def check_for_datagrid(metadata_dict: dict) -> str | bool:
     with open(datagrid_filepath, newline="", encoding="utf-8") as csvfile:
         dataset_name_rows = csv.DictReader(csvfile)
         datagrid_datasets = [x["dataset_name"] for x in dataset_name_rows]
-        print(f"Length of datagrid list {len(datagrid_datasets)}", flush=True)
-        print(f"Length of datagrid set {len(set(datagrid_datasets))}", flush=True)
+        # print(f"Length of datagrid list {len(datagrid_datasets)}", flush=True)
+        # print(f"Length of datagrid set {len(set(datagrid_datasets))}", flush=True)
 
     if metadata_dict["result"]["name"] in datagrid_datasets:
         in_datagrid = True
