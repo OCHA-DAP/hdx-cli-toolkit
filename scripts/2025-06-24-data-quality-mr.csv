@@ -1,0 +1,87 @@
+Country,Dataset,Provider,dataset_name,Is it included in the DG?,Is it included in a data series?,Is it included in Signals?,Is the data fresh (green leaf)?,Frequency of Update is respected ,Publication time is relevant to event/crisis,Machine readable format,HXL,HAPI,Stable Schema,Searchable,Metadata is complete,Methodology is clear,has data dictionary,context clear,uses p_codes,valid csv,standardised url,has permalinks,has_uid,Total,
+Burkina Faso,Conflict Events,ACLED,burkina-faso-acled-conflict-data,Y,Y,Y,Y,,,Y,N,Y,Y,Y,Y,Y,Y,N,Y,Y ,Y,,,13,
+Haiti,DTM Displacement,IOM,haiti-displacement-idps-baseline-assessment-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,N,Y,Y ,Y,,,13,assessment-iom-dtm
+Afghanistan,DTM Displacement,IOM,afghanistan-displacement-data-baseline-assessment-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,N,N,Y,Y,Y,Y,Y,Y,Y,,,13,eline-assessment-iom-dtm
+Cameroon,DTM Displacement,IOM,cameroon-baseline-assessment-data-iom-dtm,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,14,-iom-dtm
+Chad,DTM Displacement,IOM,chad-site-village-assessment-lac-province-data-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,N,N,Y,Y,Y,Y,Y,Y,Y,,,13,province-data-iom-dtm
+Ethiopia,DTM Displacement,IOM,ethiopia-baseline-assessment-data-iom-dtm,Y,Y,N,N,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,,,13,-iom-dtm
+Mali,DTM Displacement,IOM,mali-baseline-assessment-data-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,N,Y,Y,Y,Y,Y,N,Y,Y,,,13,-dtm
+Mozambique,DTM Displacement,IOM,mozambique-displacement-data-baseline-assessment-northern-mozambique-crisis-iom-dtm,Y,Y,N,N,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,,,13,line-assessment-northern-mozambique-crisis-iom-dtm
+Niger,DTM Displacement,IOM,niger-displacement-data-baseline-assessment-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,,,14,assessment-iom-dtm
+Nigeria,DTM Displacement,IOM,nigeria-site-assessment-data,Y,Y,N,N,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,N,,,12,
+Somalia,DTM Displacement,IOM,somalia-displacement-idps-returnees-baseline-assessment-iom-dtm/,Y,Y,N,Y,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,,,14,es-baseline-assessment-iom-dtm/
+South Sudan,DTM Displacement,IOM,south-sudan-displacement-data-idps-returnees-baseline-assessment-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,Y,,,14,s-returnees-baseline-assessment-iom-dtm
+Sudan,DTM Displacement,IOM,sudan-displacement-situation-countrywide-idps-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,trywide-idps-iom-dtm
+Ukraine,DTM Displacement,IOM,ukraine-displacement-data-baseline-assessment-raion-level-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,e-assessment-raion-level-iom-dtm
+Yemen,DTM Displacement,IOM,yemen-displacement-daily-tracking-idps-returnees-iom-dtm,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-idps-returnees-iom-dtm
+Afghanistan,Acute Food Insecurity,IPC,afghanistan-acute-food-insecurity-country-data,Y,Y,Y,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,N,Y ,Y,,,14,-country-data
+Multiple,ASAP Hotspots,JRC,asap-hotspots-monthly,Y,N,Y,Y,,,Y,N,N,Y,N,Y,Y,N,Y,Y,Y,N,,,10,
+Afghanistan,Climate Impact,OCHA,afghanistan-natural-disaster-incidents-in-2024,Y,N,N,Y,,,Y,Y,N,Y,Y,Y,N,Y,Y,Y,Y,N,,,11,dents-in-2024
+Chad,Climate Impact,OCHA,tchad-suivi-des-inondations,Y,N,N,Y,,,Y,Y,N,Y,Y,Y,N,Y,Y,Y,Y,N,,,11,
+Burkina Faso,Climate Impact,OCHA,burkina-faso-suivi-des-inondations,Y,N,N,Y,,,Y,Y,N,N,Y,Y,N,Y,Y,N,Y,N,,,9,s
+Colombia,Climate Impact,OCHA,colombia-desastres-naturales,Y,N,N,Y,,,Y,N,N,N,Y,Y,N,Y,N,Y,Y,N,,,8,
+Mali,Climate Impact,OCHA,mali-suivi-des-inondations,Y,N,N,Y,,,Y,Y,N,N,Y,Y,N,Y,N,N,Y,N,,,8,
+Burkina Faso,COD AB,OCHA,cod-ab-bfa,Y,Y,N,N,,,Y,N,N,?,Y,Y,N,Y,N,Y,Y,Y,,,9,
+Somalia,COD AB,OCHA,cod-ab-som,Y,Y,N,Y,,,Y,N,N,?,Y,Y,N,Y,N,Y,Y,Y,,,10,
+Sudan,COD AB,OCHA,cod-ab-sdn,Y,Y,N,Y,,,Y,N,N,?,Y,Y,N,Y,N,Y,Y,Y,,,10,
+Democratic Republic of the Congo,COD PS,OCHA,cod-ps-cod,Y,Y,N,Y,,,Y,N,Y,N,Y,Y,Y,N,N,Y,Y,Y,,,11,
+Niger,Operational Presence,OCHA,niger-operational-presence,Y,N,N,Y,,,Y,Y,N,N,Y,Y,N,Y,Y,Y,Y,N,,,10,
+Colombia,Operational Presence,OCHA,colombia-4ws,Y,N,N,Y,,,N,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,N,,,11,
+South Sudan,Operational Presence,OCHA,south-sudan-operational-presence,Y,N,N,Y,,,Y,N,Y,Y,Y,Y,N,Y,Y,N,Y,N,,,10,
+Ukraine,Operational Presence,OCHA,ukraine-who-does-what-where-3w,Y,N,N,Y,,,Y,N,Y,Y,Y,Y,N,Y,Y,N,Y,N,,,10,
+Cameroon,Operational Presence,OCHA,cameroon-5w-operational-presence,Y,N,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,Y,Y,Y,N,,,12,
+Central African Republic,Humanitarian Access,OCHA ,republique-centraficaine-acces-physique-dans-les-communes,Y,N,N,Y,,,Y,N,N,N,N,Y,N,Y,N,Y,N,N,,,6,ysique-dans-les-communes
+Nigeria,Humanitarian Access,OCHA ,nigeria-access-severity,Y,N,N,Y,,,Y,N,N,N,,Y,N,N,N,Y,N,N,,,5,
+Afghanistan,Funding,OCHA FTS,fts-requirements-and-funding-data-for-afghanistan,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-afghanistan
+Chad,Funding,OCHA FTS,fts-requirements-and-funding-data-for-chad,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-chad
+Haiti,Funding,OCHA FTS,fts-requirements-and-funding-data-for-haiti,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-haiti
+Niger,Funding,OCHA FTS,fts-requirements-and-funding-data-for-niger,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-niger
+South Sudan,Funding,OCHA FTS,fts-requirements-and-funding-data-for-south-sudan,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-south-sudan
+Venezuela,Funding,OCHA FTS,fts-requirements-and-funding-data-for-venezuela-bolivarian-republic-of,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,Y,,,15,-for-venezuela-bolivarian-republic-of
+Burkina Faso,Poverty Rate,OPHI,burkina-faso-mpi,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,Y,Y,?,Y,Y,Y,,,13,
+State of Palestine,Commodities,PCBS,state-of-palestine-price-of-basic-commodities-in-gaza,Y,N,N,Y,,,Y,N,N,Y,Y,Y,N,Y,N,N,Y,N,,,8,-commodities-in-gaza
+State of Palestine,Escalation of Hostilities,PCBS,the-state-of-palestine-escalation-of-hostilities,N,N,N,Y,,,Y,N,N,Y,N,Y,N,Y,N,N,N,N,,,5,-of-hostilities
+Syria,Ambulance Operations,The White Helmets,ambulance-operations-in-northwest-syria-jan,N,N,N,Y,,,Y,N,N,Y,Y,Y,Y,Y,N,Y,N,N,,,8,-syria-jan
+Niger,COD PS,UNFPA,cod-ps-ner,Y,Y,N,Y,,,Y,N,Y,Y,Y,Y,Y,Y,N,Y,Y ,Y,,,12,
+Myanmar,COD PS,UNFPA,cod-ps-mmr,Y,Y,N,N,,,Y,N,Y,N,Y,Y,Y,N,N,Y,N,Y,,,9,
+Sudan,COD PS,UNFPA,cod-ps-sdn,Y,Y,N,Y,,,Y,N,Y,N,Y,Y,Y,N,N,Y,N,Y,,,10,
+Yemen,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-yem,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Sudan,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-sdn,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Nigeria,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-nga,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Mali,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-mli,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Colombia,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-col,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Burkina Faso,Refugees & Persons of Concern,UNHCR,unhcr-population-data-for-bfa,Y,Y,N,Y,,,Y,Y,Y,Y,N,Y,Y,Y,Y,Y,Y,Y,,,14,
+Afghanistan,Food Prices,WFP,wfp-food-prices-for-afghanistan,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Burkina Faso,Food Prices,WFP,wfp-food-prices-for-burkina-faso,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Cameroon,Food Prices,WFP,wfp-food-prices-for-cameroon,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Central African Republic,Food Prices,WFP,f,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Chad,Food Prices,WFP,wfp-food-prices-for-chad,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Colombia,Food Prices,WFP,wfp-food-prices-for-colombia,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Democratic Republic of the Congo,Food Prices,WFP,wfp-food-prices-for-democratic-republic-of-the-congo,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,public-of-the-congo
+Ethiopia,Food Prices,WFP,wfp-food-prices-for-ethiopia,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Haiti,Food Prices,WFP,i,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Mali,Food Prices,WFP,wfp-food-prices-for-mali,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Mozambique,Food Prices,WFP,wfp-food-prices-for-mozambique,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Myanmar,Food Prices,WFP,wfp-food-prices-for-myanmar,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Niger,Food Prices,WFP,wfp-food-prices-for-niger,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Nigeria,Food Prices,WFP,wfp-food-prices-for-nigeria,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Somalia,Food Prices,WFP,wfp-food-prices-for-somalia,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+South Sudan,Food Prices,WFP,wfp-food-prices-for-south-sudan,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+State of Palestine,Food Prices,WFP,wfp-food-prices-for-state-of-palestine,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,stine
+Sudan,Food Prices,WFP,wfp-food-prices-for-sudan,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Syrian Arabic Republic,Food Prices,WFP,wfp-food-prices-for-syrian-arab-republic,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,epublic
+Ukraine,Food Prices,WFP,wfp-food-prices-for-ukraine,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Venezuela,Food Prices,WFP,wfp-food-prices-for-venezuela-bolivarian-republic-of,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,ivarian-republic-of
+Yemen,Food Prices,WFP,wfp-food-prices-for-yemen,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Lebanon,Food Prices,WFP,wfp-food-prices-for-lebanon,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Lesotho,Food Prices,WFP,wfp-food-prices-for-lesotho,Y,Y,N,N,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,12,
+Philippines,Food Prices,WFP,wfp-food-prices-for-philippines,Y,Y,N,Y,,,Y,Y,Y,Y,Y,Y,N,Y,N,Y,Y,Y,,,13,
+Philippines,,The Philippine Disaster Resilience Foundation,philippines-tropical-cyclone-nika-ofel-and-pepito-private-sector-response-efforts,N,N,N,N,Y,M,Y,N,N,n/a,Y,Y,Y,Y,?,Y,Y,Y,,,,-ofel-and-pepito-private-sector-response-efforts
+Philippines,,Cirrolytix,philippine-dengue-cases-and-deaths,N,N,N,N,Y,M,Y,Y,N,Y,Y,Y,Y,Y,?,N,Y,Y,,,,s
+Colombia,,3iSolution,colombia-pin-cluster-agua-saneamiento-e-higiene-wash,N,N,N,N,Y,Y,Y,N,N,n/a,M,Y,Y,Y,?,Y,Y,Y,,,,ento-e-higiene-wash
+Bangladesh,,BRAC,bangladesh-refugee-education-health-and-nutrition-from-september-2024-to-december-2024,N,N,N,Y,Y,Y,Y,N,N,n/a,N,Y,N,Y,?,N,Y,N,,,,th-and-nutrition-from-september-2024-to-december-2024
+Syrian Arab Republic,,Assistance Coordination Unit,population-displacement-and-return-movements-in-northern-syria,N,N,N,N,N,Y,Y,N,N,n/a,Y,Y,Y,Y,?,Y,Y,Y,,,,n-movements-in-northern-syria
+World,,Ginkgo Biosecurity,2019-novel-coronavirus-cases,N,N,N,Y,Y,Y,N,N,N,n/a,N,Y,Y,Y,?,N,N,Y,,,,
+World,,Education and Conflict Monitor,eua-2018,N,N,N,Y,?,?,Y,N,N,Y,Y,Y,Y,Y,?,N,Y,N,,,,
+Bangladesh,,CARE Bangladesh,district-wise-quarantine-for-covid-19,N,N,N,N,Y,Y,Y,N,N,N,Y,Y,Y,Y,?,N,Y,N,,,,d-19
+Kazakhstan,,Safeture,kazakhstan-coronavirus-covid-19-subnational-cases,N,N,N,N,Y,Y,Y,N,N,n/a,Y,Y,Y,Y,?,N,Y,Y,,,,ubnational-cases

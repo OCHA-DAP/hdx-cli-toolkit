@@ -4,11 +4,11 @@
 import csv
 import datetime
 import json
-import math
 import statistics
+import sys
 import urllib3
 
-
+from typing import Optional
 from pathlib import Path
 from random import randrange
 from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, get_hdx_url_and_key
@@ -20,7 +20,7 @@ HAPI_RESOURCE_IDS = None
 
 def compile_data_quality_report(
     dataset_name: str,
-    hdx_site: str | None = "stage",
+    hdx_site: Optional[str] = "stage",
     lucky_dip: bool | None = False,
     metadata_dict: dict | None = None,
 ):
@@ -45,6 +45,8 @@ def compile_data_quality_report(
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
     report = add_accessibility_entries(metadata_dict, report)
+    report = add_interpretability_entries(metadata_dict, report)
+
     return report
 
 
@@ -262,10 +264,11 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
             # print(json.dumps(check, indent=4), flush=True)
             if error_message == "Success":
                 # print(json.dumps(check, indent=4), flush=True)
-                for sheet in check["hxl_proxy_response"]["sheets"]:
-                    if sheet["is_hxlated"]:
-                        resource_report["is_hxlated"] = True
-                        resource_score += 1
+                if "sheets" in check["hxl_proxy_response"].keys():
+                    for sheet in check["hxl_proxy_response"]["sheets"]:
+                        if sheet["is_hxlated"]:
+                            resource_report["is_hxlated"] = True
+                            resource_score += 1
         # elif "shape_info" in resource.keys():
         #     check, error_message = get_last_complete_check(resource, "shape_info")
 
@@ -285,6 +288,21 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility_score"] = max_resource_score
     if n_tags > 0 and n_tags > 0:
         report["accessibility_score"] += 1
+    return report
+
+
+def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> dict:
+    # 1. Metadata is complete
+    # Suspect all keys exist by default, and in most cases have a default value.
+    # Inspect methodology, notes and description (resource) text for length. maybe check for tags
+    # and groups
+    # 2. Methodology is clear
+    # Can't see how to do this automatically
+    # 3. Data dictionary is available
+    # Scan resource names for data dictionary, check datastore key
+    # 4. Context is provided
+    # Can't see how to do this automatically
+
     return report
 
 
@@ -358,7 +376,9 @@ def check_for_crisis(metadata_dict) -> list[str] | bool:
     return in_crisis
 
 
-def lucky_dip_search(hdx_site: str = "stage"):
+def lucky_dip_search(hdx_site: str | None = "stage"):
+    if hdx_site is None:
+        hdx_site = "stage"
     hdx_site_url, hdx_api_key, _ = get_hdx_url_and_key(hdx_site=hdx_site)
     package_search_url = f"{hdx_site_url}/api/action/package_search"
     query = {"fq": "*:*", "start": 0, "rows": 1}
@@ -422,27 +442,30 @@ def summarise_resource_changes(metadata: dict) -> dict:
 
         if "fs_check_info" in resource.keys():
             for check in resource["fs_check_info"]:
-                if check["message"] == "File structure check completed":
-                    if len(check["sheet_changes"]) != 0:
-                        for change in check["sheet_changes"]:
-                            change_indicator = f"{check['timestamp'][0:10]}"
-                            if change["event_type"] == "spreadsheet-sheet-changed":
-                                change_indicator += (
-                                    f"* Schema changes in sheet "
-                                    f"'{change['name']}' field: "
-                                    f"{change['changed_fields'][0]['field']}"
-                                )
-                            else:
-                                change_indicator += (
-                                    f"* Schema changes in sheet "
-                                    f"'{change['name']}' - "
-                                    f"{change['event_type']}"
-                                )
+                if isinstance(check, dict):
+                    if check["message"] == "File structure check completed":
+                        if len(check["sheet_changes"]) != 0:
+                            for change in check["sheet_changes"]:
+                                change_indicator = f"{check['timestamp'][0:10]}"
+                                if change["event_type"] == "spreadsheet-sheet-changed":
+                                    change_indicator += (
+                                        f"* Schema changes in sheet "
+                                        f"'{change['name']}' field: "
+                                        f"{change['changed_fields'][0]['field']}"
+                                    )
+                                else:
+                                    change_indicator += (
+                                        f"* Schema changes in sheet "
+                                        f"'{change['name']}' - "
+                                        f"{change['event_type']}"
+                                    )
 
+                                resource_changes[resource["name"]]["checks"].extend(
+                                    [change_indicator]
+                                )
+                        else:
+                            change_indicator = f"{check['timestamp'][0:10]}"
                             resource_changes[resource["name"]]["checks"].extend([change_indicator])
-                    else:
-                        change_indicator = f"{check['timestamp'][0:10]}"
-                        resource_changes[resource["name"]]["checks"].extend([change_indicator])
         elif "shape_info" in resource.keys():
             previous_bounding_box = ""
             previous_headers = set()
