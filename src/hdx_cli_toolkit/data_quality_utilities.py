@@ -238,14 +238,15 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         resource_report = {}
         resource_report["name"] = resource["name"]
         format_ = resource["format"].upper()
-        if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE"]:
+        if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE", "TXT"]:
             format_score = 2
         elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]:
             format_score = 1
-        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG"]:
+        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF"]:
             format_score = 0
         else:
             print(f"Unknown resource format: {resource['format']}", flush=True)
+            print("Ceasing execution")
             sys.exit()
 
         resource_report["format_score"] = f"{format_score} ({format_})"
