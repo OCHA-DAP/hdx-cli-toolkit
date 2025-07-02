@@ -26,3 +26,5 @@ data_quality_report.json
 temp.json
 
 tests/fixtures/2025-03-05-datamart-search-response.json
+
+scripts/benchmarks.csv
