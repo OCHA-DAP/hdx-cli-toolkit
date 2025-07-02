@@ -11,11 +11,23 @@ import urllib3
 from typing import Optional
 from pathlib import Path
 from random import randrange
+from hxl.input import hash_row
 from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, get_hdx_url_and_key
 from hdx_cli_toolkit.hapi_utilities import get_hapi_resource_ids
 
 CKAN_API_ROOT_URL = "https://data.humdata.org/api/action/"
 HAPI_RESOURCE_IDS = None
+
+SHAPE_INFO_DATA_TYPE_LOOKUP = {
+    "character varying": "string",
+    "integer": "integer",
+    "bigint": "integer",
+    "numeric": "float",
+    "USER-DEFINED": "user-defined",
+    "timestamp with time zone": "timestamp",
+    "date": "date",
+    "ARRAY": "list",
+}
 
 
 def compile_data_quality_report(
@@ -42,10 +54,16 @@ def compile_data_quality_report(
     report["relevance_score"] = 0
     report["timeliness_score"] = 0
     report["accessibility_score"] = 0
+    report["interpretability_score"] = 0
+    report["interoperability_score"] = 0
+    report["findability_score"] = 0
+
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
     report = add_accessibility_entries(metadata_dict, report)
     report = add_interpretability_entries(metadata_dict, report)
+    report = add_interoperability_entries(metadata_dict, report)
+    report = add_findability_entries(metadata_dict, report)
 
     return report
 
@@ -293,6 +311,8 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
 
 
 def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> dict:
+    # Just implement a check for data dictionaries and presence in the datastore could also include
+    # a hxl tag check
     # 1. Metadata is complete
     # Suspect all keys exist by default, and in most cases have a default value.
     # Inspect methodology, notes and description (resource) text for length. maybe check for tags
@@ -300,9 +320,127 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
     # 2. Methodology is clear
     # Can't see how to do this automatically
     # 3. Data dictionary is available
-    # Scan resource names for data dictionary, check datastore key
+    # Scan resource names for data dictionary, check datastore key (datastore)
     # 4. Context is provided
     # Can't see how to do this automatically
+    report["interpretability"] = {}
+    report["interpretability"]["resources"] = []
+
+    has_data_dictionary = 0
+    for resource in metadata_dict["result"]["resources"]:
+        resource_report = {}
+        resource_report["name"] = resource["name"]
+        if resource.get("datastore_active", False):
+            resource_report["datastore_active"] = True
+            has_data_dictionary = 1
+        else:
+            resource_report["datastore_active"] = False
+
+        if "dictionary" in resource["name"].lower() and "data" in resource["name"].lower():
+            resource_report["is_data_dictionary"] = True
+            has_data_dictionary = 1
+        else:
+            resource_report["is_data_dictionary"] = False
+
+        report["interpretability"]["resources"].append(resource_report)
+
+    report["interpretability_score"] = has_data_dictionary
+    return report
+
+
+def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> dict:
+    # 1. Uses standard geodenomination - this
+    # 2. Disaggregation
+    # 3. Format compatible with APIs - this is really just a check for a well-formed CSV
+    report["interoperability"] = {}
+    report["interoperability"]["resources"] = []
+
+    has_standard_geodenomination = 0
+    for resource in metadata_dict["result"]["resources"]:
+        resource_report = {}
+        resource_report["name"] = resource["name"]
+        resource_report["p_coded"] = resource.get("p_coded", False)
+        if resource.get("p_coded", False):
+            has_standard_geodenomination = 1
+
+        #
+        schemas = summarise_schema(resource)
+        has_geodenomation_hxl = check_schemas(schemas)
+        if has_geodenomation_hxl:
+            has_standard_geodenomination = 1
+            resource_report["has_geodenomination_hxl"] = 1
+        report["interoperability"]["resources"].append(resource_report)
+
+    report["interoperability_score"] = has_standard_geodenomination
+
+    return report
+
+
+# This is summarise_schema borrowed from hdx-stable-schema 2025-07-02
+def summarise_schema(resource: dict) -> dict:
+    schemas = {}
+    error_message = "Neither fs_check_info nor shape_info found"
+    if "fs_check_info" in resource.keys():
+        check, error_message = get_last_complete_check(resource, "fs_check_info")
+
+        if error_message == "Success":
+            for sheet in check["hxl_proxy_response"]["sheets"]:
+                header_hash = sheet["header_hash"]
+                if header_hash not in schemas:
+                    schemas[header_hash] = {}
+                    schemas[header_hash]["sheet"] = sheet["name"]
+                    schemas[header_hash]["shared_with"] = [resource["name"]]
+                    schemas[header_hash]["headers"] = sheet["headers"]
+                    schemas[header_hash]["hxl_headers"] = sheet["hxl_headers"]
+                    schemas[header_hash]["data_types"] = [""] * len(sheet["headers"])
+                else:
+                    schemas[header_hash]["shared_with"].append(resource["name"])
+    elif "shape_info" in resource.keys():
+        # print(json.dumps(resource["shape_info"][-1], indent=4), flush=True)
+        check, error_message = get_last_complete_check(resource, "shape_info")
+
+        # print(json.dumps(check, indent=4), flush=True)
+        if error_message == "Success":
+            headers = [x["field_name"] for x in check["layer_fields"]]
+            data_types = [
+                SHAPE_INFO_DATA_TYPE_LOOKUP[x["data_type"]] for x in check["layer_fields"]
+            ]
+            header_hash = hash_row(headers)
+            if header_hash not in schemas:
+                schemas[header_hash] = {}
+                schemas[header_hash]["sheet"] = "__DEFAULT__"
+                schemas[header_hash]["shared_with"] = [resource["name"]]
+                schemas[header_hash]["headers"] = headers
+                schemas[header_hash]["hxl_headers"] = [""] * len(headers)
+                schemas[header_hash]["data_types"] = data_types
+            else:
+                schemas[header_hash]["shared_with"].append(resource["name"])
+
+    if error_message != "Success":
+        print(error_message, flush=True)
+
+    return schemas
+
+
+def check_schemas(schemas: dict) -> bool:
+    has_geodenomination_hxl = False
+    # https://hxlstandard.org/standard/1-1final/dictionary/#geo
+    geodenomination_hxl = ["#geo+lat", "#geo+lon", "#geo+coord"]
+    for schema_hash in schemas.keys():
+        # print(schemas[schema_hash], flush=True)
+        if schemas[schema_hash]["hxl_headers"] is not None:
+            for hxl_tag in schemas[schema_hash]["hxl_headers"]:
+                if hxl_tag in geodenomination_hxl:
+                    has_geodenomination_hxl = True
+                    break
+
+    return has_geodenomination_hxl
+
+
+def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
+    # 1. Has standized URL
+    # 2. Has permalink / latest link
+    # 3. Has unique identifier (DOI, GDACS, GLIDE...)
 
     return report
 
