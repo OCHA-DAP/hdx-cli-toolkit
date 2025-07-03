@@ -27,6 +27,9 @@ def main():
                 report["relevance_score"]
                 + report["timeliness_score"]
                 + report["accessibility_score"]
+                + report["interpretability_score"]
+                + report["interoperability_score"]
+                + report["findability_score"]
             )
             print(f'{row["dataset_name"]}, {row["Total"]}, {total_score}', flush=True)
 
