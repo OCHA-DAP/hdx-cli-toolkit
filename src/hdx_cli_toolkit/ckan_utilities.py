@@ -29,7 +29,7 @@ def fetch_data_from_ckan_package_search(
         query["rows"] = DEFAULT_ROW_LIMIT
     payload = json.dumps(query)
     i = 1
-    print(f"{i}. Querying {query_url} with {payload}", flush=True)
+    # print(f"{i}. Querying {query_url} with {payload}", flush=True)
     response = urllib3.request("POST", query_url, headers=headers, json=query, timeout=20)
     full_response_json = json.loads(response.data)
     n_expected_result = full_response_json["result"]["count"]

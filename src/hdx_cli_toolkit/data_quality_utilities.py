@@ -27,6 +27,7 @@ SHAPE_INFO_DATA_TYPE_LOOKUP = {
     "timestamp with time zone": "timestamp",
     "date": "date",
     "ARRAY": "list",
+    "boolean": "boolean",
 }
 
 
@@ -43,7 +44,7 @@ def compile_data_quality_report(
             metadata_dict = lucky_dip_search(hdx_site=hdx_site)
             if metadata_dict:
                 dataset_name = metadata_dict["result"]["name"]
-                print(f"Lucky dip search retreived dataset with name: {dataset_name}")
+                # print(f"Lucky dip search retrieved dataset with name: {dataset_name}")
         else:
             # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
             metadata_dict = read_metadata_from_hdx(dataset_name)
@@ -260,7 +261,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
             format_score = 2
         elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]:
             format_score = 1
-        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF"]:
+        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF", "PNG"]:
             format_score = 0
         else:
             print(f"Unknown resource format: {resource['format']}", flush=True)
@@ -384,17 +385,21 @@ def summarise_schema(resource: dict) -> dict:
         check, error_message = get_last_complete_check(resource, "fs_check_info")
 
         if error_message == "Success":
-            for sheet in check["hxl_proxy_response"]["sheets"]:
-                header_hash = sheet["header_hash"]
-                if header_hash not in schemas:
-                    schemas[header_hash] = {}
-                    schemas[header_hash]["sheet"] = sheet["name"]
-                    schemas[header_hash]["shared_with"] = [resource["name"]]
-                    schemas[header_hash]["headers"] = sheet["headers"]
-                    schemas[header_hash]["hxl_headers"] = sheet["hxl_headers"]
-                    schemas[header_hash]["data_types"] = [""] * len(sheet["headers"])
-                else:
-                    schemas[header_hash]["shared_with"].append(resource["name"])
+            if "sheets" in check["hxl_proxy_response"].keys():
+                for sheet in check["hxl_proxy_response"]["sheets"]:
+                    header_hash = sheet["header_hash"]
+                    if header_hash not in schemas:
+                        schemas[header_hash] = {}
+                        schemas[header_hash]["sheet"] = sheet["name"]
+                        schemas[header_hash]["shared_with"] = [resource["name"]]
+                        schemas[header_hash]["headers"] = sheet["headers"]
+                        schemas[header_hash]["hxl_headers"] = sheet["hxl_headers"]
+                        if sheet["headers"] is not None:
+                            schemas[header_hash]["data_types"] = [""] * len(sheet["headers"])
+                        else:
+                            schemas[header_hash]["data_types"] = [""]
+                    else:
+                        schemas[header_hash]["shared_with"].append(resource["name"])
     elif "shape_info" in resource.keys():
         # print(json.dumps(resource["shape_info"][-1], indent=4), flush=True)
         check, error_message = get_last_complete_check(resource, "shape_info")
@@ -416,8 +421,8 @@ def summarise_schema(resource: dict) -> dict:
             else:
                 schemas[header_hash]["shared_with"].append(resource["name"])
 
-    if error_message != "Success":
-        print(error_message, flush=True)
+    # if error_message != "Success":
+    #     print(error_message, flush=True)
 
     return schemas
 
