@@ -328,22 +328,23 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
     report["interpretability"]["resources"] = []
 
     has_data_dictionary = 0
-    for resource in metadata_dict["result"]["resources"]:
-        resource_report = {}
-        resource_report["name"] = resource["name"]
-        if resource.get("datastore_active", False):
-            resource_report["datastore_active"] = True
-            has_data_dictionary = 1
-        else:
-            resource_report["datastore_active"] = False
+    if metadata_dict is not None:
+        for resource in metadata_dict["result"]["resources"]:
+            resource_report = {}
+            resource_report["name"] = resource["name"]
+            if resource.get("datastore_active", False):
+                resource_report["datastore_active"] = True
+                has_data_dictionary = 1
+            else:
+                resource_report["datastore_active"] = False
 
-        if "dictionary" in resource["name"].lower() and "data" in resource["name"].lower():
-            resource_report["is_data_dictionary"] = True
-            has_data_dictionary = 1
-        else:
-            resource_report["is_data_dictionary"] = False
+            if "dictionary" in resource["name"].lower() and "data" in resource["name"].lower():
+                resource_report["is_data_dictionary"] = True
+                has_data_dictionary = 1
+            else:
+                resource_report["is_data_dictionary"] = False
 
-        report["interpretability"]["resources"].append(resource_report)
+            report["interpretability"]["resources"].append(resource_report)
 
     report["interpretability_score"] = has_data_dictionary
     return report
@@ -357,20 +358,21 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
     report["interoperability"]["resources"] = []
 
     has_standard_geodenomination = 0
-    for resource in metadata_dict["result"]["resources"]:
-        resource_report = {}
-        resource_report["name"] = resource["name"]
-        resource_report["p_coded"] = resource.get("p_coded", False)
-        if resource.get("p_coded", False):
-            has_standard_geodenomination = 1
+    if metadata_dict is not None:
+        for resource in metadata_dict["result"]["resources"]:
+            resource_report = {}
+            resource_report["name"] = resource["name"]
+            resource_report["p_coded"] = resource.get("p_coded", False)
+            if resource.get("p_coded", False):
+                has_standard_geodenomination = 1
 
-        #
-        schemas = summarise_schema(resource)
-        has_geodenomation_hxl = check_schemas(schemas)
-        if has_geodenomation_hxl:
-            has_standard_geodenomination = 1
-            resource_report["has_geodenomination_hxl"] = 1
-        report["interoperability"]["resources"].append(resource_report)
+            #
+            schemas = summarise_schema(resource)
+            has_geodenomation_hxl = check_schemas(schemas)
+            if has_geodenomation_hxl:
+                has_standard_geodenomination = 1
+                resource_report["has_geodenomination_hxl"] = 1
+            report["interoperability"]["resources"].append(resource_report)
 
     report["interoperability_score"] = has_standard_geodenomination
 
@@ -392,12 +394,16 @@ def summarise_schema(resource: dict) -> dict:
                         schemas[header_hash] = {}
                         schemas[header_hash]["sheet"] = sheet["name"]
                         schemas[header_hash]["shared_with"] = [resource["name"]]
-                        schemas[header_hash]["headers"] = sheet["headers"]
-                        schemas[header_hash]["hxl_headers"] = sheet["hxl_headers"]
-                        if sheet["headers"] is not None:
+                        if "headers" in sheet.keys() and sheet["headers"] is not None:
+                            schemas[header_hash]["headers"] = sheet["headers"]
                             schemas[header_hash]["data_types"] = [""] * len(sheet["headers"])
                         else:
+                            schemas[header_hash]["headers"] = [""]
                             schemas[header_hash]["data_types"] = [""]
+                        if "hxl_headers" in sheet.keys():
+                            schemas[header_hash]["hxl_headers"] = sheet["hxl_headers"]
+                        else:
+                            schemas[header_hash]["hxl_headers"] = [""]
                     else:
                         schemas[header_hash]["shared_with"].append(resource["name"])
     elif "shape_info" in resource.keys():
