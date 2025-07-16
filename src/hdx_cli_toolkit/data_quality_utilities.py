@@ -3,10 +3,9 @@
 
 import csv
 import datetime
-import json
 import statistics
 import sys
-import urllib3
+
 
 from typing import Optional
 from pathlib import Path
@@ -14,9 +13,28 @@ from random import randrange
 from hxl.input import hash_row
 from hdx_cli_toolkit.ckan_utilities import fetch_data_from_ckan_package_search, get_hdx_url_and_key
 from hdx_cli_toolkit.hapi_utilities import get_hapi_resource_ids
+from hdx_cli_toolkit.stable_schema_utilities import (
+    read_metadata_from_hdx,
+    summarise_resource_changes,
+    get_last_complete_check,
+)
 
 CKAN_API_ROOT_URL = "https://data.humdata.org/api/action/"
 HAPI_RESOURCE_IDS = None
+FORMAT_GOLD_2 = ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE", "TXT"]
+FORMAT_SILVER_1 = ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]
+FORMAT_BRONZE_0 = ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF", "PNG"]
+
+GEODENOMINATION_HXL = ["#geo+lat", "#geo+lon", "#geo+coord"]
+
+SIGNALS_DATASETS = [
+    "asap-hotspots-monthly",
+    "global-acute-food-insecurity-country-data",
+    "inform-global-crisis-severity-index",
+    "global-market-monitor",
+]
+SIGNALS_ORGANIZATIONS = ["acled", "international-displacement-monitoring-centre-idmc"]
+
 
 SHAPE_INFO_DATA_TYPE_LOOKUP = {
     "character varying": "string",
@@ -94,12 +112,14 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
         if "cod_level" in metadata_dict["result"].keys()
         else False
     )
+
     report["relevance"]["in_hapi_output"] = True if dataset_name.startswith("hdx-hapi-") else False
     report["relevance"]["in_signals"] = check_for_signals(metadata_dict)
     report["relevance"]["in_crisis"] = check_for_crisis(metadata_dict)
 
     report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
     report["relevance"]["in_data_grids"] = check_for_datagrid(metadata_dict)
+    report["relevance"]["downloads"] = metadata_dict["result"]["total_res_downloads"]
     relevance_summary = [1 if v else 0 for k, v in report["relevance"].items()]
     report["relevance_score"] = sum(relevance_summary)
 
@@ -257,11 +277,11 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         resource_report = {}
         resource_report["name"] = resource["name"]
         format_ = resource["format"].upper()
-        if format_ in ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE", "TXT"]:
+        if format_ in FORMAT_GOLD_2:
             format_score = 2
-        elif format_ in ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]:
+        elif format_ in FORMAT_SILVER_1:
             format_score = 1
-        elif format_ in ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF", "PNG"]:
+        elif format_ in FORMAT_BRONZE_0:
             format_score = 0
         else:
             print(f"Unknown resource format: {resource['format']}", flush=True)
@@ -372,6 +392,8 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
             if has_geodenomation_hxl:
                 has_standard_geodenomination = 1
                 resource_report["has_geodenomination_hxl"] = 1
+            else:
+                resource_report["has_geodenomination_hxl"] = 0
             report["interoperability"]["resources"].append(resource_report)
 
     report["interoperability_score"] = has_standard_geodenomination
@@ -436,12 +458,11 @@ def summarise_schema(resource: dict) -> dict:
 def check_schemas(schemas: dict) -> bool:
     has_geodenomination_hxl = False
     # https://hxlstandard.org/standard/1-1final/dictionary/#geo
-    geodenomination_hxl = ["#geo+lat", "#geo+lon", "#geo+coord"]
     for schema_hash in schemas.keys():
         # print(schemas[schema_hash], flush=True)
         if schemas[schema_hash]["hxl_headers"] is not None:
             for hxl_tag in schemas[schema_hash]["hxl_headers"]:
-                if hxl_tag in geodenomination_hxl:
+                if hxl_tag in GEODENOMINATION_HXL:
                     has_geodenomination_hxl = True
                     break
 
@@ -493,21 +514,14 @@ def check_for_signals(metadata_dict: dict) -> str | bool:
     # https://github.com/OCHA-DAP/hdx-ckan/blob/
     # e42f76e9ea204bbe4ec43c10088a756bb5ae8001/
     # ckanext-hdx_theme/ckanext/hdx_theme/helpers/ui_constants/landing_pages/signals.py#L40
-    signals_datasets = [
-        "asap-hotspots-monthly",
-        "global-acute-food-insecurity-country-data",
-        "inform-global-crisis-severity-index",
-        "global-market-monitor",
-    ]
-    signals_organizations = ["acled", "international-displacement-monitoring-centre-idmc"]
 
     dataset_name = metadata_dict["result"]["name"]
     organization_name = metadata_dict["result"]["organization"]["name"]
 
-    if dataset_name in signals_datasets:
+    if dataset_name in SIGNALS_DATASETS:
         in_signals = True
 
-    if organization_name in signals_organizations:
+    if organization_name in SIGNALS_ORGANIZATIONS:
         in_signals = True
 
     return in_signals
@@ -557,195 +571,3 @@ def lucky_dip_search(hdx_site: str | None = "stage"):
     metadata_dict = read_metadata_from_hdx(dataset_name=dataset_name)
 
     return metadata_dict
-
-
-# Borrowed from hdx-stable-schema 2025-05-10
-def reformat_metadata_keys(metadata_dict: dict | None):
-    if metadata_dict is not None:
-        for resource in metadata_dict["result"]["resources"]:
-            if "fs_check_info" in resource.keys():
-                resource["fs_check_info"] = json.loads(resource["fs_check_info"])
-            if "shape_info" in resource.keys():
-                resource["shape_info"] = json.loads(resource["shape_info"])
-
-
-# Borrowed from hdx-stable-schema 2025-05-10
-def read_metadata_from_hdx(dataset_name: str) -> dict | None:
-    query_url = f"{CKAN_API_ROOT_URL}package_show"
-    params = {"id": dataset_name}
-
-    response = urllib3.request("GET", query_url, fields=params)
-    metadata_dict = None
-    if response.status == 200:
-        metadata_dict = response.json()
-
-    reformat_metadata_keys(metadata_dict)
-    return metadata_dict
-
-
-# Borrowed from hdx-stable-schema 2025-05-21
-def summarise_resource_changes(metadata: dict) -> dict:
-    resource_changes = {}
-    for resource in metadata["result"]["resources"]:
-        resource_changes[resource["name"]] = {}
-        resource_changes[resource["name"]]["checks"] = []
-
-        if "fs_check_info" in resource.keys():
-            for check in resource["fs_check_info"]:
-                if isinstance(check, dict):
-                    if check["message"] == "File structure check completed":
-                        if len(check["sheet_changes"]) != 0:
-                            for change in check["sheet_changes"]:
-                                change_indicator = f"{check['timestamp'][0:10]}"
-                                if change["event_type"] == "spreadsheet-sheet-changed":
-                                    change_indicator += (
-                                        f"* Schema changes in sheet "
-                                        f"'{change['name']}' field: "
-                                        f"{change['changed_fields'][0]['field']}"
-                                    )
-                                else:
-                                    change_indicator += (
-                                        f"* Schema changes in sheet "
-                                        f"'{change['name']}' - "
-                                        f"{change['event_type']}"
-                                    )
-
-                                resource_changes[resource["name"]]["checks"].extend(
-                                    [change_indicator]
-                                )
-                        else:
-                            change_indicator = f"{check['timestamp'][0:10]}"
-                            resource_changes[resource["name"]]["checks"].extend([change_indicator])
-        elif "shape_info" in resource.keys():
-            previous_bounding_box = ""
-            previous_headers = set()
-            for check in resource["shape_info"]:
-                change_indicator = ""
-                first_check = True
-                if isinstance(check, str):
-                    continue
-                if check["message"] == "Import successful":
-                    # (json.dumps(check, indent=4), flush=True)
-                    if "layer_fields" in check.keys():
-                        headers = {x["field_name"] for x in check["layer_fields"]}
-                    else:
-                        headers = set()
-                    bounding_box = check["bounding_box"]
-                    if "timestamp" in check.keys():
-                        change_indicator += f"{check['timestamp'][0:10]}"
-                    else:
-                        change_indicator += "1900-01-01"
-                    if not first_check:
-                        if (bounding_box != previous_bounding_box) or (previous_headers != headers):
-                            change_indicator += "* "
-                        if bounding_box != previous_bounding_box:
-                            change_indicator += "bounding box change "
-                        if previous_headers != headers:
-                            change_indicator += "header change"
-
-                    previous_headers = headers
-                    previous_bounding_box = bounding_box
-                    first_check = False
-                    resource_changes[resource["name"]]["checks"].extend([change_indicator])
-                # else:
-                #     print(json.dumps(check, indent=4), flush=True)
-
-    return resource_changes
-
-
-# Borrowed from hdx-stable-schema 2025-05-21
-def print_resource_summary(resource_summary, resource_changes, target_resource_name=None):
-    if target_resource_name is None:
-        resource_names = list(resource_changes.keys())
-    else:
-        resource_names = [target_resource_name]
-    for i, resource_name in enumerate(resource_names, start=1):
-        checks = resource_changes[resource_name]["checks"]
-        print(f"\n{i:>2d}. {resource_name}", flush=True)
-        print(
-            f"\tFilename: {resource_summary[resource_name]['filename']} "
-            f"\n\tFormat: {resource_summary[resource_name]['format']}"
-            f"\n\tSheets: {', '.join(resource_summary[resource_name]['sheets'])}",
-            flush=True,
-        )
-        if "bounding_box" in resource_summary[resource_name].keys():
-            print(f"\tBounding box: {resource_summary[resource_name]['bounding_box']}", flush=True)
-        if resource_summary[resource_name]["in_quarantine"]:
-            print("\t**in quarantine**", flush=True)
-        print(f"\tChecks ({len(checks)} file structure checks):", flush=True)
-        for check in checks:
-            print(f"\t\t{check}", flush=True)
-
-
-# Borrowed from hdx-stable-schema 2025-05-21
-def summarise_resource(metadata: dict) -> dict:
-    resource_summary = {}
-    error_message = "Neither fs_check_info nor shape_info found"
-    for resource in metadata["result"]["resources"]:
-        resource_summary[resource["name"]] = {}
-        resource_summary[resource["name"]]["format"] = resource["format"]
-        if "download_url" in resource.keys():
-            resource_summary[resource["name"]]["filename"] = resource["download_url"].split("/")[-1]
-        else:
-            resource_summary[resource["name"]]["filename"] = ""
-        resource_summary[resource["name"]]["in_quarantine"] = resource.get("in_quarantine", False)
-
-        resource_summary[resource["name"]]["sheets"] = []
-
-        if "fs_check_info" in resource.keys():
-            check, error_message = get_last_complete_check(resource, "fs_check_info")
-            if error_message == "Success":
-                # print(json.dumps(check, indent=4), flush=True)
-                for sheet in check["hxl_proxy_response"]["sheets"]:
-                    sheet_name = sheet["name"]
-                    nrows = sheet["nrows"]
-                    ncols = sheet["ncols"]
-                    resource_summary[resource["name"]]["sheets"].append(
-                        f"{sheet_name} (n_columns:{ncols} x n_rows:{nrows})"
-                    )
-        elif "shape_info" in resource.keys():
-            check, error_message = get_last_complete_check(resource, "shape_info")
-            if error_message == "Success":
-                sheet_name = "__DEFAULT__"
-                ncols = len(check["layer_fields"])
-                nrows = "N/A"
-                resource_summary[resource["name"]]["sheets"].append(
-                    f"{sheet_name} (n_columns:{ncols} x n_rows:{nrows})"
-                )
-                resource_summary[resource["name"]]["bounding_box"] = check["bounding_box"]
-
-    if error_message != "Success":
-        print(error_message, flush=True)
-
-    return resource_summary
-
-
-# Borrowed from hdx-stable-schema 2025-05-21
-def get_last_complete_check(resource_metadata: dict, metadata_key: str) -> tuple[dict, str]:
-    success = False
-    error_message = "Success"
-    fingerprint = (
-        "Import successful" if metadata_key == "shape_info" else "File structure check completed"
-    )
-    if metadata_key not in resource_metadata:
-        error_message = f"metadata_key '{metadata_key}' not found in resource metadata"
-        check = {}
-        return check, error_message
-
-    for check in reversed(resource_metadata[metadata_key]):
-        try:
-            if check["message"] == fingerprint:
-                # print(json.dumps(check, indent=4), flush=True)
-                success = True
-                break
-        except TypeError:
-            success = False
-
-    if not success:
-        error_message = (
-            f"\nError, could not find an '{fingerprint}' check "
-            f"for {resource_metadata['name']}\n"
-            f"final message was '{check}'"
-        )
-        check = {}
-    return check, error_message
