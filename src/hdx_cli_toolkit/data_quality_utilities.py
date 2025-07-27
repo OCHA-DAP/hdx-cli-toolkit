@@ -262,6 +262,10 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
 def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility"] = {}
+    report["accessibility"]["is_hxlated"] = 0
+    report["accessibility"]["format_score"] = 0
+    report["accessibility"]["n_schema_changes"] = 0
+
     if metadata_dict is None:
         return report
 
@@ -272,6 +276,9 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     # print(json.dumps(resource_changes, indent=4), flush=True)
     report["accessibility"]["resources"] = []
     max_resource_score = 0
+    best_resource_is_hxlated = 0
+    best_resource_n_schema_changes = 0
+    best_resource_format_score = 0
     for resource in metadata_dict["result"]["resources"]:
         resource_score = 0
         resource_report = {}
@@ -318,16 +325,24 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         for resource_check in resource_checks:
             if "*" in resource_check and "nrows" not in resource_check:
                 n_schema_changes += 1
-        if n_schema_changes == 1:
+        if n_schema_changes == 0:
             resource_score += 1
         resource_report["n_schema_changes"] = n_schema_changes
         report["accessibility"]["resources"].append(resource_report)
         if resource_score > max_resource_score:
             max_resource_score = resource_score
+            best_resource_is_hxlated = resource_report["is_hxlated"]
+            best_resource_n_schema_changes = n_schema_changes
+            best_resource_format_score = format_score
 
     report["accessibility_score"] = max_resource_score
-    if n_tags > 0 and n_tags > 0:
+    if n_tags > 0 and n_countries > 0:
         report["accessibility_score"] += 1
+
+    report["accessibility"]["is_hxlated"] = best_resource_is_hxlated
+    report["accessibility"]["format_score"] = best_resource_format_score
+    report["accessibility"]["n_schema_changes"] = best_resource_n_schema_changes
+
     return report
 
 
@@ -345,6 +360,7 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
     # 4. Context is provided
     # Can't see how to do this automatically
     report["interpretability"] = {}
+    report["interpretability"]["has_data_dictionary"] = 0
     report["interpretability"]["resources"] = []
 
     has_data_dictionary = 0
@@ -366,6 +382,7 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
 
             report["interpretability"]["resources"].append(resource_report)
 
+    report["interpretability"]["has_data_dictionary"] = has_data_dictionary
     report["interpretability_score"] = has_data_dictionary
     return report
 
@@ -375,6 +392,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
     # 2. Disaggregation
     # 3. Format compatible with APIs - this is really just a check for a well-formed CSV
     report["interoperability"] = {}
+    report["interoperability"]["has_standard_geodenomination"] = 0
     report["interoperability"]["resources"] = []
 
     has_standard_geodenomination = 0
@@ -396,6 +414,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
                 resource_report["has_geodenomination_hxl"] = 0
             report["interoperability"]["resources"].append(resource_report)
 
+    report["interoperability"]["has_standard_geodenomination"] = has_standard_geodenomination
     report["interoperability_score"] = has_standard_geodenomination
 
     return report
