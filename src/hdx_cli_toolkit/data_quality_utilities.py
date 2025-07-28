@@ -437,16 +437,50 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     if metadata_dict is not None:
         # Detecting Glide - Glide: EQ-2023-000015-TUR
-        glide_fingerprint = "glide:"
-        if (
-            glide_fingerprint in metadata_dict["result"]["caveats"].lower()
-            or glide_fingerprint in metadata_dict["result"]["caveats"].lower()
-        ):
-            report["findability"]["has_glide_number"] = True
-            has_unique_identifier = 1
+        glide_fingerprint = ["glide:"]
+        report["findability"]["has_glide_number"] = check_for_uid_fingerprint(
+            metadata_dict, glide_fingerprint
+        )
 
-    report["findability_score"] = has_unique_identifier
+        # Detecting GDACS - GDACS ID: 1000099
+        gdacs_fingerprint = ["gdacs id:"]
+        report["findability"]["has_gdacs_number"] = check_for_uid_fingerprint(
+            metadata_dict, gdacs_fingerprint
+        )
+
+        # Detecting DOI -  https://doi.org/10.1038/s41586-022-04997-3 or https://www.pnas.org/doi/10.1073/pnas.2409418122
+        doi_fingerprint = ["doi.org/", "/doi/", "doi:"]
+        report["findability"]["has_doi_number"] = check_for_uid_fingerprint(
+            metadata_dict, doi_fingerprint
+        )
+
+    report["findability_score"] = (
+        1
+        if any(
+            [
+                report["findability"]["has_doi_number"],
+                report["findability"]["has_glide_number"],
+                report["findability"]["has_gdacs_number"],
+            ]
+        )
+        else 0
+    )
+
     return report
+
+
+def check_for_uid_fingerprint(metadata_dict: dict, fingerprints: list[str]) -> bool:
+    result = False
+    for fingerprint in fingerprints:
+        if (
+            fingerprint.lower() in metadata_dict["result"]["caveats"].lower()
+            or fingerprint.lower() in metadata_dict["result"]["methodology"].lower()
+            or fingerprint.lower() in metadata_dict["result"]["notes"].lower()
+        ):
+            result = True
+            break
+
+    return result
 
 
 # This is summarise_schema borrowed from hdx-stable-schema 2025-07-02
