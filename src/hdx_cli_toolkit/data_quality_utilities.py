@@ -420,6 +420,35 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
     return report
 
 
+def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
+    # 1. Has standized URL
+    # 2. Has permalink / latest link
+    # 3. Has unique identifier (DOI, GDACS, GLIDE...)
+    report["findability"] = {}
+    report["findability"]["has_glide_number"] = False
+    report["findability"]["has_gdacs_number"] = False
+    report["findability"]["has_doi_number"] = False
+    has_unique_identifier = 0
+
+    # Check for DOI, GDACS, Glide - methodology, caveats, comments
+    # Glide definition - https://glidenumber.net/glide/public/search/search.jsp - example https://data.humdata.org/dataset/turkey-earthquake
+    # DOI definition - https://www.doi.org/the-identifier/what-is-a-doi/ - example https://data.humdata.org/dataset/social-capital-atlas
+    # GDACS definition - https://www.gdacs.org/ - example https://data.humdata.org/dataset/unosat-live-web-map-lewotobi-volcanic-eruption-indonesia
+
+    if metadata_dict is not None:
+        # Detecting Glide - Glide: EQ-2023-000015-TUR
+        glide_fingerprint = "glide:"
+        if (
+            glide_fingerprint in metadata_dict["result"]["caveats"].lower()
+            or glide_fingerprint in metadata_dict["result"]["caveats"].lower()
+        ):
+            report["findability"]["has_glide_number"] = True
+            has_unique_identifier = 1
+
+    report["findability_score"] = has_unique_identifier
+    return report
+
+
 # This is summarise_schema borrowed from hdx-stable-schema 2025-07-02
 def summarise_schema(resource: dict) -> dict:
     schemas = {}
@@ -486,14 +515,6 @@ def check_schemas(schemas: dict) -> bool:
                     break
 
     return has_geodenomination_hxl
-
-
-def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
-    # 1. Has standized URL
-    # 2. Has permalink / latest link
-    # 3. Has unique identifier (DOI, GDACS, GLIDE...)
-
-    return report
 
 
 def check_for_hapi(metadata_dict: dict) -> str | bool:
