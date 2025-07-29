@@ -923,7 +923,26 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
     default=False,
     help="select a dataset at random",
 )
-def data_quality_report(hdx_site: str = "stage", dataset_name: str = None, lucky_dip: bool = False):
+@click.option(
+    "--output_format",
+    type=click.Choice(["full", "summary"]),
+    is_flag=False,
+    default="full_json",
+    help="Format for data quality report",
+)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export data from update to CSV",
+)
+def data_quality_report(
+    hdx_site: str = "stage",
+    dataset_name: str | None = None,
+    lucky_dip: bool = False,
+    output_format: str = "full",
+    output_path: Optional[str] = None,
+):
     """Compile a data quality report for a specified dataset,
     based on the Q2 2025 Data Quality Project"""
     print_banner("data_quality_report")
@@ -933,4 +952,24 @@ def data_quality_report(hdx_site: str = "stage", dataset_name: str = None, lucky
         return
 
     report = compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
-    print(json.dumps(report, indent=4), flush=True)
+
+    if output_format == "full":
+        print(json.dumps(report, indent=4), flush=True)
+    elif output_format == "summary":
+        total_score = (
+            report["relevance_score"]
+            + report["timeliness_score"]
+            + report["accessibility_score"]
+            + report["interpretability_score"]
+            + report["interoperability_score"]
+            + report["findability_score"]
+        )
+        # the / n are derived manually, somewhat labouriously
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
+        print(f'{"Relevance:":<20} {report["relevance_score"]} / 9', flush=True)
+        print(f'{"Timeliness:":<20} {report["timeliness_score"]} / 5', flush=True)
+        print(f'{"Accessibility:":<20} {report["accessibility_score"]} / 6', flush=True)
+        print(f'{"Interpretability:":<20} {report["interpretability_score"]} / 1', flush=True)
+        print(f'{"Interoperability:":<20} {report["interoperability_score"]} / 1', flush=True)
+        print(f'{"Findability:":<20} {report["findability_score"]} / 1', flush=True)
+        print(f"{"Total:":<20} {total_score} / 23", flush=True)

@@ -50,7 +50,7 @@ SHAPE_INFO_DATA_TYPE_LOOKUP = {
 
 
 def compile_data_quality_report(
-    dataset_name: str,
+    dataset_name: str | None,
     hdx_site: Optional[str] = "stage",
     lucky_dip: bool | None = False,
     metadata_dict: dict | None = None,
@@ -62,11 +62,9 @@ def compile_data_quality_report(
             metadata_dict = lucky_dip_search(hdx_site=hdx_site)
             if metadata_dict:
                 dataset_name = metadata_dict["result"]["name"]
-                # print(f"Lucky dip search retrieved dataset with name: {dataset_name}")
         else:
-            # we assume dataset_filter contains no wildcards - maybe rename to "dataset_name"
-            metadata_dict = read_metadata_from_hdx(dataset_name)
-            # Need a call to package show here.
+            if dataset_name is not None:
+                metadata_dict = read_metadata_from_hdx(dataset_name)
 
     report = {}
     report["dataset_name"] = dataset_name
@@ -428,7 +426,6 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["findability"]["has_glide_number"] = False
     report["findability"]["has_gdacs_number"] = False
     report["findability"]["has_doi_number"] = False
-    has_unique_identifier = 0
 
     # Check for DOI, GDACS, Glide - methodology, caveats, comments
     # Glide definition - https://glidenumber.net/glide/public/search/search.jsp - example https://data.humdata.org/dataset/turkey-earthquake
@@ -472,12 +469,14 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
 def check_for_uid_fingerprint(metadata_dict: dict, fingerprints: list[str]) -> bool:
     result = False
     for fingerprint in fingerprints:
-        if (
-            fingerprint.lower() in metadata_dict["result"]["caveats"].lower()
-            or fingerprint.lower() in metadata_dict["result"]["methodology"].lower()
-            or fingerprint.lower() in metadata_dict["result"]["notes"].lower()
-        ):
-            result = True
+        for metadata_key in ["caveats" "methodology_other", "methodology", "notes"]:
+            if (
+                metadata_key in metadata_dict["result"]
+                and fingerprint.lower() in metadata_dict["result"][metadata_key].lower()
+            ):
+                result = True
+                break
+        if result:
             break
 
     return result
