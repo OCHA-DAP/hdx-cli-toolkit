@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
+import csv
 import json
 import os
 import time
@@ -23,6 +24,7 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     print_banner,
     make_path_unique,
+    convert_dict_to_rows,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -956,14 +958,7 @@ def data_quality_report(
     if output_format == "full":
         print(json.dumps(report, indent=4), flush=True)
     elif output_format == "summary":
-        total_score = (
-            report["relevance_score"]
-            + report["timeliness_score"]
-            + report["accessibility_score"]
-            + report["interpretability_score"]
-            + report["interoperability_score"]
-            + report["findability_score"]
-        )
+
         # the / n are derived manually, somewhat labouriously
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
         print(f'{"Relevance:":<20} {report["relevance_score"]} / 9', flush=True)
@@ -972,4 +967,9 @@ def data_quality_report(
         print(f'{"Interpretability:":<20} {report["interpretability_score"]} / 1', flush=True)
         print(f'{"Interoperability:":<20} {report["interoperability_score"]} / 1', flush=True)
         print(f'{"Findability:":<20} {report["findability_score"]} / 1', flush=True)
-        print(f"{"Total:":<20} {total_score} / 23", flush=True)
+        print(f"{"Total:":<20} {report["total_score"]} / 23", flush=True)
+
+    if output_path is not None:
+        rows = convert_dict_to_rows(report)
+        status = write_dictionary(output_path, rows, append=True)
+        print(status)

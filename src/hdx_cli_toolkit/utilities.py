@@ -424,3 +424,63 @@ def traverse(keys, dictionary, value_list=None):
         return value_list
 
     return traverse(keys[1:], value, value_list)
+
+
+def convert_dict_to_rows(report) -> list[dict]:
+
+    # datetime, dataset_name, group (incl summary otherwise relevance etc), key, value, resource,
+    # resource_name, key, value
+    rows = []
+    row_template = {
+        "datetime": None,
+        "dataset_name": None,
+        "group": None,
+        "key": None,
+        "value": None,
+        "resource": False,
+        "resource_name": None,
+        "resource_key": None,
+        "resource_value": None,
+    }
+    dataset_name = report["dataset_name"]
+    datetime_str = datetime.datetime.now().isoformat()
+    for group_key in report.keys():
+        row = row_template.copy()
+        row["datetime"] = datetime_str
+        row["dataset_name"] = dataset_name
+        group_item = report[group_key]
+        # Process summary keys
+        if not isinstance(group_item, dict):
+            row["group"] = "summary"
+            row["key"] = group_key
+            row["value"] = group_item
+            rows.append(row)
+        else:
+            # Process group keys
+            for key in group_item.keys():
+                row = row_template.copy()
+                row["datetime"] = datetime_str
+                row["dataset_name"] = dataset_name
+                row["group"] = group_key
+                if key != "resources":
+                    item = group_item[key]
+                    row["key"] = key
+                    row["value"] = item
+                    rows.append(row)
+                else:
+                    for resource in group_item["resources"]:
+                        for resource_key in resource.keys():
+                            if resource_key == "name":
+                                continue
+                            row = row_template.copy()
+                            row["datetime"] = datetime_str
+                            row["dataset_name"] = dataset_name
+                            row["group"] = group_key
+                            row["resource"] = True
+                            row["resource_name"] = resource["name"]
+                            row["resource_key"] = resource_key
+                            row["resource_value"] = resource[resource_key]
+
+                            rows.append(row)
+
+    return rows

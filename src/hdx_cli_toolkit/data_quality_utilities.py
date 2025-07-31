@@ -74,6 +74,7 @@ def compile_data_quality_report(
     report["interpretability_score"] = 0
     report["interoperability_score"] = 0
     report["findability_score"] = 0
+    report["total_score"] = 0
 
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
@@ -81,6 +82,15 @@ def compile_data_quality_report(
     report = add_interpretability_entries(metadata_dict, report)
     report = add_interoperability_entries(metadata_dict, report)
     report = add_findability_entries(metadata_dict, report)
+
+    report["total_score"] = (
+        report["relevance_score"]
+        + report["timeliness_score"]
+        + report["accessibility_score"]
+        + report["interpretability_score"]
+        + report["interoperability_score"]
+        + report["findability_score"]
+    )
 
     return report
 
