@@ -25,7 +25,7 @@ FORMAT_GOLD_2 = ["CSV", "JSON", "GEOJSON", "XML", "KML", "GEOTIFF", "GEOPACKAGE"
 FORMAT_SILVER_1 = ["XLSX", "XLS", "SHP", "GEODATABASE", "GEOSERVICE"]
 FORMAT_BRONZE_0 = ["PDF", "DOC", "DOCX", "WEB APP", "GARMIN IMG", "EMF", "PNG"]
 
-GEODENOMINATION_HXL = ["#geo+lat", "#geo+lon", "#geo+coord"]
+GEODENOMINATION_HXL = ["#geo+lat", "#geo+lon", "#geo+coord", "#country+code", "#country+v_iso3"]
 
 SIGNALS_DATASETS = [
     "asap-hotspots-monthly",
@@ -85,6 +85,7 @@ def compile_data_quality_report(
     return report
 
 
+# Scored out of 9 as of 2025-07-29
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict:
         dataset_name = metadata_dict["result"]["name"]
@@ -124,6 +125,7 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     return report
 
 
+# Scored out of 5 as of 2025-07-29
 def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["timeliness"] = {}
     if metadata_dict is None:
@@ -258,6 +260,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     return report
 
 
+# Scored out of 6 as of 2025-07-29
 def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility"] = {}
     report["accessibility"]["is_hxlated"] = 0
@@ -344,6 +347,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     return report
 
 
+# Scored out of 1 as of 2025-07-29
 def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> dict:
     # Just implement a check for data dictionaries and presence in the datastore could also include
     # a hxl tag check
@@ -385,6 +389,7 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
     return report
 
 
+# Scored out of 1 as of 2025-07-29
 def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> dict:
     # 1. Uses standard geodenomination - this
     # 2. Disaggregation
@@ -418,6 +423,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
     return report
 
 
+# Scored out of 1 as of 2025-07-29
 def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
     # 1. Has standized URL
     # 2. Has permalink / latest link
@@ -543,7 +549,7 @@ def check_schemas(schemas: dict) -> bool:
         # print(schemas[schema_hash], flush=True)
         if schemas[schema_hash]["hxl_headers"] is not None:
             for hxl_tag in schemas[schema_hash]["hxl_headers"]:
-                if hxl_tag in GEODENOMINATION_HXL:
+                if hxl_tag.replace(" ", "").lower() in GEODENOMINATION_HXL:
                     has_geodenomination_hxl = True
                     break
 
