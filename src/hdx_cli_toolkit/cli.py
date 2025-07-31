@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import csv
 import json
 import os
 import time
@@ -25,6 +24,7 @@ from hdx_cli_toolkit.utilities import (
     print_banner,
     make_path_unique,
     convert_dict_to_rows,
+    flatten_dict_to_row,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -970,6 +970,7 @@ def data_quality_report(
         print(f"{"Total:":<20} {report["total_score"]} / 23", flush=True)
 
     if output_path is not None:
-        rows = convert_dict_to_rows(report)
-        status = write_dictionary(output_path, rows, append=True)
+        # rows = convert_dict_to_rows(report)
+        row = flatten_dict_to_row(report)
+        status = write_dictionary(output_path, [row], append=True)
         print(status)

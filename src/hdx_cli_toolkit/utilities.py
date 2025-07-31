@@ -484,3 +484,21 @@ def convert_dict_to_rows(report) -> list[dict]:
                             rows.append(row)
 
     return rows
+
+
+def flatten_dict_to_row(report) -> dict:
+    row = {}
+    datetime_str = datetime.datetime.now().isoformat()
+    row["datetime"] = datetime_str
+    for group_key in report.keys():
+        group_item = report[group_key]
+        if not isinstance(group_item, dict):
+            row[f"summary-{group_key}"] = group_item
+        else:
+            # Process group keys
+            for key in group_item.keys():
+                if key != "resources":
+                    item = group_item[key]
+                    row[f"{group_key}-{key}"] = item
+
+    return row
