@@ -154,7 +154,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["timeliness"]["has_correct_cadence"] = None
 
     # ** Should these be part of a verbose / diagnostic report
-    report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
+    # report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
     # report["timeliness"]["due_date"] = due_date
     # report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
     # report["timeliness"]["days_since_last_modified"] = (
@@ -169,17 +169,17 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     expected_cadence = metadata_dict["result"]["data_update_frequency"]
 
     for resource in metadata_dict["result"]["resources"]:
-        has_correct_cadence = 1
+        has_correct_cadence = 0
         resource_report = {}
         resource_report["name"] = resource["name"]
         if due_date is not None:
             resource_report["is_fresh"] = (
                 True if datetime.datetime.now().isoformat() < due_date else False
             )
-        resource_report["days_since_last_modified"] = (
-            datetime.datetime.fromisoformat(today)
-            - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
-        ).days
+        # resource_report["days_since_last_modified"] = (
+        #     datetime.datetime.fromisoformat(today)
+        #     - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
+        # ).days
 
         # Process fs_check_info
         checks = resource_changes[resource["name"]]["checks"]
@@ -187,22 +187,22 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
         resource_report["n_updates"] = len(checks)
         # Days since last update
         if len(checks) != 0:
-            resource_report["days_since_last_update"] = (
-                datetime.datetime.fromisoformat(today)
-                - datetime.datetime.fromisoformat(checks[-1][0:10])
-            ).days
+            # resource_report["days_since_last_update"] = (
+            #     datetime.datetime.fromisoformat(today)
+            #     - datetime.datetime.fromisoformat(checks[-1][0:10])
+            # ).days
             # Days since last nrows change
-            last_change_date = None
-            for check in reversed(checks):
-                if "nrows" in check:
-                    last_change_date = check[0:10]
-            if last_change_date is not None:
-                resource_report["days_since_last_data_change"] = (
-                    datetime.datetime.fromisoformat(today)
-                    - datetime.datetime.fromisoformat(last_change_date)
-                ).days
-            else:
-                resource_report["days_since_last_data_change"] = None
+            # last_change_date = None
+            # for check in reversed(checks):
+            #     if "nrows" in check:
+            #         last_change_date = check[0:10]
+            # if last_change_date is not None:
+            #     resource_report["days_since_last_data_change"] = (
+            #         datetime.datetime.fromisoformat(today)
+            #         - datetime.datetime.fromisoformat(last_change_date)
+            #     ).days
+            # else:
+            #     resource_report["days_since_last_data_change"] = None
             # days between updates
             days_between_updates = []
             previous = datetime.datetime.fromisoformat(checks[0][0:10])
@@ -212,7 +212,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 days_between_updates.append(days)
                 previous = current
 
-            resource_report["update_cadence"] = days_between_updates
+            # resource_report["update_cadence"] = days_between_updates
             # Calculate cadence compliance metric
             # if len(resource_report["update_cadence"]) != 0:
             #     cadence_metric = math.sqrt(
@@ -233,13 +233,13 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
             resource_report["cadence_mean_ratio"] = None
             resource_report["cadence_std_ratio"] = None
             resource_report["has_correct_cadence"] = has_correct_cadence
-            if float(expected_cadence) > 0 and len(resource_report["update_cadence"]) > 1:
-                average_interval = statistics.mean(resource_report["update_cadence"])
+            if float(expected_cadence) > 0 and len(days_between_updates) > 1:
+                average_interval = statistics.mean(days_between_updates)
                 resource_report["cadence_mean_ratio"] = round(
                     average_interval / float(expected_cadence), 2
                 )
                 # Updates are regular
-                std_interval = statistics.stdev(resource_report["update_cadence"])
+                std_interval = statistics.stdev(days_between_updates)
                 resource_report["cadence_std_ratio"] = round(
                     std_interval / float(expected_cadence), 2
                 )
