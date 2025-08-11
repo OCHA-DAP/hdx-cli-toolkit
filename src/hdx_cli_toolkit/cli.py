@@ -961,8 +961,8 @@ def data_quality_report(
 
         # the / n are derived manually, somewhat labouriously
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
-        print(f'{"Relevance:":<20} {report["relevance_score"]} / 9', flush=True)
-        print(f'{"Timeliness:":<20} {report["timeliness_score"]} / 5', flush=True)
+        print(f'{"Relevance:":<20} {report["relevance_score"]} / 12', flush=True)
+        print(f'{"Timeliness:":<20} {report["timeliness_score"]} / 4', flush=True)
         print(f'{"Accessibility:":<20} {report["accessibility_score"]} / 6', flush=True)
         print(f'{"Interpretability:":<20} {report["interpretability_score"]} / 1', flush=True)
         print(f'{"Interoperability:":<20} {report["interoperability_score"]} / 1', flush=True)

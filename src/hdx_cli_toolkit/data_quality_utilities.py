@@ -95,7 +95,7 @@ def compile_data_quality_report(
     return report
 
 
-# Scored out of 9 as of 2025-07-29
+# Scored out of 12 as of 2025-07-29
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict:
         dataset_name = metadata_dict["result"]["name"]
@@ -128,14 +128,47 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     report["relevance"]["in_hapi_input"] = check_for_hapi(metadata_dict)
     report["relevance"]["in_data_grids"] = check_for_datagrid(metadata_dict)
-    report["relevance"]["downloads"] = metadata_dict["result"]["total_res_downloads"]
+
     relevance_summary = [1 if v else 0 for k, v in report["relevance"].items()]
-    report["relevance_score"] = sum(relevance_summary)
+    report["relevance"]["downloads_score"] = calculate_downloads_score(
+        metadata_dict["result"]["total_res_downloads"]
+    )
+    report["relevance_score"] = sum(relevance_summary) + report["relevance"]["downloads_score"]
+    report["relevance"]["resources"] = []
+    for resource in metadata_dict["result"]["resources"]:
+        resource_report = {}
+        resource_report["name"] = resource["name"]
+        if resource["id"] in HAPI_RESOURCE_IDS:
+            resource_report["in_hapi_input"] = True
+        else:
+            resource_report["in_hapi_input"] = False
+        report["relevance"]["resources"].append(resource_report)
 
     return report
 
 
-# Scored out of 5 as of 2025-07-29
+def calculate_downloads_score(n_downloads: str) -> int:
+    # 0 – 0 – 100 no downloads
+    # 1 –  1-100 downloads – catches the obvious peak
+    # 2 – 101-300 downloads and above
+    # 3 – 301 upwards
+
+    n_downloads_int = int(n_downloads)
+
+    score = 0
+    if n_downloads_int == 0:
+        score = 0
+    elif n_downloads_int >= 1 and n_downloads_int <= 100:
+        score = 1
+    elif n_downloads_int >= 101 and n_downloads_int <= 300:
+        score = 2
+    elif n_downloads_int >= 301:
+        score = 3
+
+    return score
+
+
+# Scored out of 4 as of 2025-07-29
 def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["timeliness"] = {}
     if metadata_dict is None:
@@ -143,7 +176,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     due_date = metadata_dict["result"].get("due_date", False)
 
-    today = datetime.datetime.now().isoformat()[0:10]
+    # today = datetime.datetime.now().isoformat()[0:10]
     report["timeliness"]["is_fresh"] = metadata_dict["result"].get("is_fresh", False)
     report["timeliness"]["is_crisis_relevant"] = (
         True
@@ -252,9 +285,9 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
         report["timeliness"]["resources"].append(resource_report)
 
     # Compile cadence score
-    # 3 if cadence is correct (mean ratio~1) and stable (std ratio ~0) for at least 1 resource
-    # 2 if one of mean ratio and std ratio is good for at least 1 resource
-    # 1 if neither
+    # 2 if cadence is correct (mean ratio~1) and stable (std ratio ~0) for at least 1 resource
+    # 1 if one of mean ratio and std ratio is good for at least 1 resource
+    # 0 if neither
     has_correct_cadence = max(
         x.get("has_correct_cadence", 1) for x in report["timeliness"]["resources"]
     )
