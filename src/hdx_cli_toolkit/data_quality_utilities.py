@@ -75,6 +75,9 @@ def compile_data_quality_report(
     report["interoperability_score"] = 0
     report["findability_score"] = 0
     report["total_score"] = 0
+    report["priority_score"] = 0
+    report["normalized_score"] = 0
+    report["medal"] = "Bronze"
 
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
@@ -91,6 +94,39 @@ def compile_data_quality_report(
         + report["interoperability_score"]
         + report["findability_score"]
     )
+
+    report["priority_score"] = (
+        report["relevance"]["downloads_score"]
+        + int(report["relevance"]["in_signals"])
+        + int(report["findability_score"])
+        + int(report["timeliness"]["is_fresh"])
+        + int(report["timeliness"]["has_correct_cadence"])
+        + int(report["interpretability"]["has_data_dictionary"])
+        + int(report["interoperability"]["has_standard_geodenomination"])
+        + int(report["accessibility"]["has_stable_schema"])
+    )
+
+    max_total_score = 0
+    for dimension in [
+        "Relevance",
+        "Timeliness",
+        "Accessibility",
+        "Interpretability",
+        "Interoperability",
+        "Findability",
+    ]:
+        max_score = report[dimension.lower()]["max_score"]
+        max_total_score = max_total_score + 1
+        report["normalized_score"] += report[f"{dimension.lower()}_score"] / max_score
+
+    report["normalized_score"] = round(report["normalized_score"], 2)
+
+    if report["priority_score"] < 4:
+        report["medal"] = "Bronze"
+    elif report["priority_score"] >= 7:
+        report["medal"] = "Gold"
+    else:
+        report["medal"] = "Silver"
 
     return report
 
@@ -257,7 +293,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility"] = {}
     report["accessibility"]["is_hxlated"] = 0
     report["accessibility"]["format_score"] = 0
-    report["accessibility"]["n_schema_changes"] = 0
+    report["accessibility"]["has_stable_schema"] = 0
 
     if metadata_dict is None:
         return report
@@ -328,7 +364,10 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     report["accessibility"]["is_hxlated"] = best_resource_is_hxlated
     report["accessibility"]["format_score"] = best_resource_format_score
-    report["accessibility"]["n_schema_changes"] = best_resource_n_schema_changes
+    if best_resource_n_schema_changes == 0:
+        report["accessibility"]["has_stable_schema"] = True
+    else:
+        report["accessibility"]["has_stable_schema"] = False
     report["accessibility"]["max_score"] = 2 + 1 + 1 + 1  # format_score + in_hapi + is_hxlated +
     # stable_schema
     return report
