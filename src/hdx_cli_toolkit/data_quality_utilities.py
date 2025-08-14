@@ -134,6 +134,8 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
         metadata_dict["result"]["total_res_downloads"]
     )
     report["relevance_score"] = sum(relevance_summary) + report["relevance"]["downloads_score"]
+
+    max_score = sum([1 for k, v in report["relevance"].items()]) + 3
     report["relevance"]["resources"] = []
     for resource in metadata_dict["result"]["resources"]:
         resource_report = {}
@@ -144,6 +146,7 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
             resource_report["in_hapi_input"] = False
         report["relevance"]["resources"].append(resource_report)
 
+    report["relevance"]["max_score"] = max_score
     return report
 
 
@@ -300,6 +303,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     if report["timeliness"]["is_crisis_relevant"]:
         timeliness_summary += 1
     report["timeliness_score"] = timeliness_summary
+    report["timeliness"]["max_score"] = 2 + 1 + 1  # Cadence + is_fresh + is_crisis_relevant)
 
     return report
 
@@ -387,7 +391,8 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility"]["is_hxlated"] = best_resource_is_hxlated
     report["accessibility"]["format_score"] = best_resource_format_score
     report["accessibility"]["n_schema_changes"] = best_resource_n_schema_changes
-
+    report["accessibility"]["max_score"] = 2 + 1 + 1 + 1  # format_score + in_hapi + is_hxlated +
+    # stable_schema
     return report
 
 
@@ -430,6 +435,8 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
 
     report["interpretability"]["has_data_dictionary"] = has_data_dictionary
     report["interpretability_score"] = has_data_dictionary
+    report["interpretability"]["max_score"] = 1  # has_data_dictionary
+
     return report
 
 
@@ -463,6 +470,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
 
     report["interoperability"]["has_standard_geodenomination"] = has_standard_geodenomination
     report["interoperability_score"] = has_standard_geodenomination
+    report["interoperability"]["max_score"] = 1  # has_standard_geodenomination
 
     return report
 
@@ -517,6 +525,7 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
         else 0
     )
 
+    report["findability"]["max_score"] = 1  # has a uid
     return report
 
 

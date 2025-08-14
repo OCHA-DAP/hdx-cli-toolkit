@@ -936,7 +936,7 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
     "--output_path",
     is_flag=False,
     default=None,
-    help="A file path to export the report in CSV format",
+    help="A file path to export the report in CSV",
 )
 def data_quality_report(
     hdx_site: str = "stage",
@@ -961,15 +961,24 @@ def data_quality_report(
             status = write_dictionary(output_path, rows, append=True)
             print(status)
     elif output_format == "summary":
-        # the / n are derived manually, somewhat labouriously
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
-        print(f'{"Relevance:":<20} {report["relevance_score"]} / 13', flush=True)
-        print(f'{"Timeliness:":<20} {report["timeliness_score"]} / 4', flush=True)
-        print(f'{"Accessibility:":<20} {report["accessibility_score"]} / 6', flush=True)
-        print(f'{"Interpretability:":<20} {report["interpretability_score"]} / 1', flush=True)
-        print(f'{"Interoperability:":<20} {report["interoperability_score"]} / 1', flush=True)
-        print(f'{"Findability:":<20} {report["findability_score"]} / 1', flush=True)
-        print(f"{"Total:":<20} {report["total_score"]} / 26", flush=True)
+        max_total_score = 0
+        for dimension in [
+            "Relevance",
+            "Timeliness",
+            "Accessibility",
+            "Interpretability",
+            "Interoperability",
+            "Findability",
+        ]:
+            max_score = report[dimension.lower()]["max_score"]
+            max_total_score = max_total_score + max_score
+            print(
+                f'{dimension+":":<20} {report[f"{dimension.lower()}_score"]} / {max_score}',
+                flush=True,
+            )
+
+        print(f"{"Total:":<20} {report["total_score"]} / {max_total_score}", flush=True)
 
         if output_path is not None:
             row = flatten_dict_to_row(report)
