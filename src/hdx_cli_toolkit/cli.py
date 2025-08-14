@@ -957,20 +957,22 @@ def data_quality_report(
 
     if output_format == "full":
         print(json.dumps(report, indent=4), flush=True)
+        if output_path is not None:
+            rows = convert_dict_to_rows(report)
+            status = write_dictionary(output_path, rows, append=True)
+            print(status)
     elif output_format == "summary":
-
         # the / n are derived manually, somewhat labouriously
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
-        print(f'{"Relevance:":<20} {report["relevance_score"]} / 12', flush=True)
+        print(f'{"Relevance:":<20} {report["relevance_score"]} / 13', flush=True)
         print(f'{"Timeliness:":<20} {report["timeliness_score"]} / 4', flush=True)
         print(f'{"Accessibility:":<20} {report["accessibility_score"]} / 6', flush=True)
         print(f'{"Interpretability:":<20} {report["interpretability_score"]} / 1', flush=True)
         print(f'{"Interoperability:":<20} {report["interoperability_score"]} / 1', flush=True)
         print(f'{"Findability:":<20} {report["findability_score"]} / 1', flush=True)
-        print(f"{"Total:":<20} {report["total_score"]} / 23", flush=True)
+        print(f"{"Total:":<20} {report["total_score"]} / 26", flush=True)
 
-    if output_path is not None:
-        # rows = convert_dict_to_rows(report)
-        row = flatten_dict_to_row(report)
-        status = write_dictionary(output_path, [row], append=True)
-        print(status)
+        if output_path is not None:
+            row = flatten_dict_to_row(report)
+            status = write_dictionary(output_path, [row], append=True)
+            print(status)

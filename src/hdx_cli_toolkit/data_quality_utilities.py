@@ -95,7 +95,7 @@ def compile_data_quality_report(
     return report
 
 
-# Scored out of 12 as of 2025-07-29
+# Scored out of 13 as of 2025-07-29
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict:
         dataset_name = metadata_dict["result"]["name"]
@@ -187,7 +187,8 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["timeliness"]["has_correct_cadence"] = None
 
     # ** Should these be part of a verbose / diagnostic report
-    # report["timeliness"]["data_update_frequency"] = metadata_dict["result"]["data_update_frequency"]
+    # report["timeliness"]["data_update_frequency"]
+    #                               = metadata_dict["result"]["data_update_frequency"]
     # report["timeliness"]["due_date"] = due_date
     # report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
     # report["timeliness"]["days_since_last_modified"] = (
@@ -477,9 +478,12 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["findability"]["has_doi_number"] = False
 
     # Check for DOI, GDACS, Glide - methodology, caveats, comments
-    # Glide definition - https://glidenumber.net/glide/public/search/search.jsp - example https://data.humdata.org/dataset/turkey-earthquake
-    # DOI definition - https://www.doi.org/the-identifier/what-is-a-doi/ - example https://data.humdata.org/dataset/social-capital-atlas
-    # GDACS definition - https://www.gdacs.org/ - example https://data.humdata.org/dataset/unosat-live-web-map-lewotobi-volcanic-eruption-indonesia
+    # Glide definition - https://glidenumber.net/glide/public/search/search.jsp
+    #           example https://data.humdata.org/dataset/turkey-earthquake
+    # DOI definition - https://www.doi.org/the-identifier/what-is-a-doi/
+    #           example https://data.humdata.org/dataset/social-capital-atlas
+    # GDACS definition - https://www.gdacs.org/
+    #                   unosat-live-web-map-lewotobi-volcanic-eruption-indonesia
 
     if metadata_dict is not None:
         # Detecting Glide - Glide: EQ-2023-000015-TUR
@@ -494,7 +498,8 @@ def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
             metadata_dict, gdacs_fingerprint
         )
 
-        # Detecting DOI -  https://doi.org/10.1038/s41586-022-04997-3 or https://www.pnas.org/doi/10.1073/pnas.2409418122
+        # Detecting DOI -  https://doi.org/10.1038/s41586-022-04997-3
+        # or https://www.pnas.org/doi/10.1073/pnas.2409418122
         doi_fingerprint = ["doi.org/", "/doi/", "doi:"]
         report["findability"]["has_doi_number"] = check_for_uid_fingerprint(
             metadata_dict, doi_fingerprint

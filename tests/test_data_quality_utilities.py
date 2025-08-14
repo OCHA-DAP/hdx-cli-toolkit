@@ -61,6 +61,10 @@ def test_with_gibraltar_metadata(json_fixture):
         dataset_name="gibraltar-healthsites", metadata_dict=metadata_dict
     )
     assert report["dataset_name"] == "gibraltar-healthsites"
-    assert report["relevance_score"] == 3
+    assert report["relevance_score"] == 5
     assert report["timeliness_score"] == 1
-    assert report["accessibility_score"] == 4
+    assert report["accessibility_score"] == 5
+    assert report["interpretability_score"] == 0
+    assert report["interoperability_score"] == 0
+    assert report["findability_score"] == 0
+    assert report["total_score"] == 11
