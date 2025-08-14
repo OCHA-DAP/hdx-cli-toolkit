@@ -6,6 +6,7 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
 
 ```
   configuration              Print configuration information to terminal
+  data_quality_report        Compile a data quality report
   download                   Download dataset resources from HDX
   get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata

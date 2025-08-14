@@ -6,6 +6,7 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
 
 ```
   configuration              Print configuration information to terminal
+  data_quality_report        Compile a data quality report
   download                   Download dataset resources from HDX
   get_organization_metadata  Get an organization id and other metadata
   get_user_metadata          Get user id and other metadata
@@ -269,6 +270,18 @@ hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_freq
 hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
 hdx-toolkit scan --hdx_site="stage" --action=list --key=organization.name,data_update_frequency --rows=100
 ```
+
+## Data Quality Report
+
+The `data_quality_report` command provides a report based on work in the Centre for Humanitarian Data's Data Partnerships Team (DPT) in 2025 Q3. This provides a data quality report across 6 dimensions (relevance, timeliness, accessibility, interpretability, interoperability and findability) as well as a total score. In the initial release the total score is provisional with a view to refining its calculation on the basis of use.
+
+The dataset is specified using a `dataset_name` parameter, or a `--lucky_dip` flag can be provided which selects a random dataset. The HDX site (stage or prod) can be set using the `hdx_site` parameter. `output_format` can be set to `full` for an extensive JSON report for console output or `summary` for a brief report of scores in each dimension. If an `output_path` provided then the `full` and `summary` outputs are sent to a CSV format file.
+
+Example invocations:
+```
+hdx-toolkit data_quality_report --lucky_dip --output_format="summary" --output_path="output/dqr-summary-scores.csv"
+ hdx-toolkit data_quality_report --dataset_name=burkina-faso-acled-conflict-data --output_format="full"
+```
 ## Miscellaneous
 
 There is an issue with some datasets where a key, `extras` is found which is not valid, it prevents
@@ -313,4 +326,6 @@ hdx-toolkit scan --hdx_site="stage" --action=distribution --key=data_update_freq
 hdx-toolkit scan --hdx_site="stage" --input_path=output/2024-08-24-hdx-snapshot.json --action=delete_key --key=extras --verbose
 hdx-toolkit scan --hdx_site="stage" --action=list --key=organization.name,data_update_frequency --rows=100
 hdx-toolkit scan --hdx_site="stage" --action=list --key=data_update_frequency --input_path=output/2024-08-24-hdx-snapshot.json --result_path=output/2024-09-03-scan-results.csv
+hdx-toolkit data_quality_report --lucky_dip --output_format="summary" --output_path="output/dqr-summary-scores.csv"
+ hdx-toolkit data_quality_report --dataset_name=burkina-faso-acled-conflict-data --output_format="full"
 ```

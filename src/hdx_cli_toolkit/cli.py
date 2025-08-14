@@ -917,7 +917,7 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
     "--dataset_name",
     is_flag=False,
     default=None,
-    help="a dataset name or pattern on which to filter list",
+    help="a dataset name",
 )
 @click.option(
     "--lucky_dip",
@@ -936,7 +936,7 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
     "--output_path",
     is_flag=False,
     default=None,
-    help="A file path to export data from update to CSV",
+    help="A file path to export the report in CSV format",
 )
 def data_quality_report(
     hdx_site: str = "stage",
@@ -945,8 +945,7 @@ def data_quality_report(
     output_format: str = "full",
     output_path: Optional[str] = None,
 ):
-    """Compile a data quality report for a specified dataset,
-    based on the Q2 2025 Data Quality Project"""
+    """Compile a data quality report"""
     print_banner("data_quality_report")
 
     if not lucky_dip and dataset_name is None:
