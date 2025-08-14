@@ -95,7 +95,6 @@ def compile_data_quality_report(
     return report
 
 
-# Scored out of 13 as of 2025-07-29
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict:
         dataset_name = metadata_dict["result"]["name"]
@@ -171,7 +170,6 @@ def calculate_downloads_score(n_downloads: str) -> int:
     return score
 
 
-# Scored out of 4 as of 2025-07-29
 def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["timeliness"] = {}
     if metadata_dict is None:
@@ -179,7 +177,6 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     due_date = metadata_dict["result"].get("due_date", False)
 
-    # today = datetime.datetime.now().isoformat()[0:10]
     report["timeliness"]["is_fresh"] = metadata_dict["result"].get("is_fresh", False)
     report["timeliness"]["is_crisis_relevant"] = (
         True
@@ -189,18 +186,6 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     )
     report["timeliness"]["has_correct_cadence"] = None
 
-    # ** Should these be part of a verbose / diagnostic report
-    # report["timeliness"]["data_update_frequency"]
-    #                               = metadata_dict["result"]["data_update_frequency"]
-    # report["timeliness"]["due_date"] = due_date
-    # report["timeliness"]["dataset_date"] = metadata_dict["result"]["dataset_date"]
-    # report["timeliness"]["days_since_last_modified"] = (
-    #     datetime.datetime.fromisoformat(today)
-    #     - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
-    # ).days
-
-    # Frequency of update is respected
-    # Publication time is relevant to crisis
     resource_changes = summarise_resource_changes(metadata_dict)
     report["timeliness"]["resources"] = []
     expected_cadence = metadata_dict["result"]["data_update_frequency"]
@@ -213,34 +198,12 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
             resource_report["is_fresh"] = (
                 True if datetime.datetime.now().isoformat() < due_date else False
             )
-        # resource_report["days_since_last_modified"] = (
-        #     datetime.datetime.fromisoformat(today)
-        #     - datetime.datetime.fromisoformat(metadata_dict["result"]["last_modified"][0:10])
-        # ).days
-
         # Process fs_check_info
         checks = resource_changes[resource["name"]]["checks"]
         # Number of updates
         resource_report["n_updates"] = len(checks)
         # Days since last update
         if len(checks) != 0:
-            # resource_report["days_since_last_update"] = (
-            #     datetime.datetime.fromisoformat(today)
-            #     - datetime.datetime.fromisoformat(checks[-1][0:10])
-            # ).days
-            # Days since last nrows change
-            # last_change_date = None
-            # for check in reversed(checks):
-            #     if "nrows" in check:
-            #         last_change_date = check[0:10]
-            # if last_change_date is not None:
-            #     resource_report["days_since_last_data_change"] = (
-            #         datetime.datetime.fromisoformat(today)
-            #         - datetime.datetime.fromisoformat(last_change_date)
-            #     ).days
-            # else:
-            #     resource_report["days_since_last_data_change"] = None
-            # days between updates
             days_between_updates = []
             previous = datetime.datetime.fromisoformat(checks[0][0:10])
             for check in checks[1:]:
@@ -248,24 +211,6 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 days = (current - previous).days
                 days_between_updates.append(days)
                 previous = current
-
-            # resource_report["update_cadence"] = days_between_updates
-            # Calculate cadence compliance metric
-            # if len(resource_report["update_cadence"]) != 0:
-            #     cadence_metric = math.sqrt(
-            #         sum(
-            #             [
-            #                 ((float(x) - float(expected_cadence)) / float(expected_cadence)) ** 2
-            #                 for x in resource_report["update_cadence"]
-            #             ]
-            #         )
-            #         / len(resource_report["update_cadence"])
-            #     )
-            #     resource_report["cadence_rms"] = round(cadence_metric, 2)
-            # else:
-            #     resource_report["cadence_rms"] = None
-
-            # Cadence
             # Cadence is as advertised
             resource_report["cadence_mean_ratio"] = None
             resource_report["cadence_std_ratio"] = None
@@ -308,7 +253,6 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     return report
 
 
-# Scored out of 6 as of 2025-07-29
 def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["accessibility"] = {}
     report["accessibility"]["is_hxlated"] = 0
@@ -322,7 +266,6 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     n_countries = len(metadata_dict["result"]["groups"])
     report["accessibility"]["n_tags"] = n_tags + n_countries
     resource_changes = summarise_resource_changes(metadata_dict)
-    # print(json.dumps(resource_changes, indent=4), flush=True)
     report["accessibility"]["resources"] = []
     max_resource_score = 0
     best_resource_is_hxlated = 0
@@ -347,9 +290,6 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         resource_report["format_score"] = f"{format_score} ({format_})"
 
         resource_score += format_score
-        # # Number of updates
-        # resource_report["n_updates"] = len(checks)
-        # Days since last update
         resource_report["in_hapi"] = False
         if resource["id"] in HAPI_RESOURCE_IDS:
             resource_report["in_hapi"] = True
@@ -357,9 +297,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         resource_report["is_hxlated"] = False
         if "fs_check_info" in resource.keys():
             check, error_message = get_last_complete_check(resource, "fs_check_info")
-            # print(json.dumps(check, indent=4), flush=True)
             if error_message == "Success":
-                # print(json.dumps(check, indent=4), flush=True)
                 if "sheets" in check["hxl_proxy_response"].keys():
                     for sheet in check["hxl_proxy_response"]["sheets"]:
                         if sheet["is_hxlated"]:
@@ -396,20 +334,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
     return report
 
 
-# Scored out of 1 as of 2025-07-29
 def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> dict:
-    # Just implement a check for data dictionaries and presence in the datastore could also include
-    # a hxl tag check
-    # 1. Metadata is complete
-    # Suspect all keys exist by default, and in most cases have a default value.
-    # Inspect methodology, notes and description (resource) text for length. maybe check for tags
-    # and groups
-    # 2. Methodology is clear
-    # Can't see how to do this automatically
-    # 3. Data dictionary is available
-    # Scan resource names for data dictionary, check datastore key (datastore)
-    # 4. Context is provided
-    # Can't see how to do this automatically
     report["interpretability"] = {}
     report["interpretability"]["has_data_dictionary"] = 0
     report["interpretability"]["resources"] = []
@@ -440,11 +365,7 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
     return report
 
 
-# Scored out of 1 as of 2025-07-29
 def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> dict:
-    # 1. Uses standard geodenomination - this
-    # 2. Disaggregation
-    # 3. Format compatible with APIs - this is really just a check for a well-formed CSV
     report["interoperability"] = {}
     report["interoperability"]["has_standard_geodenomination"] = 0
     report["interoperability"]["resources"] = []
@@ -475,11 +396,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
     return report
 
 
-# Scored out of 1 as of 2025-07-29
 def add_findability_entries(metadata_dict: dict | None, report: dict) -> dict:
-    # 1. Has standized URL
-    # 2. Has permalink / latest link
-    # 3. Has unique identifier (DOI, GDACS, GLIDE...)
     report["findability"] = {}
     report["findability"]["has_glide_number"] = False
     report["findability"]["has_gdacs_number"] = False
@@ -573,10 +490,8 @@ def summarise_schema(resource: dict) -> dict:
                     else:
                         schemas[header_hash]["shared_with"].append(resource["name"])
     elif "shape_info" in resource.keys():
-        # print(json.dumps(resource["shape_info"][-1], indent=4), flush=True)
         check, error_message = get_last_complete_check(resource, "shape_info")
 
-        # print(json.dumps(check, indent=4), flush=True)
         if error_message == "Success":
             headers = [x["field_name"] for x in check["layer_fields"]]
             data_types = [
@@ -593,9 +508,6 @@ def summarise_schema(resource: dict) -> dict:
             else:
                 schemas[header_hash]["shared_with"].append(resource["name"])
 
-    # if error_message != "Success":
-    #     print(error_message, flush=True)
-
     return schemas
 
 
@@ -603,7 +515,6 @@ def check_schemas(schemas: dict) -> bool:
     has_geodenomination_hxl = False
     # https://hxlstandard.org/standard/1-1final/dictionary/#geo
     for schema_hash in schemas.keys():
-        # print(schemas[schema_hash], flush=True)
         if schemas[schema_hash]["hxl_headers"] is not None:
             for hxl_tag in schemas[schema_hash]["hxl_headers"]:
                 if hxl_tag.replace(" ", "").lower() in GEODENOMINATION_HXL:
@@ -634,8 +545,6 @@ def check_for_datagrid(metadata_dict: dict) -> str | bool:
     with open(datagrid_filepath, newline="", encoding="utf-8") as csvfile:
         dataset_name_rows = csv.DictReader(csvfile)
         datagrid_datasets = [x["dataset_name"] for x in dataset_name_rows]
-        # print(f"Length of datagrid list {len(datagrid_datasets)}", flush=True)
-        # print(f"Length of datagrid set {len(set(datagrid_datasets))}", flush=True)
 
     if metadata_dict["result"]["name"] in datagrid_datasets:
         in_datagrid = True
@@ -692,7 +601,6 @@ def lucky_dip_search(hdx_site: str | None = "stage"):
     # using the first to get the range of offsets possible
     # Make a random offset in the range 0, n datasets
     random_start = randrange(0, n_datasets)
-    # query with offset (start) = random, limit (rows) = 1
     random_offset_params = {
         "fq": "*:*",
         "start": random_start,
