@@ -292,7 +292,10 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
 
     n_tags = len(metadata_dict["result"]["tags"])
     n_countries = len(metadata_dict["result"]["groups"])
-    report["accessibility"]["n_tags"] = n_tags + n_countries
+    if n_tags > 0 and n_countries > 0:
+        report["accessibility"]["has_tags_and_countries"] = True
+    else:
+        report["accessibility"]["has_tags_and_countries"] = False
     resource_changes = summarise_resource_changes(metadata_dict)
     report["accessibility"]["resources"] = []
     max_resource_score = 0
@@ -315,7 +318,7 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
             print("Ceasing execution")
             sys.exit()
 
-        resource_report["format_score"] = f"{format_score} ({format_})"
+        resource_report["format_score"] = format_score
 
         resource_score += format_score
         resource_report["in_hapi"] = False
