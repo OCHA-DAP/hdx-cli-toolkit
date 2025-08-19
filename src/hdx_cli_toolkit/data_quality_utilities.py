@@ -393,7 +393,7 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
             report["interpretability"]["resources"].append(resource_report)
 
     report["interpretability"]["has_data_dictionary"] = has_data_dictionary
-    report["interpretability_score"] = has_data_dictionary
+    report["interpretability_score"] = int(has_data_dictionary)
     report["interpretability"]["max_score"] = 1  # has_data_dictionary
 
     return report
@@ -425,7 +425,7 @@ def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> di
             report["interoperability"]["resources"].append(resource_report)
 
     report["interoperability"]["has_standard_geodenomination"] = has_standard_geodenomination
-    report["interoperability_score"] = has_standard_geodenomination
+    report["interoperability_score"] = int(has_standard_geodenomination)
     report["interoperability"]["max_score"] = 1  # has_standard_geodenomination
 
     return report
