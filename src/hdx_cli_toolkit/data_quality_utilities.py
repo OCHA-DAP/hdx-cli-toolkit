@@ -142,14 +142,10 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
         return report
     report["relevance"]["in_hdx"] = True
     report["relevance"]["in_dataseries"] = (
-        metadata_dict["result"]["dataseries_name"]
-        if "dataseries_name" in metadata_dict["result"].keys()
-        else False
+        True if "dataseries_name" in metadata_dict["result"].keys() else False
     )
     report["relevance"]["in_pipeline"] = (
-        metadata_dict["result"]["updated_by_script"]
-        if "updated_by_script" in metadata_dict["result"].keys()
-        else False
+        True if "updated_by_script" in metadata_dict["result"].keys() else False
     )
     report["relevance"]["in_cod"] = (
         metadata_dict["result"]["cod_level"]
@@ -170,7 +166,7 @@ def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     )
     report["relevance_score"] = sum(relevance_summary) + report["relevance"]["downloads_score"]
 
-    max_score = sum([1 for k, v in report["relevance"].items()]) + 3
+    max_score = sum([1 for k, v in report["relevance"].items()]) + 3  # 3 for the downloads score
     report["relevance"]["resources"] = []
     for resource in metadata_dict["result"]["resources"]:
         resource_report = {}
@@ -237,7 +233,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
         # Process fs_check_info
         checks = resource_changes[resource["name"]]["checks"]
         # Number of updates
-        resource_report["n_updates"] = len(checks)
+        # resource_report["n_updates"] = len(checks)
         # Days since last update
         if len(checks) != 0:
             days_between_updates = []
@@ -248,22 +244,18 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 days_between_updates.append(days)
                 previous = current
             # Cadence is as advertised
-            resource_report["cadence_mean_ratio"] = None
-            resource_report["cadence_std_ratio"] = None
+            # resource_report["cadence_mean_ratio"] = None
+            # resource_report["cadence_std_ratio"] = None
             resource_report["has_correct_cadence"] = has_correct_cadence
             if float(expected_cadence) > 0 and len(days_between_updates) > 1:
                 average_interval = statistics.mean(days_between_updates)
-                resource_report["cadence_mean_ratio"] = round(
-                    average_interval / float(expected_cadence), 2
-                )
+                cadence_mean_ratio = round(average_interval / float(expected_cadence), 2)
                 # Updates are regular
                 std_interval = statistics.stdev(days_between_updates)
-                resource_report["cadence_std_ratio"] = round(
-                    std_interval / float(expected_cadence), 2
-                )
-                if abs(resource_report["cadence_mean_ratio"] - 1) < 0.1:
+                cadence_std_ratio = round(std_interval / float(expected_cadence), 2)
+                if abs(cadence_mean_ratio - 1) < 0.1:
                     has_correct_cadence += 1
-                if resource_report["cadence_std_ratio"] < 0.1:
+                if cadence_std_ratio < 0.1:
                     has_correct_cadence += 1
             resource_report["has_correct_cadence"] = has_correct_cadence
 
@@ -350,7 +342,9 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
                 n_schema_changes += 1
         if n_schema_changes == 0:
             resource_score += 1
-        resource_report["n_schema_changes"] = n_schema_changes
+            resource_report["has_stable_schema"] = True
+        else:
+            resource_report["has_stable_schema"] = False
         report["accessibility"]["resources"].append(resource_report)
         if resource_score > max_resource_score:
             max_resource_score = resource_score
@@ -375,25 +369,26 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
 
 def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["interpretability"] = {}
-    report["interpretability"]["has_data_dictionary"] = 0
+    report["interpretability"]["has_data_dictionary"] = False
     report["interpretability"]["resources"] = []
 
-    has_data_dictionary = 0
+    has_data_dictionary = False
     if metadata_dict is not None:
         for resource in metadata_dict["result"]["resources"]:
             resource_report = {}
             resource_report["name"] = resource["name"]
             if resource.get("datastore_active", False):
-                resource_report["datastore_active"] = True
-                has_data_dictionary = 1
+                resource_report["has_data_dictionary"] = True
+                has_data_dictionary = True
             else:
-                resource_report["datastore_active"] = False
+                resource_report["has_data_dictionary"] = False
 
-            if "dictionary" in resource["name"].lower() and "data" in resource["name"].lower():
-                resource_report["is_data_dictionary"] = True
-                has_data_dictionary = 1
-            else:
-                resource_report["is_data_dictionary"] = False
+            if not resource_report["has_data_dictionary"]:
+                if "dictionary" in resource["name"].lower() and "data" in resource["name"].lower():
+                    resource_report["has_data_dictionary"] = True
+                    has_data_dictionary = True
+                else:
+                    resource_report["has_data_dictionary"] = False
 
             report["interpretability"]["resources"].append(resource_report)
 
@@ -406,26 +401,27 @@ def add_interpretability_entries(metadata_dict: dict | None, report: dict) -> di
 
 def add_interoperability_entries(metadata_dict: dict | None, report: dict) -> dict:
     report["interoperability"] = {}
-    report["interoperability"]["has_standard_geodenomination"] = 0
+    report["interoperability"]["has_standard_geodenomination"] = False
     report["interoperability"]["resources"] = []
 
-    has_standard_geodenomination = 0
+    has_standard_geodenomination = False
     if metadata_dict is not None:
         for resource in metadata_dict["result"]["resources"]:
             resource_report = {}
             resource_report["name"] = resource["name"]
-            resource_report["p_coded"] = resource.get("p_coded", False)
+            resource_report["has_standard_geodenomination"] = resource.get("p_coded", False)
             if resource.get("p_coded", False):
-                has_standard_geodenomination = 1
+                has_standard_geodenomination = True
 
             #
             schemas = summarise_schema(resource)
-            has_geodenomation_hxl = check_schemas(schemas)
-            if has_geodenomation_hxl:
-                has_standard_geodenomination = 1
-                resource_report["has_geodenomination_hxl"] = 1
-            else:
-                resource_report["has_geodenomination_hxl"] = 0
+            if not has_standard_geodenomination:
+                has_geodenomation_hxl = check_schemas(schemas)
+                if has_geodenomation_hxl:
+                    has_standard_geodenomination = True
+                    resource_report["has_standard_geodenomination"] = True
+                else:
+                    resource_report["has_standard_geodenomination"] = False
             report["interoperability"]["resources"].append(resource_report)
 
     report["interoperability"]["has_standard_geodenomination"] = has_standard_geodenomination
