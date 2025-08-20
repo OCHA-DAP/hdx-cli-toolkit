@@ -957,12 +957,15 @@ def data_quality_report(
 
     report = compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
 
+    if report == {}:
+        return
     if output_format == "full":
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
         print(json.dumps(report, indent=4), flush=True)
         if output_path is not None:
             rows = convert_dict_to_rows(report)
             status = write_dictionary(output_path, rows, append=True)
-            print(status)
+            print(status, flush=True)
     elif output_format == "summary":
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
         max_total_score = 0
@@ -989,7 +992,11 @@ def data_quality_report(
         if output_path is not None:
             row = flatten_dict_to_row(report)
             status = write_dictionary(output_path, [row], append=True)
-            print(status)
+            print(status, flush=True)
     elif output_format == "resource":
         resource_report = make_resource_centric_report(report)
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
         print(json.dumps(resource_report, indent=4), flush=True)
+        if output_path is not None:
+            status = write_dictionary(output_path, resource_report, append=True)
+            print(status, flush=True)
