@@ -66,6 +66,10 @@ def compile_data_quality_report(
             if dataset_name is not None:
                 metadata_dict = read_metadata_from_hdx(dataset_name)
 
+    if metadata_dict is None:
+        print(f"Dataset '{dataset_name} not found on HDX", flush=True)
+        return {}
+
     report = {}
     report["dataset_name"] = dataset_name
     report["relevance_score"] = 0
@@ -155,7 +159,9 @@ def make_resource_centric_report(report) -> list[dict]:
     resource_reports_list = []
     for key in resource_reports_dict.keys():
         new_resource_report = {}
-        new_resource_report["name"] = key
+        new_resource_report["datatime"] = datetime.datetime.now().isoformat()
+        new_resource_report["dataset_name"] = report["dataset_name"]
+        new_resource_report["resource_name"] = key
         new_resource_report["resource_score"] = 0
         resource_score = 0
         for key, value in resource_reports_dict[key].items():
@@ -299,6 +305,8 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 if cadence_std_ratio < 0.1:
                     has_correct_cadence += 1
             resource_report["has_correct_cadence"] = has_correct_cadence
+        else:
+            resource_report["has_correct_cadence"] = 0
 
         report["timeliness"]["resources"].append(resource_report)
 
