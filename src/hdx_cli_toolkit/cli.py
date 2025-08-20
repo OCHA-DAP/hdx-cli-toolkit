@@ -53,7 +53,10 @@ from hdx_cli_toolkit.ckan_utilities import (
     scan_distribution,
 )
 
-from hdx_cli_toolkit.data_quality_utilities import compile_data_quality_report
+from hdx_cli_toolkit.data_quality_utilities import (
+    compile_data_quality_report,
+    make_resource_centric_report,
+)
 
 
 @click.group()
@@ -927,7 +930,7 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
 )
 @click.option(
     "--output_format",
-    type=click.Choice(["full", "summary"]),
+    type=click.Choice(["full", "summary", "resource"]),
     is_flag=False,
     default="full_json",
     help="Format for data quality report",
@@ -987,3 +990,6 @@ def data_quality_report(
             row = flatten_dict_to_row(report)
             status = write_dictionary(output_path, [row], append=True)
             print(status)
+    elif output_format == "resource":
+        resource_report = make_resource_centric_report(report)
+        print(json.dumps(resource_report, indent=4), flush=True)

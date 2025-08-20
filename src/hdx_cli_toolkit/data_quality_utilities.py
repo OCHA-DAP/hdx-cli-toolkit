@@ -131,6 +131,47 @@ def compile_data_quality_report(
     return report
 
 
+def make_resource_centric_report(report) -> list[dict]:
+    resource_reports_dict = {}
+    for dimension in [
+        "relevance",
+        "timeliness",
+        "accessibility",
+        "interpretability",
+        "interoperability",
+        "findability",
+    ]:
+        # findability does not have a resources key
+        if dimension == "findability":
+            continue
+        for resource in report[dimension]["resources"]:
+            if resource["name"] not in resource_reports_dict.keys():
+                resource_reports_dict[resource["name"]] = {}
+            for key, value in resource.items():
+                if key == "name":
+                    continue
+                resource_reports_dict[resource["name"]][key] = value
+
+    resource_reports_list = []
+    for key in resource_reports_dict.keys():
+        new_resource_report = {}
+        new_resource_report["name"] = key
+        new_resource_report["resource_score"] = 0
+        resource_score = 0
+        for key, value in resource_reports_dict[key].items():
+            new_resource_report[key] = value
+            resource_score += int(value)
+
+        new_resource_report["resource_score"] = resource_score
+        resource_reports_list.append(new_resource_report)
+
+    sorted_resource_reports_list = sorted(
+        resource_reports_list, key=lambda x: x["resource_score"], reverse=True
+    )
+
+    return sorted_resource_reports_list
+
+
 def add_relevance_entries(metadata_dict: dict | None, report: dict) -> dict:
     if metadata_dict:
         dataset_name = metadata_dict["result"]["name"]
