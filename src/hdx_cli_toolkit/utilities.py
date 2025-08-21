@@ -427,7 +427,6 @@ def traverse(keys, dictionary, value_list=None):
 
 
 def convert_dict_to_rows(report) -> list[dict]:
-
     # datetime, dataset_name, group (incl summary otherwise relevance etc), key, value, resource,
     # resource_name, key, value
     rows = []
