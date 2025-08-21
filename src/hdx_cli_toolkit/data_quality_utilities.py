@@ -67,8 +67,8 @@ def compile_data_quality_report(
                 metadata_dict = read_metadata_from_hdx(dataset_name)
 
     if metadata_dict is None:
-        print(f"Dataset '{dataset_name} not found on HDX", flush=True)
-        return {}
+        print(f"Dataset '{dataset_name}' not found on HDX", flush=True)
+        return {"dataset_name": dataset_name, "relevance": {"in_hdx": False}}
 
     report = {}
     report["dataset_name"] = dataset_name

@@ -275,7 +275,7 @@ hdx-toolkit scan --hdx_site="stage" --action=list --key=organization.name,data_u
 
 The `data_quality_report` command provides a report based on work in the Centre for Humanitarian Data's Data Partnerships Team (DPT) in 2025 Q3. This provides a data quality report across 6 dimensions (relevance, timeliness, accessibility, interpretability, interoperability and findability) as well as a total score. In the initial release the total score is provisional with a view to refining its calculation on the basis of use.
 
-The dataset is specified using a `dataset_name` parameter, or a `--lucky_dip` flag can be provided which selects a random dataset. The HDX site (stage or prod) can be set using the `hdx_site` parameter. `output_format` can be set to `full` for an extensive JSON report for console output or `summary` for a brief report of scores in each dimension. If an `output_path` provided then the `full` and `summary` outputs are sent to a CSV format file.
+The dataset is specified using a `dataset_name` parameter, or a `--lucky_dip` flag can be provided which selects a random dataset. The HDX site (stage or prod) can be set using the `hdx_site` parameter. `output_format` can be set to `full` for an extensive JSON report for console output,  `summary` for a brief report of scores in each dimension or `resource` for a resource centric report in JSON format. If an `output_path` is provided then all three outputs can be sent to a CSV format file with one row per dataset for the `summary` format and multiple rows for the `full` and `resource` formats.
 
 Example invocations:
 ```

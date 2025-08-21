@@ -957,7 +957,7 @@ def data_quality_report(
 
     report = compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
 
-    if report == {}:
+    if not report["relevance"]["in_hdx"]:
         return
     if output_format == "full":
         print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
