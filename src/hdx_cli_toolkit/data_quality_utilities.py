@@ -104,7 +104,7 @@ def compile_data_quality_report(
         + int(report["relevance"]["in_signals"])
         + int(report["findability_score"])
         + int(report["timeliness"]["is_fresh"])
-        + int(report["timeliness"]["has_correct_cadence"])
+        + int(report["timeliness"]["cadence_score"])
         + int(report["interpretability"]["has_data_dictionary"])
         + int(report["interoperability"]["has_standard_geodenomination"])
         + int(report["accessibility"]["has_stable_schema"])
@@ -263,14 +263,14 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
         and metadata_dict["result"]["data_update_frequency"] == "0"
         else False
     )
-    report["timeliness"]["has_correct_cadence"] = None
+    report["timeliness"]["cadence_score"] = None
 
     resource_changes = summarise_resource_changes(metadata_dict)
     report["timeliness"]["resources"] = []
     expected_cadence = metadata_dict["result"]["data_update_frequency"]
 
     for resource in metadata_dict["result"]["resources"]:
-        has_correct_cadence = 0
+        cadence_score = 0
         resource_report = {}
         resource_report["name"] = resource["name"]
         if due_date is not None:
@@ -293,7 +293,7 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
             # Cadence is as advertised
             # resource_report["cadence_mean_ratio"] = None
             # resource_report["cadence_std_ratio"] = None
-            resource_report["has_correct_cadence"] = has_correct_cadence
+            resource_report["cadence_score"] = cadence_score
             if float(expected_cadence) > 0 and len(days_between_updates) > 1:
                 average_interval = statistics.mean(days_between_updates)
                 cadence_mean_ratio = round(average_interval / float(expected_cadence), 2)
@@ -301,12 +301,14 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
                 std_interval = statistics.stdev(days_between_updates)
                 cadence_std_ratio = round(std_interval / float(expected_cadence), 2)
                 if abs(cadence_mean_ratio - 1) < 0.1:
-                    has_correct_cadence += 1
+                    cadence_score += 1
                 if cadence_std_ratio < 0.1:
-                    has_correct_cadence += 1
-            resource_report["has_correct_cadence"] = has_correct_cadence
+                    cadence_score += 1
+            resource_report["cadence_score"] = cadence_score
+            resource_report["has_fs_check_or_shape_info"] = True
         else:
-            resource_report["has_correct_cadence"] = 0
+            resource_report["cadence_score"] = 0
+            resource_report["has_fs_check_or_shape_info"] = False
 
         report["timeliness"]["resources"].append(resource_report)
 
@@ -314,12 +316,10 @@ def add_timeliness_entries(metadata_dict: dict | None, report: dict) -> dict:
     # 2 if cadence is correct (mean ratio~1) and stable (std ratio ~0) for at least 1 resource
     # 1 if one of mean ratio and std ratio is good for at least 1 resource
     # 0 if neither
-    has_correct_cadence = max(
-        x.get("has_correct_cadence", 1) for x in report["timeliness"]["resources"]
-    )
-    report["timeliness"]["has_correct_cadence"] = has_correct_cadence
+    cadence_score = max(x.get("cadence_score", 1) for x in report["timeliness"]["resources"])
+    report["timeliness"]["cadence_score"] = cadence_score
 
-    timeliness_summary = has_correct_cadence
+    timeliness_summary = cadence_score
     if report["timeliness"]["is_fresh"]:
         timeliness_summary += 1
     if report["timeliness"]["is_crisis_relevant"]:
@@ -389,6 +389,11 @@ def add_accessibility_entries(metadata_dict: dict | None, report: dict) -> dict:
         # Check for schema changes
         resource_checks = resource_changes[resource["name"]]["checks"]
         n_schema_changes = 0
+        if len(resource_checks) != 0:
+            resource_report["has_fs_check_or_shape_info"] = True
+        else:
+            resource_report["has_fs_check_or_shape_info"] = False
+
         for resource_check in resource_checks:
             if "*" in resource_check and "nrows" not in resource_check:
                 n_schema_changes += 1
