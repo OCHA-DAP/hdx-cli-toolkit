@@ -81,7 +81,6 @@ def compile_data_quality_report(
     report["total_score"] = 0
     report["priority_score"] = 0
     report["normalized_score"] = 0
-    report["medal"] = "Bronze"
 
     report = add_relevance_entries(metadata_dict, report)
     report = add_timeliness_entries(metadata_dict, report)
@@ -125,12 +124,12 @@ def compile_data_quality_report(
 
     report["normalized_score"] = round(report["normalized_score"], 2)
 
-    if report["priority_score"] < 4:
-        report["medal"] = "Bronze"
-    elif report["priority_score"] >= 7:
-        report["medal"] = "Gold"
-    else:
-        report["medal"] = "Silver"
+    # if report["priority_score"] < 4:
+    #     report["medal"] = "Bronze"
+    # elif report["priority_score"] >= 7:
+    #     report["medal"] = "Gold"
+    # else:
+    #     report["medal"] = "Silver"
 
     return report
 

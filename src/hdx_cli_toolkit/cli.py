@@ -987,7 +987,6 @@ def data_quality_report(
         print(f"{'Total score:':<20} {report['total_score']} / {max_total_score}", flush=True)
         print(f"{'Priority score:':<20} {report['priority_score']} / 10", flush=True)
         print(f"{'Normalised score:':<20} {report['normalized_score']} / 6", flush=True)
-        print(f"{'Medal:':<20} {report['medal']}", flush=True)
 
         if output_path is not None:
             row = flatten_dict_to_row(report)
