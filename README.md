@@ -60,6 +60,21 @@ The `hdx-toolkit` is built using the Python `click` library. Details of the curr
 
 A detailed guide can be found in the [USERGUIDE.md](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/USERGUIDE.md) file
 
+## Maintenance 
+
+For the `data_quality_report` data on membership of Data Grid and HDX Signals is hard-coded. To update the coding for datasets in Data Grids:
+
+1. clone this repo: https://github.com/OCHA-DAP/data-grid-recipes
+2. Run the script `scripts/data_grid_recipes_compiler.py` script in the root of the data-grid-recipes repo
+3. copy the output datagrid-datasets.csv to `src/hdx_cli_toolkit/data`
+
+To update the coding for datasets in HDX Signals, check the code at this path in the `hdx-ckan` repo:
+`hdx-ckan/ckanext-hdx_theme/ckanext/hdx_theme/helpers/ui_constants/landing_pages/signals.py`
+
+for the `DATA_COVERAGE_CONSTANTS` note that the `links` in this constant are sometimes to datasets and sometimes to organizations. Copy the dataset and organization names to the `SIGNALS_DATASETS` and `SIGNALS_ORGANIZATIONS` constants in `src\hdx_cli_toolkit\data_quality_utilities.py` in this repo.
+
+These are ugly methods for identifying Data Grid and HDX Signals datasets but with the current HDX implementation they are the most straightforward.
+
 ## Contributions
 
 For developers the code should be cloned installed from the [GitHub repo](https://github.com/OCHA-DAP/hdx-cli-toolkit), and a virtual enviroment created:

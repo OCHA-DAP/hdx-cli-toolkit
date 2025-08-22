@@ -633,7 +633,7 @@ def check_for_hapi(metadata_dict: dict) -> str | bool:
 
 def check_for_datagrid(metadata_dict: dict) -> str | bool:
     in_datagrid = False
-    datagrid_filepath = Path(__file__).parent / "data" / "2025-05-13-datagrid-datasets.csv"
+    datagrid_filepath = Path(__file__).parent / "data" / "datagrid-datasets.csv"
     with open(datagrid_filepath, newline="", encoding="utf-8") as csvfile:
         dataset_name_rows = csv.DictReader(csvfile)
         datagrid_datasets = [x["dataset_name"] for x in dataset_name_rows]
