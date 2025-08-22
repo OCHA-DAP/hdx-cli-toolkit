@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # encoding: utf-8
 
-import os
 import json
+import os
 
 import pytest
 
 from hdx_cli_toolkit.data_quality_utilities import compile_data_quality_report
 
-TEST_DATASETS_NAMES = [
+TEST_DATASET_NAMES = [
     # A couple that I generate which are not on data grid/signals/events:
     "explosive-weapons-use-affecting-aid-access-education-and-healthcare-services",
     "climada-litpop-dataset",
@@ -29,21 +29,17 @@ TEST_DATASETS_NAMES = [
     "hdx-hapi-mmr",
 ]
 
-SAMPLE_REPORTS_FILEPATH = os.path.join(
-    os.path.dirname(__file__), "fixtures", "2025-05-15-sample-data-quality_reports.json"
+TEST_DATA_QUALITY_REPORT_FILE_PATH = os.path.join(
+    os.path.dirname(__file__), "fixtures", "gibraltar-healthsites-data-quality-report.json"
 )
-with open(SAMPLE_REPORTS_FILEPATH, encoding="utf-8") as SAMPLE_HANDLE:
-    TEST_DATASETS = json.load(SAMPLE_HANDLE)
 
 
 @pytest.mark.skip(reason="This is an integration test that makes live calls to HDX stage")
 def test_dataset_data_quality():
-    for dataset in TEST_DATASETS:
-        print(dataset["dataset_name"], flush=True)
-        report = compile_data_quality_report(dataset["dataset_name"])
+    for dataset_name in TEST_DATASET_NAMES:
+        print(dataset_name, flush=True)
+        report = compile_data_quality_report(dataset_name)
         print(json.dumps(report, indent=4), flush=True)
-
-        assert dataset["dataset_name"] in TEST_DATASETS_NAMES
 
     assert False
 
@@ -55,11 +51,15 @@ def test_handle_a_nonexistent_dataset():
 
 def test_with_gibraltar_metadata(json_fixture):
     dataset_dict = json_fixture("gibraltar_with_extras.json")[0]
+    report_dict = json_fixture("gibraltar-healthsites-data-quality-report.json")
     metadata_dict = {}
     metadata_dict["result"] = dataset_dict
     report = compile_data_quality_report(
         dataset_name="gibraltar-healthsites", metadata_dict=metadata_dict
     )
+
+    assert report == report_dict
+
     assert report["dataset_name"] == "gibraltar-healthsites"
     assert report["relevance_score"] == 5
     assert report["timeliness_score"] == 0
