@@ -21,6 +21,7 @@ def test_help():
     cli_test_template(command, cli_arguments, expected_output, forbidden_output="")
 
 
+@pytest.mark.skip(reason="This requires a live stage key to pass")
 def test_configuration():
     command = show_configuration
     cli_arguments = []
@@ -61,6 +62,9 @@ def test_get_organization_metadata():
     cli_test_template(command, cli_arguments, expected_outputs, forbidden_output="")
 
 
+@pytest.mark.skip(
+    reason="This requires a key with admin privileges to access abitrary userr metadata"
+)
 def test_get_user_metadata():
     command = get_user_metadata
     cli_arguments = ["--user=hopkinson", "--verbose"]

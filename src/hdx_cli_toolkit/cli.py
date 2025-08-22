@@ -23,6 +23,8 @@ from hdx_cli_toolkit.utilities import (
     make_conversion_func,
     print_banner,
     make_path_unique,
+    convert_dict_to_rows,
+    flatten_dict_to_row,
 )
 
 from hdx_cli_toolkit.hdx_utilities import (
@@ -49,6 +51,11 @@ from hdx_cli_toolkit.ckan_utilities import (
     scan_survey,
     scan_delete_key,
     scan_distribution,
+)
+
+from hdx_cli_toolkit.data_quality_utilities import (
+    compile_data_quality_report,
+    make_resource_centric_report,
 )
 
 
@@ -899,3 +906,96 @@ def output_for_list(output_path: str | None, output_rows: list[dict]):
         output_path = make_path_unique(output_path)
         status = write_dictionary(output_path, output_rows, append=False)
         print(status, flush=True)
+
+
+@hdx_toolkit.command(name="data_quality_report")
+@click.option(
+    "--hdx_site",
+    type=click.Choice(["stage", "prod"]),
+    is_flag=False,
+    default="stage",
+    help="an hdx_site value",
+)
+@click.option(
+    "--dataset_name",
+    is_flag=False,
+    default=None,
+    help="a dataset name",
+)
+@click.option(
+    "--lucky_dip",
+    is_flag=True,
+    default=False,
+    help="select a dataset at random",
+)
+@click.option(
+    "--output_format",
+    type=click.Choice(["full", "summary", "resource"]),
+    is_flag=False,
+    default="full_json",
+    help="Format for data quality report",
+)
+@click.option(
+    "--output_path",
+    is_flag=False,
+    default=None,
+    help="A file path to export the report in CSV",
+)
+def data_quality_report(
+    hdx_site: str = "stage",
+    dataset_name: str | None = None,
+    lucky_dip: bool = False,
+    output_format: str = "full",
+    output_path: Optional[str] = None,
+):
+    """Compile a data quality report"""
+    print_banner("data_quality_report")
+
+    if not lucky_dip and dataset_name is None:
+        print("Lucky_dip not specified, and no dataset_name provided - returning", flush=True)
+        return
+
+    report = compile_data_quality_report(dataset_name, hdx_site, lucky_dip)
+
+    if not report["relevance"]["in_hdx"]:
+        return
+    if output_format == "full":
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
+        print(json.dumps(report, indent=4), flush=True)
+        if output_path is not None:
+            rows = convert_dict_to_rows(report)
+            status = write_dictionary(output_path, rows, append=True)
+            print(status, flush=True)
+    elif output_format == "summary":
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
+        max_total_score = 0
+        for dimension in [
+            "Relevance",
+            "Timeliness",
+            "Accessibility",
+            "Interpretability",
+            "Interoperability",
+            "Findability",
+        ]:
+            max_score = report[dimension.lower()]["max_score"]
+            max_total_score = max_total_score + max_score
+            print(
+                f'{dimension+":":<20} {report[f"{dimension.lower()}_score"]} / {max_score}',
+                flush=True,
+            )
+
+        print(f"{'Total score:':<20} {report['total_score']} / {max_total_score}", flush=True)
+        print(f"{'Priority score:':<20} {report['priority_score']} / 10", flush=True)
+        print(f"{'Normalised score:':<20} {report['normalized_score']} / 6", flush=True)
+
+        if output_path is not None:
+            row = flatten_dict_to_row(report)
+            status = write_dictionary(output_path, [row], append=True)
+            print(status, flush=True)
+    elif output_format == "resource":
+        resource_report = make_resource_centric_report(report)
+        print(f'{"Dataset name:":<20} {report["dataset_name"]}', flush=True)
+        print(json.dumps(resource_report, indent=4), flush=True)
+        if output_path is not None:
+            status = write_dictionary(output_path, resource_report, append=True)
+            print(status, flush=True)

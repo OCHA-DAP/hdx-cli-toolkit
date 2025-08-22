@@ -18,3 +18,21 @@ dist/
 src/hdx_cli_toolkit/output/
 
 output/
+
+burkina-faso-acled-conflict-data.json
+
+data_quality_report.json
+
+temp.json
+
+tests/fixtures/2025-03-05-datamart-search-response.json
+
+scripts/benchmarks.csv
+
+scripts/2025-07-07-benchmark-mr-comparison.csv
+
+scripts/2025-07-03-benchmark-lucky_dip.csv
+
+*.twbr
+
+*.twb

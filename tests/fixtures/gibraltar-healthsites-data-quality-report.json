@@ -1,0 +1,192 @@
+{
+    "dataset_name": "gibraltar-healthsites",
+    "relevance_score": 5,
+    "timeliness_score": 0,
+    "accessibility_score": 5,
+    "interpretability_score": 0,
+    "interoperability_score": 0,
+    "findability_score": 0,
+    "total_score": 10,
+    "priority_score": 3,
+    "normalized_score": 1.38,
+    "relevance": {
+        "in_hdx": true,
+        "in_dataseries": true,
+        "in_pipeline": true,
+        "in_cod": false,
+        "in_hapi_output": false,
+        "in_signals": false,
+        "in_crisis": false,
+        "in_hapi_input": false,
+        "in_data_grids": false,
+        "downloads_score": 2,
+        "resources": [
+            {
+                "name": "gibraltar-healthsites-csv-with-hxl-tags",
+                "in_hapi_input": false
+            },
+            {
+                "name": "gibraltar-healthsites-shp",
+                "in_hapi_input": false
+            },
+            {
+                "name": "gibraltar-healthsites-geojson",
+                "in_hapi_input": false
+            },
+            {
+                "name": "gibraltar-healthsites-hxl-geojson",
+                "in_hapi_input": false
+            },
+            {
+                "name": "gibraltar-healthsites-csv",
+                "in_hapi_input": false
+            }
+        ],
+        "max_score": 13
+    },
+    "timeliness": {
+        "is_fresh": false,
+        "is_crisis_relevant": false,
+        "cadence_score": 0,
+        "resources": [
+            {
+                "name": "gibraltar-healthsites-csv-with-hxl-tags",
+                "is_fresh": false,
+                "cadence_score": 0,
+                "has_fs_check_or_shape_info": true
+            },
+            {
+                "name": "gibraltar-healthsites-shp",
+                "is_fresh": false,
+                "cadence_score": 0,
+                "has_fs_check_or_shape_info": false
+            },
+            {
+                "name": "gibraltar-healthsites-geojson",
+                "is_fresh": false,
+                "cadence_score": 0,
+                "has_fs_check_or_shape_info": false
+            },
+            {
+                "name": "gibraltar-healthsites-hxl-geojson",
+                "is_fresh": false,
+                "cadence_score": 0,
+                "has_fs_check_or_shape_info": false
+            },
+            {
+                "name": "gibraltar-healthsites-csv",
+                "is_fresh": false,
+                "cadence_score": 0,
+                "has_fs_check_or_shape_info": true
+            }
+        ],
+        "max_score": 4
+    },
+    "accessibility": {
+        "is_hxlated": true,
+        "format_score": 2,
+        "has_stable_schema": true,
+        "has_tags_and_countries": true,
+        "resources": [
+            {
+                "name": "gibraltar-healthsites-csv-with-hxl-tags",
+                "format_score": 2,
+                "in_hapi": false,
+                "is_hxlated": true,
+                "has_fs_check_or_shape_info": true,
+                "has_stable_schema": true
+            },
+            {
+                "name": "gibraltar-healthsites-shp",
+                "format_score": 1,
+                "in_hapi": false,
+                "is_hxlated": false,
+                "has_fs_check_or_shape_info": false,
+                "has_stable_schema": true
+            },
+            {
+                "name": "gibraltar-healthsites-geojson",
+                "format_score": 2,
+                "in_hapi": false,
+                "is_hxlated": false,
+                "has_fs_check_or_shape_info": false,
+                "has_stable_schema": true
+            },
+            {
+                "name": "gibraltar-healthsites-hxl-geojson",
+                "format_score": 2,
+                "in_hapi": false,
+                "is_hxlated": false,
+                "has_fs_check_or_shape_info": false,
+                "has_stable_schema": true
+            },
+            {
+                "name": "gibraltar-healthsites-csv",
+                "format_score": 2,
+                "in_hapi": false,
+                "is_hxlated": false,
+                "has_fs_check_or_shape_info": true,
+                "has_stable_schema": true
+            }
+        ],
+        "max_score": 5
+    },
+    "interpretability": {
+        "has_data_dictionary": false,
+        "resources": [
+            {
+                "name": "gibraltar-healthsites-csv-with-hxl-tags",
+                "has_data_dictionary": false
+            },
+            {
+                "name": "gibraltar-healthsites-shp",
+                "has_data_dictionary": false
+            },
+            {
+                "name": "gibraltar-healthsites-geojson",
+                "has_data_dictionary": false
+            },
+            {
+                "name": "gibraltar-healthsites-hxl-geojson",
+                "has_data_dictionary": false
+            },
+            {
+                "name": "gibraltar-healthsites-csv",
+                "has_data_dictionary": false
+            }
+        ],
+        "max_score": 1
+    },
+    "interoperability": {
+        "has_standard_geodenomination": false,
+        "resources": [
+            {
+                "name": "gibraltar-healthsites-csv-with-hxl-tags",
+                "has_standard_geodenomination": false
+            },
+            {
+                "name": "gibraltar-healthsites-shp",
+                "has_standard_geodenomination": false
+            },
+            {
+                "name": "gibraltar-healthsites-geojson",
+                "has_standard_geodenomination": false
+            },
+            {
+                "name": "gibraltar-healthsites-hxl-geojson",
+                "has_standard_geodenomination": false
+            },
+            {
+                "name": "gibraltar-healthsites-csv",
+                "has_standard_geodenomination": false
+            }
+        ],
+        "max_score": 1
+    },
+    "findability": {
+        "has_glide_number": false,
+        "has_gdacs_number": false,
+        "has_doi_number": false,
+        "max_score": 1
+    }
+}
