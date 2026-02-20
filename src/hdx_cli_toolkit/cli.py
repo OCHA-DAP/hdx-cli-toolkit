@@ -29,7 +29,6 @@ from hdx_cli_toolkit.utilities import (
 
 from hdx_cli_toolkit.hdx_utilities import (
     add_showcase,
-    add_quickcharts,
     get_organizations_from_hdx,
     get_users_from_hdx,
     update_values_in_hdx,
@@ -474,51 +473,6 @@ def show_configuration(approved_tag_list: bool = False, organization: Optional[s
             if "API key not valid" in status:
                 color = "red"
             click.secho(f"{status}", fg=color, color=True)
-
-
-@hdx_toolkit.command(name="quickcharts")
-@click.option(
-    "--dataset_filter",
-    is_flag=False,
-    default="*",
-    help="a dataset name",
-)
-@click.option(
-    "--hdx_site",
-    is_flag=False,
-    default="stage",
-    help="an hdx_site value {stage|prod}",
-)
-@click.option(
-    "--resource_name",
-    is_flag=False,
-    default="stage",
-    help="name of resource to which the QuickCharts are attached",
-)
-@click.option(
-    "--hdx_hxl_preview_file_path",
-    is_flag=False,
-    default="stage",
-    help="name of resource to which the QuickCharts are attached",
-)
-def quickcharts(
-    dataset_filter: str = "",
-    hdx_site: str = "stage",
-    resource_name: str = "",
-    hdx_hxl_preview_file_path: str = "",
-):
-    """Upload QuickChart JSON description to HDX"""
-    print_banner("quickcharts")
-    print(
-        f"Adding Quick Chart defined at '{hdx_hxl_preview_file_path}' to dataset "
-        f"'{dataset_filter}', resource '{resource_name}'"
-    )
-    t0 = time.time()
-    status = add_quickcharts(dataset_filter, hdx_site, resource_name, hdx_hxl_preview_file_path)
-
-    print(status, flush=True)
-
-    print(f"Quick Chart update took {time.time() - t0:.2f} seconds")
 
 
 @hdx_toolkit.command(name="showcase")

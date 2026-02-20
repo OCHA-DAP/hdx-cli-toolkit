@@ -324,6 +324,9 @@ def decorate_dataset_with_extras(
     dictionaries to make printed output more readable. This decoration means that the dataset
     dictionary cannot be uploaded to HDX.
 
+    `hxl_preview_config` and `quickcharts` are to be removed from HDX but this function handles
+    their absence.
+
     Arguments:
         dataset {Dataset} -- a Dataset object to process
 
@@ -479,44 +482,6 @@ def update_resource_in_hdx(
 
     statuses.append("No '--live' flag supplied so no update to HDX made, otherwise successful")
     return statuses
-
-
-@hdx_error_handler
-def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_path):
-    configure_hdx_connection(hdx_site=hdx_site)
-    status = "Successful"
-
-    # read the json file
-    with open(hdx_hxl_preview_file_path, "r", encoding="utf-8") as json_file:
-        recipe = json.load(json_file)
-    # extract appropriate keys
-    processed_recipe = {
-        "description": "",
-        "title": "Quick Charts",
-        "view_type": "hdx_hxl_preview",
-        "hxl_preview_config": "",
-    }
-
-    # convert the configuration to a string
-    stringified_config = json.dumps(
-        recipe["hxl_preview_config"], indent=None, separators=(",", ":")
-    )
-    processed_recipe["hxl_preview_config"] = stringified_config
-    # write out yaml to a temp file
-    temp_yaml_path = f"{hdx_hxl_preview_file_path}.temp.yaml"
-    with open(temp_yaml_path, "w", encoding="utf-8") as yaml_file:
-        yaml.dump(processed_recipe, yaml_file)
-
-    dataset = Dataset.read_from_hdx(dataset_name)
-    if dataset is not None:
-        dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-        dataset.update_in_hdx(update_resources=False)
-
-    # delete the temp file
-    if os.path.exists(temp_yaml_path):
-        os.remove(temp_yaml_path)
-
-    return status
 
 
 @hdx_error_handler

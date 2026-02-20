@@ -17,7 +17,6 @@ from hdx_cli_toolkit.hdx_utilities import (
     configure_hdx_connection,
     update_values_in_hdx,
     add_showcase,
-    add_quickcharts,
     get_approved_tag_list,
     update_values_in_hdx_from_file,
     get_hdx_url_and_key,
@@ -167,43 +166,6 @@ def test_add_showcase():
 
     assert len(showcases) == 1
     assert showcases[0]["title"] == "CLIMADA LitPop Methodology Documentation"
-
-
-def test_add_quickcharts():
-    resource_name = "admin1-summaries-flood.csv"
-    new_resource_file_path = os.path.join(os.path.dirname(__file__), "fixtures", resource_name)
-    _ = update_resource_in_hdx(
-        DATASET_NAME, resource_name, HDX_SITE, new_resource_file_path, live=True
-    )
-
-    hdx_hxl_preview_file_path = os.path.join(
-        os.path.dirname(__file__), "fixtures", "quickchart-flood.json"
-    )
-
-    status = add_quickcharts(DATASET_NAME, HDX_SITE, resource_name, hdx_hxl_preview_file_path)
-
-    assert status == "Successful"
-
-    dataset = Dataset.read_from_hdx(DATASET_NAME)
-    resources = dataset.get_resources()
-
-    quickchart_dicts = []
-    for resource in resources:
-        resource_dict = resource.data
-        if resource_dict["name"] != resource_name:
-            continue
-        dataset_quickcharts = ResourceView.get_all_for_resource(resource_dict["id"])
-        if dataset_quickcharts is not None:
-            for quickchart in dataset_quickcharts:
-                quickchart_dict = quickchart.data
-                if "hxl_preview_config" in quickchart_dict:
-                    quickchart_dict["hxl_preview_config"] = json.loads(
-                        quickchart_dict["hxl_preview_config"]
-                    )
-                quickchart_dicts.append(quickchart_dict)
-
-    assert len(quickchart_dicts) == 2
-    assert quickchart_dicts[1]["title"] == "Quick Charts"
 
 
 def test_get_approved_tag_list():
