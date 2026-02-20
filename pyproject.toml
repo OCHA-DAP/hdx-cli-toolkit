@@ -11,7 +11,7 @@ authors = [
 ]
 
 dependencies = [
-  "hdx-python-api==6.3.1",
+  "hdx-python-api",
   "hdx-python-country",
   "ckanapi",
   "libhxl==5.2.2",
