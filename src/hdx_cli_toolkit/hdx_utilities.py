@@ -263,7 +263,6 @@ def update_values_in_hdx(
                 dataset.data.pop("extras")
             dataset.update_in_hdx(
                 update_resources=False,
-                hxl_update=False,
                 operation="patch",
                 batch_mode="KEEP_OLD",
                 skip_validation=True,
@@ -511,7 +510,7 @@ def add_quickcharts(dataset_name, hdx_site, resource_name, hdx_hxl_preview_file_
     dataset = Dataset.read_from_hdx(dataset_name)
     if dataset is not None:
         dataset.generate_quickcharts(resource=resource_name, path=temp_yaml_path)
-        dataset.update_in_hdx(update_resources=False, hxl_update=False)
+        dataset.update_in_hdx(update_resources=False)
 
     # delete the temp file
     if os.path.exists(temp_yaml_path):
@@ -606,7 +605,7 @@ def remove_extras_key_from_dataset(
     if "extras" in original_dataset.data:
         output_row["had_extras"] = True
         original_dataset.data.pop("extras")
-        original_dataset.create_in_hdx(hxl_update=False, keys_to_delete=["extras"])
+        original_dataset.create_in_hdx(keys_to_delete=["extras"])
     else:
         # print(f"Extras key not found in {dataset_name} on {hdx_site}", flush=True)
         return output_row

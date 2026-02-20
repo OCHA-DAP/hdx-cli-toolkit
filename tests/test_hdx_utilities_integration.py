@@ -60,7 +60,7 @@ def setup_and_teardown_dataset_in_hdx():
 
     dataset.add_update_resource(resource)
 
-    dataset.create_in_hdx(hxl_update=False, updated_by_script="hdx_cli_toolkit_ignore")
+    dataset.create_in_hdx(updated_by_script="hdx_cli_toolkit_ignore")
 
     assert Dataset.read_from_hdx(DATASET_NAME) is not None
     # This is pytest teardown
