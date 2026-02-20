@@ -12,7 +12,6 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
-  quickcharts                Upload QuickChart JSON description to HDX
   remove_extras_key          Remove extras key from a dataset
   scan                       Scan all of HDX and perform an action
   showcase                   Upload showcase to HDX
@@ -124,7 +123,7 @@ The `list` command can output multiple comma separated keys to a table, and also
 hdx-toolkit list --organization=international-organization-for-migration --key=data_update_frequency,dataset_date --output_path=2024-02-05-iom-dtm.csv
 ```
 
-`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. The displaying attributes from `resources`, `quickcharts`, `showcases`, `fs_check_info` and `shape_info` forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
+`list` can also output the value of nested keys such as `organization.name` or lists of values such as `tags.name` or `groups.name`. The displaying attributes from `resources`, `showcases`, `fs_check_info` and `shape_info` forces multiple queries to HDX per dataset and can be slow, therefore it should only be used if necessary and only for small numbers of datasets at a time. An example of this is as follows:
 
 ```shell
 hdx-toolkit list --organization=healthsites --dataset_filter=gibraltar-healthsites --hdx_site=stage --key=resources.name --value=True
@@ -181,17 +180,7 @@ It is possible to include resource, showcase and QuickChart (resource_view) meta
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 ```
 
-This adds resources under a `resources` key which includes a `quickcharts` key and showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info`, `shape_info` and `hxl_preview_config` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
-
-## Quick Charts
-
-A Quick Chart can be uploaded from a JSON file using a commandline like where the `dataset_filter` specifies a single dataset and the `resource_name` specifies the resource to which the Quick Chart is attached:
-
-```
- hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
-```
-
-The `hdx_hxl_preview_file_path` points to a JSON format file with the key `hxl_preview_config` which contains the Quick Chart definition. This file is converted to a single string via a temporary yaml file so should be easily readable. Quick Chart recipe documentation can be found [here](https://github.com/OCHA-DAP/hxl-recipes?tab=readme-ov-file). There is an example file in the `hdx-cli-toolkit` [repo](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/tests/fixtures/quickchart-flood.json).
+This adds resources under a `resources` key which includes showcases under a `showcases` key. These new keys mean that the output JSON cannot be created directly in HDX. The `fs_check_info`, and `shape_info` keys which previously contained a JSON object serialised as a single string are expanded as dictionaries so that they are printed out in an easy to read format.
 
 ## Showcases
 
@@ -316,7 +305,6 @@ hdx-toolkit get_user_metadata --user=hopkinson --verbose
 hdx-toolkit print --dataset_filter=climada-litpop-dataset
 hdx-toolkit print --dataset_filter=wfp-food-prices-for-nigeria --with_extras
 hdx-toolkit print --dataset_filter=geoboundaries-admin-boundaries-for-nepal --with_extras
-hdx-toolkit quickcharts --dataset_filter=climada-flood-dataset --hdx_site=stage --resource_name=admin1-summaries-flood.csv --hdx_hxl_preview_file_path=quickchart-flood.json
 hdx-toolkit showcase --showcase_name=climada-litpop-showcase --hdx_site=stage --attributes_file_path=attributes.csv
 hdx-toolkit update_resource --dataset_name=hdx_cli_toolkit_test --resource_name="test_resource_1" --hdx_site=stage --resource_file_path=test-2.csv --live
 hdx-toolkit download --dataset=bangladesh-bgd-attacks-on-protection --hdx_site=stage
