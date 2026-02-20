@@ -12,7 +12,6 @@ This toolkit provides a commandline interface to the [Humanitarian Data Exchange
   get_user_metadata          Get user id and other metadata
   list                       List datasets in HDX
   print                      Print datasets in HDX to the terminal
-  quickcharts                Upload QuickChart JSON description to HDX
   remove_extras_key          Remove extras key from a dataset
   scan                       Scan all of HDX and perform an action
   showcase                   Upload showcase to HDX
@@ -59,6 +58,12 @@ hdx-cli-toolkit:
 The `hdx-toolkit` is built using the Python `click` library. Details of the currently implemented commands can be revealed by running `hdx-toolkit --help`, and details of the arguments for a command can be found using `hdx-toolkit [COMMAND] --help`
 
 A detailed guide can be found in the [USERGUIDE.md](https://github.com/OCHA-DAP/hdx-cli-toolkit/blob/main/USERGUIDE.md) file
+
+## Changelog
+
+Entries commence with 2026.2.1
+
+**2026.2.1** - this release removes the `quickcharts` command since HXL is to be removed from HDX and quickcharts depends on this. There are also a couple of removals of `hxl_update=False` from calls which should make no difference to the end user.
 
 ## Maintenance 
 

@@ -1,6 +1,6 @@
 [project]
 name = "hdx_cli_toolkit"
-version = "2025.8.1"
+version = "2026.2.1"
 description = "HDX CLI tool kit for commandline interaction with HDX"
 readme = {file = "README.md", content-type = "text/markdown"}
 license = {file = "LICENSE"}
@@ -11,7 +11,7 @@ authors = [
 ]
 
 dependencies = [
-  "hdx-python-api==6.3.1",
+  "hdx-python-api",
   "hdx-python-country",
   "ckanapi",
   "libhxl==5.2.2",
